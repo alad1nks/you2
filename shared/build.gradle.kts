@@ -57,6 +57,8 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
+            implementation(projects.resources)
+
             implementation(project.dependencies.platform(libs.koin.bom))
         }
         commonTest.dependencies {

@@ -36,3 +36,5 @@ include(":androidApp")
 include(":desktopApp")
 include(":shared")
 include(":webApp")
+
+include(":resources")
