@@ -2,4 +2,4 @@ package com.alad1nks.startkmp
 
 import androidx.compose.ui.window.ComposeUIViewController
 
-fun MainViewController() = ComposeUIViewController { KoinApp() }
+fun mainViewController() = ComposeUIViewController { KoinApp() }
