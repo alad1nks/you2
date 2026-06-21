@@ -14,14 +14,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.alad1nks.startkmp.di.CommonModules
+import com.alad1nks.startkmp.di.PlatformModules
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.KoinApplication
+import org.koin.dsl.koinConfiguration
 
 import startkmp.shared.generated.resources.Res
 import startkmp.shared.generated.resources.compose_multiplatform
 
 @Composable
+fun KoinApp() {
+    KoinApplication(
+        configuration =
+            koinConfiguration {
+                modules(CommonModules + PlatformModules)
+            },
+    ) {
+        App()
+    }
+}
+
+@Composable
 @Preview
-fun App() {
+private fun App() {
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(

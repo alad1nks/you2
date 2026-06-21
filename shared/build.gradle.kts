@@ -24,7 +24,7 @@ kotlin {
         browser()
     }
 
-    androidLibrary {
+    android {
        namespace = "com.alad1nks.startkmp.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
@@ -53,6 +53,11 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+
+            implementation(project.dependencies.platform(libs.koin.bom))
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
