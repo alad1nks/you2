@@ -2,6 +2,7 @@ package com.alad1nks.startkmp
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.alad1nks.startkmp.ui.App
 
 fun main() =
     application {
@@ -9,6 +10,6 @@ fun main() =
             onCloseRequest = ::exitApplication,
             title = "startkmp",
         ) {
-            KoinApp()
+            App()
         }
     }

@@ -42,7 +42,7 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
+            implementation(projects.core.storage.datastore)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -57,6 +57,11 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
+            implementation(projects.core.data)
+            implementation(projects.core.designsystem)
+            implementation(projects.core.domain)
+            implementation(projects.core.model)
+            implementation(projects.core.storage.common)
             implementation(projects.resources)
 
             implementation(project.dependencies.platform(libs.koin.bom))
@@ -64,8 +69,16 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        iosMain.dependencies {
+            implementation(projects.core.storage.datastore)
+        }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
+
+            implementation(projects.core.storage.js)
+        }
+        jvmMain.dependencies {
+            implementation(projects.core.storage.datastore)
         }
     }
 }
