@@ -19,20 +19,41 @@ Workflow-файлы GitHub Actions требуют адаптации перед 
 
 ## Окружение
 
-Версии ниже взяты из конфигурации проекта. Основной источник версий зависимостей —
+Зависимости проверены 4 октября 2026 года по Google Maven, Maven Central, Gradle Plugin Portal
+и официальным релизам. Используются последние стабильные версии; alpha, beta и RC не включены.
+Основной источник версий зависимостей —
 [gradle/libs.versions.toml](gradle/libs.versions.toml).
 
 | Компонент | Значение в проекте |
 | --- | --- |
-| Kotlin | 2.4.0 |
-| Compose Multiplatform | 1.11.1 |
+| Kotlin (включая Compose Compiler и kotlin-test) | 2.4.20 |
+| Compose Multiplatform | 1.12.1 |
 | Material 3 | 1.9.0 |
-| Android Gradle Plugin | 9.2.1 |
-| Gradle Wrapper | 9.6.0 |
+| Android Gradle Plugin | 9.4.1 |
+| Gradle Wrapper | 9.8.0 |
 | JVM для Gradle daemon | Amazon JDK 21 |
 | Android SDK | compile/target 37, min 28 |
 | iOS deployment target | 18.2 |
 | Koin / DataStore / Coroutines | 4.2.2 / 1.2.1 / 1.11.0 |
+| AndroidX Activity | 1.13.0 |
+| JetBrains Lifecycle | 2.11.0 |
+| Kotlin Wrappers (kotlin-browser) | 2026.9.3 |
+| ktlint Gradle plugin / ktlint CLI | 14.2.0 / 1.8.0 |
+| Foojay resolver convention | 1.0.0 |
+
+Material 3 версионируется отдельно от Compose Multiplatform: `1.9.0` остаётся последним стабильным релизом
+[артефакта Material 3](https://repo.maven.apache.org/maven2/org/jetbrains/compose/material3/material3/maven-metadata.xml).
+Версии Koin-модулей согласованы через BOM. Версия движка ktlint задана явно:
+обновление Gradle-плагина само по себе не гарантирует обновление его CLI.
+
+Для проверки обновлений используйте [релизы Kotlin](https://kotlinlang.org/docs/releases.html),
+[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/releases),
+[AGP](https://developer.android.com/build/releases/about-agp) и
+[текущий релиз Gradle](https://services.gradle.org/versions/current).
+По [таблице совместимости Kotlin](https://kotlinlang.org/docs/gradle-configure-project.html)
+Kotlin 2.4.20 полностью проверен с Gradle до 9.7.0 и AGP до 9.3.1.
+В проекте выбраны более новые стабильные Gradle 9.8.0 и AGP 9.4.1; эта комбинация находится
+за пределами указанного диапазона полной поддержки, поэтому при дальнейших обновлениях проверяйте сборку всех целей.
 
 Для работы нужны Git и установленный JDK. Критерии JVM для Gradle daemon заданы в
 [gradle/gradle-daemon-jvm.properties](gradle/gradle-daemon-jvm.properties): версия 21, поставщик Amazon.
@@ -249,6 +270,7 @@ App → MainViewModel → GetDarkTheme / GetLanguage
 
 Первая команда проверяет Kotlin-код, вторая исправляет форматирование и изменяет файлы.
 Правила находятся в [.editorconfig](.editorconfig); ktlint подключён ко всем Gradle-подпроектам.
+Версия CLI задаётся ключом `ktlint-cli` в каталоге версий независимо от версии Gradle-плагина `ktlint`.
 
 Для `commonTest` модуля `shared` настроена зависимость `kotlin-test`, но исходников тестов в репозитории пока нет.
 Общие тесты можно добавлять в `shared/src/commonTest/kotlin` и запускать на JVM:
@@ -263,6 +285,9 @@ App → MainViewModel → GetDarkTheme / GetLanguage
 ## GitHub Actions
 
 Текущие workflow-файлы содержат настройки исходного проекта и требуют изменений при клонировании.
+Они используют Amazon Corretto 21, как и критерии Gradle daemon, и следующие версии Actions:
+`actions/checkout@v7.0.1`, `actions/setup-java@v6.0.1`,
+`actions/upload-artifact@v7.0.1`, `actions/download-artifact@v8.0.1`.
 
 | Workflow | Триггер | Что описано |
 | --- | --- | --- |
@@ -277,7 +302,7 @@ App → MainViewModel → GetDarkTheme / GetLanguage
 2. Удалите шаги декодирования Firebase, если интеграция не нужна. Firebase-зависимости и плагин Google Services
    в текущих Gradle-файлах не подключены. JS-шаг обращается к отсутствующему
    `composeApp/src/jsMain/resources/firebaseConfig.js`.
-3. Согласуйте Java в CI с критериями daemon JVM: workflows устанавливают Temurin 17, проект задаёт Amazon 21.
+3. При изменении JVM проекта согласованно обновляйте Java в CI и критерии в `gradle-daemon-jvm.properties`.
 4. Настройте Android release signing и реальные пути выходных файлов. Сейчас workflows декодируют keystore
    и передают `SIGNING_*`, но Gradle их не использует; ожидаемый подписанный APK таким способом не создаётся.
 5. Уточните задачи по модулям: для JVM-приложения используйте `:desktopApp:jar` или задачу упаковки,
