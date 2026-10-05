@@ -289,6 +289,9 @@ App → MainViewModel → GetDarkTheme / GetLanguage
 `actions/checkout@v7.0.1`, `actions/setup-java@v6.0.1`,
 `actions/upload-artifact@v7.0.1`, `actions/download-artifact@v8.0.1`.
 
+Firebase в проекте не используется: его SDK, конфиги и секреты для сборок не нужны.
+JS-проверка запускает `:webApp:jsBrowserProductionWebpack` без подготовки внешних конфигов.
+
 | Workflow | Триггер | Что описано |
 | --- | --- | --- |
 | [pr-checks.yml](.github/workflows/pr-checks.yml) | PR в `main` или `master` | Сборки Android, iOS framework, JS, JVM и ktlint |
@@ -299,18 +302,15 @@ App → MainViewModel → GetDarkTheme / GetLanguage
 
 1. Замените или удалите `post-build`, публикующий файлы в `alad1nks/alad1nks.github.io`.
    Обновите имя и email автора коммитов, пути `startkmp` и имена артефактов.
-2. Удалите шаги декодирования Firebase, если интеграция не нужна. Firebase-зависимости и плагин Google Services
-   в текущих Gradle-файлах не подключены. JS-шаг обращается к отсутствующему
-   `composeApp/src/jsMain/resources/firebaseConfig.js`.
-3. При изменении JVM проекта согласованно обновляйте Java в CI и критерии в `gradle-daemon-jvm.properties`.
-4. Настройте Android release signing и реальные пути выходных файлов. Сейчас workflows декодируют keystore
+2. При изменении JVM проекта согласованно обновляйте Java в CI и критерии в `gradle-daemon-jvm.properties`.
+3. Настройте Android release signing и реальные пути выходных файлов. Сейчас workflows декодируют keystore
    и передают `SIGNING_*`, но Gradle их не использует; ожидаемый подписанный APK таким способом не создаётся.
-5. Уточните задачи по модулям: для JVM-приложения используйте `:desktopApp:jar` или задачу упаковки,
+4. Уточните задачи по модулям: для JVM-приложения используйте `:desktopApp:jar` или задачу упаковки,
    для общего JVM-кода — `:shared:jvmJar`. Текущий вызов `jvmJar` не проверяет Desktop-точку входа.
    Сборка `linkReleaseFrameworkIosArm64` проверяет framework, а не SwiftUI-приложение целиком.
 
-В существующих workflows используются секреты `FIREBASE_CONFIG_ANDROID`, `FIREBASE_CONFIG_IOS`,
-`FIREBASE_CONFIG_JS`, `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `KEYSTORE_PASSWORD` и `ACCESS_TOKEN`.
+В существующих workflows используются секреты `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`,
+`KEYSTORE_PASSWORD` и `ACCESS_TOKEN`.
 Они относятся к этим сценариям CI; для локальной debug-сборки шаблона они не нужны.
 Если сохраняете release-сценарии, добавьте keystore и приватные конфиги в `.gitignore`
 до создания таких файлов локально — сейчас специальных правил для них нет.

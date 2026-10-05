@@ -21,10 +21,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Decode Firebase config
-        run: |
-          echo "${{ secrets.FIREBASE_CONFIG_ANDROID }}" | base64 -d > androidApp/google-services.json
-
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > startkmp-release-key.jks
