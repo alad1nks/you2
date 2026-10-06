@@ -7,7 +7,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.alad1nks.startkmp.core.model"
+        namespace = "com.alad1nks.you2.core.model"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

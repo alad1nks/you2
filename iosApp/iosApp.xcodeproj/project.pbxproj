@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		B8A7A6B806CE4345EAD96DD7 /* startkmp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = startkmp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8A7A6B806CE4345EAD96DD7 /* you2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = you2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		033522932354A11AE2461873 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B8A7A6B806CE4345EAD96DD7 /* startkmp.app */,
+				B8A7A6B806CE4345EAD96DD7 /* you2.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = B8A7A6B806CE4345EAD96DD7 /* startkmp.app */;
+			productReference = B8A7A6B806CE4345EAD96DD7 /* you2.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

@@ -25,7 +25,7 @@ kotlin {
     }
 
     android {
-        namespace = "com.alad1nks.startkmp.shared"
+        namespace = "com.alad1nks.you2.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
