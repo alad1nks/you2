@@ -1,42 +1,42 @@
 ---
 name: pr-workflow
-description: Начинать новую задачу в you2 от актуальной главной ветки и подготавливать пулл-реквест с выполненными изменениями. Использовать при начале новой задачи с изменением файлов или по запросу создания PR; продолжение текущей задачи сохраняет её рабочую ветку.
+description: Start a new task in you2 from the latest main branch and prepare a pull request with the completed changes. Use when starting a new task that modifies files or when asked to create a PR; continue an existing task on its working branch.
 ---
 
-# Работа с ветками и PR
+# Working with branches and pull requests
 
-## Начало новой задачи
+## Starting a new task
 
-Перед изменением файлов проверь `git status --short --branch` и текущую ветку.
-В этом репозитории главная ветка — `main`, удалённый репозиторий — `origin`.
+Before modifying files, check `git status --short --branch` and the current branch.
+This repository uses `main` as its main branch and `origin` as its remote.
 
-При чистой рабочей директории перейди на главную ветку и подтяни её:
+If the working directory is clean, switch to the main branch and update it:
 
 ```bash
 git switch main
 git pull --ff-only origin main
 ```
 
-Только после успешного обновления создай отдельную рабочую ветку с именем по задаче.
-Если переключение или fast-forward не удалось, выясни причину. Не сбрасывай локальные коммиты
-и не заменяй `--ff-only` принудительным обновлением или автоматическим merge.
+Create a separate working branch named for the task only after the update succeeds.
+If switching branches or fast-forwarding fails, investigate the cause. Do not discard local commits
+or replace `--ff-only` with a forced update or an automatic merge.
 
-Если есть незакоммиченные изменения, сначала установи, относятся ли они к текущей задаче.
-Сохрани их: не применяй автоматически `reset --hard`, `clean`, `stash` или отбрасывание файлов.
-При неясной принадлежности изменений уточни дальнейшее действие у пользователя.
+If there are uncommitted changes, first determine whether they belong to the current task.
+Preserve them: do not automatically run `reset --hard`, `clean`, or `stash`, or discard files.
+If it is unclear which task the changes belong to, ask the user how to proceed.
 
-## Продолжение задачи и создание PR
+## Continuing a task and creating a PR
 
-Продолжай начатую задачу в её рабочей ветке. Запрос «создай PR» после выполненных изменений
-не является новой задачей: не переключайся на `main` поверх подготовленной работы.
-Если изменения уже сделаны на `main`, перенеси их в новую рабочую ветку через `git switch -c`.
+Continue an existing task on its working branch. A request to create a PR after changes have been made
+is not a new task: do not switch to `main` over the prepared work.
+If changes have already been made on `main`, move them to a new working branch with `git switch -c`.
 
-Перед коммитом проверь diff и выполни проверки, соответствующие изменениям.
-Включай в коммит только файлы задачи. Перед публикацией получи актуальную базу через
-`git fetch origin main` и проверь состав diff относительно `origin/main`.
+Before committing, review the diff and run checks appropriate to the changes.
+Include only files belonging to the task in the commit. Before publishing, get the latest base with
+`git fetch origin main` and review the diff against `origin/main`.
 
-Создавай PR только по запросу пользователя или при уже выданном разрешении для этой задачи.
-Отправь рабочую ветку в `origin` и открой PR в `main`. В описании укажи результат изменений,
-выполненные проверки и ограничения. Для многострочного описания при использовании `gh`
-применяй `--body-file`. Убедись, что PR открыт из нужной ветки и содержит только изменения задачи;
-верни пользователю ссылку. Не сливай PR без отдельного указания.
+Create a PR only when the user requests one or has already authorized it for this task.
+Push the working branch to `origin` and open a PR targeting `main`. Describe the resulting changes,
+checks performed, and limitations. When using `gh` with a multiline description,
+use `--body-file`. Verify that the PR uses the correct source branch and contains only changes for this task;
+return its link to the user. Do not merge the PR without a separate instruction.
