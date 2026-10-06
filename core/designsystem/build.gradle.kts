@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.alad1nks.startkmp.feature.designsystem"
+        namespace = "com.alad1nks.you2.feature.designsystem"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

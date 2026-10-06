@@ -21,11 +21,11 @@ dependencies {
 }
 
 android {
-    namespace = "com.alad1nks.startkmp"
+    namespace = "com.alad1nks.you2"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.alad1nks.startkmp"
+        applicationId = "com.alad1nks.you2"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

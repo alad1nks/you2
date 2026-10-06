@@ -1,4 +1,4 @@
-# start-kmp
+# you2
 
 Стартовый шаблон Kotlin Multiplatform для новых приложений под Android, iOS, Desktop (JVM) и Web (Kotlin/JS).
 Репозиторий предназначен для клонирования: после замены имени, идентификаторов и настроек публикации
@@ -71,7 +71,7 @@ Kotlin 2.4.20 полностью проверен с Gradle до 9.7.0 и AGP д
 1. Склонируйте шаблон в каталог нового приложения:
 
    ```bash
-   git clone https://github.com/alad1nks/start-kmp.git my-app
+   git clone https://github.com/alad1nks/you2.git my-app
    cd my-app
    ```
 
@@ -90,22 +90,22 @@ Kotlin 2.4.20 полностью проверен с Gradle до 9.7.0 и AGP д
 
 | Что заменить | Где |
 | --- | --- |
-| `rootProject.name = "startkmp"` | [settings.gradle.kts](settings.gradle.kts) |
-| `com.alad1nks.startkmp`: пакеты, импорты и соответствующие каталоги | Kotlin-исходники во всех модулях |
+| `rootProject.name = "you2"` | [settings.gradle.kts](settings.gradle.kts) |
+| `com.alad1nks.you2`: пакеты, импорты и соответствующие каталоги | Kotlin-исходники во всех модулях |
 | `namespace` во всех Android/KMP-модулях; `applicationId`, `versionCode`, `versionName` приложения | Модульные `build.gradle.kts`, в том числе [androidApp/build.gradle.kts](androidApp/build.gradle.kts) |
 | Android-название и иконки | [strings.xml](androidApp/src/main/res/values/strings.xml), ресурсы `mipmap*` и `drawable*` в `androidApp/src/main/res` |
 | `PRODUCT_NAME`, `PRODUCT_BUNDLE_IDENTIFIER`, `TEAM_ID`, версии | [Config.xcconfig](iosApp/Configuration/Config.xcconfig) |
-| Ссылки на `startkmp.app`, иконка iOS | [project.pbxproj](iosApp/iosApp.xcodeproj/project.pbxproj), [AppIcon.appiconset](iosApp/iosApp/Assets.xcassets/AppIcon.appiconset) |
+| Ссылки на `you2.app`, иконка iOS | [project.pbxproj](iosApp/iosApp.xcodeproj/project.pbxproj), [AppIcon.appiconset](iosApp/iosApp/Assets.xcassets/AppIcon.appiconset) |
 | Desktop `mainClass`, `packageName`, `packageVersion` | [desktopApp/build.gradle.kts](desktopApp/build.gradle.kts) |
-| Заголовок окна Desktop | [main.kt](desktopApp/src/main/kotlin/com/alad1nks/startkmp/main.kt) |
+| Заголовок окна Desktop | [main.kt](desktopApp/src/main/kotlin/com/alad1nks/you2/main.kt) |
 | Заголовок страницы Web | [index.html](webApp/src/webMain/resources/index.html) |
-| Имя файла настроек `startkmp.preferences_pb` | [StorageDataStoreFileName.kt](core/storage/datastore/src/commonMain/kotlin/com/alad1nks/startkmp/core/storage/datastore/StorageDataStoreFileName.kt) |
+| Имя файла настроек `you2.preferences_pb` | [StorageDataStoreFileName.kt](core/storage/datastore/src/commonMain/kotlin/com/alad1nks/you2/core/storage/datastore/StorageDataStoreFileName.kt) |
 | Репозиторий публикации, пути и имена артефактов, автор коммитов | [.github/workflows](.github/workflows) |
 
-В iOS bundle identifier сейчас используется `com.alad1nks.startkmp.startkmp$(TEAM_ID)` —
+В iOS bundle identifier сейчас используется `com.alad1nks.you2.you2$(TEAM_ID)` —
 задайте свой идентификатор явно. `TEAM_ID` используется также для подписи приложения.
 
-Импорты ресурсов в `App.kt` сейчас начинаются с `startkmp.shared.generated.resources`.
+Импорты ресурсов в `App.kt` сейчас начинаются с `you2.shared.generated.resources`.
 После изменения имени проекта синхронизируйте Gradle и обновите импорты под сгенерированный пакет.
 Сгенерированные файлы в `build/` редактировать не нужно.
 
@@ -118,7 +118,7 @@ Kotlin 2.4.20 полностью проверен с Gradle до 9.7.0 и AGP д
 
    ```bash
    rg -n --hidden -g '!.git' -g '!**/build/**' -g '!.gradle' -g '!.kotlin' \
-     'startkmp|start-kmp|alad1nks' .
+     'you2|alad1nks' .
    ```
 
 5. Синхронизируйте проект в IDE, соберите нужные платформы и замените демонстрационный экран своим.
@@ -240,9 +240,9 @@ App → MainViewModel → GetDarkTheme / GetLanguage
 
 | Платформа | Где хранятся настройки |
 | --- | --- |
-| Android | `filesDir/startkmp.preferences_pb` |
-| iOS | Каталог Documents приложения, `startkmp.preferences_pb` |
-| Desktop | `java.io.tmpdir/startkmp.preferences_pb` |
+| Android | `filesDir/you2.preferences_pb` |
+| iOS | Каталог Documents приложения, `you2.preferences_pb` |
+| Desktop | `java.io.tmpdir/you2.preferences_pb` |
 | Web | `localStorage` текущего origin, ключи `dark_theme` и `language` |
 
 Для Desktop перед выпуском приложения выберите постоянный каталог данных пользователя:
@@ -301,7 +301,7 @@ JS-проверка запускает `:webApp:jsBrowserProductionWebpack` бе
 Перед включением CI в своём проекте:
 
 1. Замените или удалите `post-build`, публикующий файлы в `alad1nks/alad1nks.github.io`.
-   Обновите имя и email автора коммитов, пути `startkmp` и имена артефактов.
+   Обновите имя и email автора коммитов, пути `you2` и имена артефактов.
 2. При изменении JVM проекта согласованно обновляйте Java в CI и критерии в `gradle-daemon-jvm.properties`.
 3. Настройте Android release signing и реальные пути выходных файлов. Сейчас workflows декодируют keystore
    и передают `SIGNING_*`, но Gradle их не использует; ожидаемый подписанный APK таким способом не создаётся.

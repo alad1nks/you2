@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "com.alad1nks.startkmp.resources"
+        namespace = "com.alad1nks.you2.resources"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 

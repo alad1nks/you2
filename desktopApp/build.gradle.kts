@@ -17,11 +17,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.alad1nks.startkmp.MainKt"
+        mainClass = "com.alad1nks.you2.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.alad1nks.startkmp"
+            packageName = "com.alad1nks.you2"
             packageVersion = "1.0.0"
         }
     }
