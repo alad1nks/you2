@@ -65,7 +65,7 @@ fun App() {
 
 @Composable
 @Preview
-private fun AppContent() {
+internal fun AppContent(greeting: String = remember { Greeting().greet() }) {
     var showContent by remember { mutableStateOf(false) }
     Column(
         modifier =
@@ -79,7 +79,6 @@ private fun AppContent() {
             Text("Click me!")
         }
         AnimatedVisibility(showContent) {
-            val greeting = remember { Greeting().greet() }
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,

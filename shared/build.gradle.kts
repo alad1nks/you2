@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.roborazzi)
 }
 
 kotlin {
@@ -80,7 +81,16 @@ kotlin {
         jvmMain.dependencies {
             implementation(projects.core.storage.datastore)
         }
+        jvmTest.dependencies {
+            implementation(libs.roborazzi.compose.desktop)
+            implementation(libs.compose.ui.test)
+            implementation(compose.desktop.currentOs)
+        }
     }
+}
+
+roborazzi {
+    outputDir.set(layout.projectDirectory.dir("src/jvmTest/screenshots"))
 }
 
 dependencies {
