@@ -11,6 +11,15 @@ These are the intended product features. The current implementation is a Kotlin 
 starter foundation for Android, iOS, Desktop (JVM), and Web (Kotlin/JS), with a shared
 Compose Multiplatform interface. Registration, couple linking, and shared wish lists are not yet implemented.
 
+## Design
+
+[Open the you2 mockup in Figma](https://www.figma.com/design/4NzqzLDkOMaaGQGKYhEeuT/you2-%E2%80%94-Our-wishes?m=auto&t=vTKmz2XhR6KV8954-1).
+
+The file groups screens by user flow: guest experience, Us and pairing, Wishes, adding a wish,
+wish details, and Memories. It also includes the color palette, typography, form elements,
+components, and category illustrations. These mockups describe the intended interface;
+they are not yet implemented in the application.
+
 ## Included features
 
 - Shared UI built with Compose Multiplatform and Material 3, with separate entry points for four platforms.
