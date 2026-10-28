@@ -19,6 +19,25 @@ import kotlin.test.assertTrue
 
 class PairedFoundationTest {
     @Test
+    fun wishesAreFilteredAndSortedIndependentlyOfRepositoryOrder() {
+        val space = DemoSpace.create()
+        val shuffled = space.copy(wishes = space.wishes.reversed())
+        assertEquals(space.active, shuffled.visibleWishes(null))
+        WishCategory.entries.forEach { category ->
+            assertEquals(space.active.filter { it.content.category == category }, shuffled.visibleWishes(category))
+        }
+        assertTrue(space.copy(wishes = space.memories).visibleWishes(null).isEmpty())
+        assertTrue(
+            space.copy(wishes = space.active.filterNot { it.content.category == WishCategory.MOVIES })
+                .visibleWishes(WishCategory.MOVIES).isEmpty(),
+        )
+        val repository = InMemoryWishesRepository(DemoDateSource)
+        repository.create(WishDraft("First today", WishCategory.OTHER))
+        val newest = repository.create(WishDraft("Second today", WishCategory.OTHER))
+        assertEquals(newest, repository.space.value.visibleWishes(null).first().id)
+    }
+
+    @Test
     fun demoCoversAllStatesAndBothAuthors() {
         val space = DemoSpace.create()
         assertEquals(12, space.active.size)

@@ -21,6 +21,8 @@ object AppSpacing {
     val large = 16.dp
     val page = 24.dp
     val section = 32.dp
+    val listGap = 10.dp
+    val cardInset = 14.dp
 }
 
 object AppDimensions {
@@ -30,6 +32,7 @@ object AppDimensions {
     val avatar = 44.dp
     val headerHeight = 64.dp
     val navigationHeight = 76.dp
+    val dateIcon = 14.dp
 }
 
 object AppShapes {
@@ -37,6 +40,8 @@ object AppShapes {
     val card = RoundedCornerShape(18.dp)
     val image = RoundedCornerShape(24.dp)
     val pill = RoundedCornerShape(50)
+    val symbol = RoundedCornerShape(12.dp)
+    val date = RoundedCornerShape(6.dp)
 }
 
 @Composable

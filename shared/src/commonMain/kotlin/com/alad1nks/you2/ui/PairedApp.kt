@@ -1,13 +1,15 @@
 package com.alad1nks.you2.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -30,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -41,7 +44,6 @@ import com.alad1nks.you2.core.model.WishDates
 import com.alad1nks.you2.core.model.status
 import com.alad1nks.you2.feature.designsystem.components.AppTextField
 import com.alad1nks.you2.feature.designsystem.components.Avatar
-import com.alad1nks.you2.feature.designsystem.components.CategoryChip
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.CoupleHeader
 import com.alad1nks.you2.feature.designsystem.components.DateBadge
@@ -55,7 +57,6 @@ import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.add_wish
 import com.alad1nks.you2.resources.generated.added_by
 import com.alad1nks.you2.resources.generated.adventures
-import com.alad1nks.you2.resources.generated.all_wishes
 import com.alad1nks.you2.resources.generated.back
 import com.alad1nks.you2.resources.generated.category_adventures
 import com.alad1nks.you2.resources.generated.category_movies
@@ -69,6 +70,7 @@ import com.alad1nks.you2.resources.generated.demo_signout
 import com.alad1nks.you2.resources.generated.due_today
 import com.alad1nks.you2.resources.generated.empty_list
 import com.alad1nks.you2.resources.generated.ended
+import com.alad1nks.you2.resources.generated.formatted_date
 import com.alad1nks.you2.resources.generated.icon_couple
 import com.alad1nks.you2.resources.generated.icon_heart
 import com.alad1nks.you2.resources.generated.icon_memories
@@ -82,8 +84,10 @@ import com.alad1nks.you2.resources.generated.our_wishes
 import com.alad1nks.you2.resources.generated.overdue
 import com.alad1nks.you2.resources.generated.plans
 import com.alad1nks.you2.resources.generated.presents
+import com.alad1nks.you2.resources.generated.same_month_range
 import com.alad1nks.you2.resources.generated.scaffold_notice
 import com.alad1nks.you2.resources.generated.shared_space
+import com.alad1nks.you2.resources.generated.short_months
 import com.alad1nks.you2.resources.generated.subtitle
 import com.alad1nks.you2.resources.generated.summary_counts
 import com.alad1nks.you2.resources.generated.summary_title
@@ -97,6 +101,7 @@ import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -111,15 +116,27 @@ internal fun AppContent(space: PairedSpace, today: LocalDate) {
                 modifier = Modifier.widthIn(max = AppDimensions.contentWidth).fillMaxSize().safeDrawingPadding(),
                 topBar = { CoupleHeader(space.couple.you.name, space.couple.partner.name) },
                 bottomBar = {
-                    Column {
-                        if (navigation.tab == MainTab.WISHES) {
-                            PrimaryButton(
-                                stringResource(Res.string.add_wish),
-                                { navigation.open(OverlayRoute.Form()) },
-                                Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
+                    Box {
+                        Column {
+                            if (navigation.tab == MainTab.WISHES) {
+                                PrimaryButton(
+                                    stringResource(Res.string.add_wish),
+                                    { navigation.open(OverlayRoute.Form()) },
+                                    Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
+                                    leadingIcon = { Text("+") },
+                                )
+                            }
+                            BottomNavigation(navigation.tab, navigation::select)
+                        }
+                        if (navigation.tab == MainTab.WISHES && wishesScroll.canScrollForward) {
+                            val background = MaterialTheme.colorScheme.background
+                            Box(
+                                Modifier.fillMaxWidth().height(AppSpacing.section).offset(y = -AppSpacing.section)
+                                    .background(
+                                        Brush.verticalGradient(listOf(background.copy(alpha = 0f), background)),
+                                    ),
                             )
                         }
-                        BottomNavigation(navigation.tab, navigation::select)
                     }
                 },
             ) { padding ->
@@ -133,114 +150,106 @@ internal fun AppContent(space: PairedSpace, today: LocalDate) {
                             MainTab.MEMORIES -> memoriesScroll
                             MainTab.US -> usScroll
                         },
-                    verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
+                    verticalArrangement =
+                        Arrangement.spacedBy(
+                            if (navigation.tab == MainTab.WISHES) AppSpacing.listGap else AppSpacing.large,
+                        ),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = AppSpacing.large),
                 ) {
-                    item {
-                        Text(
-                            stringResource(
-                                when (navigation.tab) {
-                                    MainTab.WISHES -> Res.string.our_wishes
-                                    MainTab.MEMORIES -> Res.string.our_memories
-                                    MainTab.US -> Res.string.shared_space
-                                },
-                            ),
-                            style = MaterialTheme.typography.headlineLarge,
+                    if (navigation.tab == MainTab.WISHES) {
+                        wishesContent(
+                            space,
+                            today,
+                            navigation.category,
+                            onCategory = { navigation.category = it },
+                            onOpen = { navigation.open(OverlayRoute.Details(it)) },
                         )
-                        Text(
-                            stringResource(Res.string.subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
-                    item {
-                        Surface(
-                            shape = MaterialTheme.shapes.large,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                        ) {
-                            Column(
-                                Modifier.fillMaxWidth().padding(AppSpacing.large),
-                                verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
-                            ) {
-                                Text(
-                                    stringResource(Res.string.summary_title),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                                Text(
-                                    stringResource(Res.string.summary_counts, space.active.size, space.memories.size),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                        }
-                    }
-                    item {
-                        Text(
-                            stringResource(Res.string.scaffold_notice),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    if (navigation.tab == MainTab.US) {
-                        item {
-                            ContentCard {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Avatar(space.couple.you.name)
-                                    Text(space.couple.you.name)
-                                    Avatar(space.couple.partner.name)
-                                    Text(space.couple.partner.name)
-                                }
-                                Text(stringResource(Res.string.connected))
-                                Text(
-                                    stringResource(Res.string.demo_signout),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                        }
                     } else {
-                        if (navigation.tab == MainTab.WISHES) {
-                            item {
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                                    CategoryChip(
-                                        stringResource(Res.string.all_wishes),
-                                        navigation.category == null,
-                                        { navigation.category = null },
-                                    )
-                                    WishCategory.entries.forEach { category ->
-                                        CategoryChip(
-                                            stringResource(category.label),
-                                            navigation.category == category,
-                                            { navigation.category = category },
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        val wishes =
-                            if (navigation.tab == MainTab.WISHES) {
-                                space.active.filter {
-                                    navigation.category == null || it.content.category == navigation.category
-                                }
-                            } else {
-                                space.memories.sortedByDescending { it.completion?.date }
-                            }
-                        if (wishes.isEmpty()) item { Text(stringResource(Res.string.empty_list)) }
-                        items(wishes, key = { it.id }) { wish ->
-                            WishCard(
-                                wish.content.title,
-                                wish.content.description,
+                        item {
+                            Text(
                                 stringResource(
-                                    Res.string.added_by,
-                                    if (wish.authorId == space.couple.you.id) {
-                                        space.couple.you.name
-                                    } else {
-                                        space.couple.partner.name
+                                    when (navigation.tab) {
+                                        MainTab.WISHES -> Res.string.our_wishes
+                                        MainTab.MEMORIES -> Res.string.our_memories
+                                        MainTab.US -> Res.string.shared_space
                                     },
                                 ),
-                                onClick = { navigation.open(OverlayRoute.Details(wish.id)) },
-                                date = { WishDateBadge(wish.content.dates, today) },
+                                style = MaterialTheme.typography.headlineLarge,
                             )
+                            Text(
+                                stringResource(Res.string.subtitle),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
+                        }
+                        item {
+                            Surface(
+                                shape = MaterialTheme.shapes.large,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                            ) {
+                                Column(
+                                    Modifier.fillMaxWidth().padding(AppSpacing.large),
+                                    verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
+                                ) {
+                                    Text(
+                                        stringResource(Res.string.summary_title),
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                    Text(
+                                        stringResource(
+                                            Res.string.summary_counts,
+                                            space.active.size,
+                                            space.memories.size,
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
+                            }
+                        }
+                        item {
+                            Text(
+                                stringResource(Res.string.scaffold_notice),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        if (navigation.tab == MainTab.US) {
+                            item {
+                                ContentCard {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Avatar(space.couple.you.name)
+                                        Text(space.couple.you.name)
+                                        Avatar(space.couple.partner.name)
+                                        Text(space.couple.partner.name)
+                                    }
+                                    Text(stringResource(Res.string.connected))
+                                    Text(
+                                        stringResource(Res.string.demo_signout),
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
+                            }
+                        } else {
+                            val wishes = space.memories.sortedByDescending { it.completion?.date }
+                            if (wishes.isEmpty()) item { Text(stringResource(Res.string.empty_list)) }
+                            items(wishes, key = { it.id }) { wish ->
+                                WishCard(
+                                    wish.content.title,
+                                    wish.content.description,
+                                    stringResource(
+                                        Res.string.added_by,
+                                        if (wish.authorId == space.couple.you.id) {
+                                            space.couple.you.name
+                                        } else {
+                                            space.couple.partner.name
+                                        },
+                                    ),
+                                    onClick = { navigation.open(OverlayRoute.Details(wish.id)) },
+                                    date = { WishDateBadge(wish.content.dates, today) },
+                                )
+                            }
                         }
                     }
                 }
@@ -373,14 +382,32 @@ internal val WishCategory.image: DrawableResource
         }
 
 @Composable
-private fun WishDateBadge(dates: WishDates, today: LocalDate) {
+internal fun WishDateBadge(dates: WishDates, today: LocalDate) {
     val status = dates.status(today)
     if (status == DateStatus.NONE) return
     val date =
         when (dates) {
-            WishDates.NoDate -> ""
-            is WishDates.Deadline -> dates.date.toString()
-            is WishDates.Range -> stringResource(Res.string.date_range, dates.start.toString(), dates.end.toString())
+            WishDates.NoDate -> {
+                ""
+            }
+
+            is WishDates.Deadline -> {
+                wishDateText(dates.date)
+            }
+
+            is WishDates.Range -> {
+                if (dates.start.year == dates.end.year && dates.start.month == dates.end.month) {
+                    stringResource(
+                        Res.string.same_month_range,
+                        dates.start.day,
+                        dates.end.day,
+                        stringArrayResource(Res.array.short_months)[dates.start.month.ordinal],
+                        dates.start.year,
+                    )
+                } else {
+                    stringResource(Res.string.date_range, wishDateText(dates.start), wishDateText(dates.end))
+                }
+            }
         }
     val label =
         when (status) {
@@ -402,3 +429,12 @@ private fun WishDateBadge(dates: WishDates, today: LocalDate) {
         },
     )
 }
+
+@Composable
+private fun wishDateText(date: LocalDate): String =
+    stringResource(
+        Res.string.formatted_date,
+        date.day,
+        stringArrayResource(Res.array.short_months)[date.month.ordinal],
+        date.year,
+    )
