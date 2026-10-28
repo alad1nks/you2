@@ -9,7 +9,8 @@ the couple would like to experience or enjoy together.
 
 These are the intended product features. The current implementation is a Kotlin Multiplatform
 starter foundation for Android, iOS, Desktop (JVM), and Web (Kotlin/JS), with a shared
-Compose Multiplatform interface. Registration, couple linking, and shared wish lists are not yet implemented.
+Compose Multiplatform interface. A paired demo starts with Alex and Mia, 12 active wishes and four memories.
+Registration, couple linking, networking and persistent wish storage are not yet implemented.
 
 ## Design
 
@@ -18,7 +19,7 @@ Compose Multiplatform interface. Registration, couple linking, and shared wish l
 The file groups screens by user flow: guest experience, Us and pairing, Wishes, adding a wish,
 wish details, and Memories. It also includes the color palette, typography, form elements,
 components, and category illustrations. These mockups describe the intended interface;
-they are not yet implemented in the application.
+the full screens are being implemented in stages described in [the UI plan](docs/paired-user-ui-plan.md).
 
 ## Included features
 
@@ -29,8 +30,11 @@ they are not yet implemented in the application.
 - Light and dark color schemes, with infrastructure for system, Russian, English, and Kazakh language selection.
 - A Gradle version catalog and ktlint for Kotlin code.
 
-The current screen is a demo with a button and a greeting. The template does not include a settings screen,
-navigation, a networking layer, or a database. String resource files are currently empty; demo text is hardcoded.
+The current app provides a three-tab paired-user scaffold, category filters and preliminary detail/form overlays.
+Shared components, Roboto, bundled Figma illustrations and English string resources are available for subsequent screens.
+A Koin singleton repository exposes the demo through StateFlow and supports local wish mutations.
+The injected demo date is October 28, 2026; restarting resets wishes, while theme/language preferences persist.
+Full forms, detail actions, memory grouping, translations and settings UI belong to subsequent stages.
 The GitHub Actions workflows need to be adapted before use in a new repository.
 
 ## Environment
@@ -121,8 +125,8 @@ Web requires a browser. Gradle is configured for Kotlin/JS; there is no Wasm tar
 The current iOS bundle identifier is `com.alad1nks.you2.you2$(TEAM_ID)`;
 set your own identifier explicitly. `TEAM_ID` is also used for application signing.
 
-Resource imports in `App.kt` currently begin with `you2.shared.generated.resources`.
-After changing the project name, sync Gradle and update imports to match the generated package.
+Product resources use the explicit package `com.alad1nks.you2.resources.generated`.
+After changing the package name in `resources/build.gradle.kts`, update the resource imports.
 Do not edit generated files in `build/`.
 
 You can keep the module names `shared`, `androidApp`, `desktopApp`, and `webApp`, and the framework name `Shared`.
@@ -211,7 +215,7 @@ These commands build the framework. Build the complete iOS application and distr
 | [iosApp](iosApp) | Xcode project and SwiftUI wrapper around `MainViewController` |
 | [desktopApp](desktopApp) | JVM entry point, window, and installer settings |
 | [webApp](webApp) | Browser entry point using `ComposeViewport`, HTML, and CSS |
-| [shared](shared) | Shared `App`, demo UI, `MainViewModel`, DI setup, and platform adapters |
+| [shared](shared) | Paired UI scaffold, navigation, `MainViewModel`, DI setup, and platform adapters |
 | [core/model](core/model) | Shared models, currently `Language` |
 | [core/domain](core/domain) | `GetDarkTheme`, `SetDarkTheme`, `GetLanguage`, `SetLanguage`, and their implementations |
 | [core/data](core/data) | `SettingsRepository`, which converts the stored language code into a model |
@@ -301,9 +305,12 @@ A successful task with no test sources does not indicate test coverage.
 ### Screenshot tests
 
 Shared Compose UI screenshots use [Roborazzi](https://github.com/takahirom/roborazzi) on the JVM,
-without an emulator. `AppScreenshotTest` covers light and dark themes before and after opening the
-demo content. It renders the production `AppContent` with a fixed greeting, 360 x 640 viewport,
-density and font scale of 1, and waits for animations to finish. Settings storage and DI are bypassed.
+without an emulator. `AppScreenshotTest` covers the paired scaffold in light and dark themes at 412 x 917,
+a narrow 320 x 917 viewport and all six category illustrations. It renders production `AppContent`
+with fixed shared demo data, density and font scale of 1. It also exercises tab switching,
+filter retention, form dismissal and returning from details without losing the list position.
+Settings storage and DI are bypassed. `PairedFoundationTest` checks date boundaries, validation,
+repository transitions and navigation state.
 These tests cover shared layout and styling; they do not check native Android/iOS rendering.
 
 Run on Windows with JDK 21, matching the `windows-2025` PR runner. Desktop font rendering can differ

@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+compose.resources {
+    publicResClass = true
+    packageOfResClass = "com.alad1nks.you2.resources.generated"
+    generateResClass = always
+}
+
 kotlin {
     android {
         namespace = "com.alad1nks.you2.resources"

@@ -27,6 +27,12 @@ kotlin {
 
     jvm()
 
+    sourceSets {
+        commonMain.dependencies {
+            api(libs.kotlinx.datetime)
+        }
+    }
+
     js {
         browser()
         binaries.executable()
