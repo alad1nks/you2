@@ -2,8 +2,10 @@
 
 Category illustrations are original image fills from the you2 Figma file
 `4NzqzLDkOMaaGQGKYhEeuT`, section `23:118`, downloaded on 2026-10-28.
-They are encoded as lossless WebP with unchanged dimensions and decoded pixels.
-The six illustrations total 4,584,340 bytes (41.2% smaller than their PNG sources).
+The original 1891 ? 832 fills are resized with Lanczos to 1092 ? 480 pixels,
+matching the 364 ? 160 dp slot at 3? density, then encoded as lossless WebP.
+The six illustrations total 1,989,900 bytes. A decoded RGBA image needs about 2 MiB
+instead of 6 MiB for the original resolution. Displays above 3? may upscale the image.
 They are bundled locally; the application never requests temporary Figma URLs.
 
 | Resource | Figma image layer |
