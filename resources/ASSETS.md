@@ -37,6 +37,13 @@ Roboto Regular, Medium and Bold are bundled from
 [googlefonts/roboto-2](https://github.com/googlefonts/roboto-2/tree/main/src/hinted).
 Their Apache 2.0 license is included in `Roboto-LICENSE.txt`.
 
+Wish details adds the original 20 × 20 back (`18:111`), edit (`21:121`) and
+delete (`21:125`) vectors from Figma, exported on 2026-10-29. Their unmodified
+sources are `design/icons/back.svg`, `edit.svg` and `delete.svg`. The corresponding
+`icon_back.png`, `icon_edit.png` and `icon_delete.png` resources are rendered with
+resvg at intrinsic size and displayed at 20 dp with theme-aware tints. Details
+reuse the existing category covers, heart, more and calendar resources.
+
 English is the first UI reference. Interface copy is in `values/strings.xml`;
 Russian and Kazakh translations and the language picker are part of the Us stage.
 Demo wish content represents user-authored data and intentionally remains English.

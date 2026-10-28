@@ -22,6 +22,7 @@ object AppSpacing {
     val page = 24.dp
     val section = 32.dp
     val listGap = 10.dp
+    val detailsGap = 20.dp
     val cardInset = 14.dp
 }
 

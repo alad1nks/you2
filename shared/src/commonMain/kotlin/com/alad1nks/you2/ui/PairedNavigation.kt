@@ -35,7 +35,8 @@ class PairedNavigation {
     }
 
     fun back() {
-        overlay = null
+        val route = overlay
+        overlay = if (route is OverlayRoute.Form && route.wishId != null) OverlayRoute.Details(route.wishId) else null
     }
 
     companion object {
