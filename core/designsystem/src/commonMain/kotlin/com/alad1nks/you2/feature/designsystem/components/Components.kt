@@ -28,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,6 +46,8 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -246,22 +249,42 @@ fun AppTextField(
     maxLength: Int = 80,
     singleLine: Boolean = true,
     isError: Boolean = false,
+    minLines: Int = 1,
+    labelAbove: Boolean = false,
+    helperText: String? = null,
 ) {
-    OutlinedTextField(
-        value,
-        onValueChange,
-        modifier.fillMaxWidth(),
-        label = { Text(label) },
-        singleLine = singleLine,
-        shape = AppShapes.field,
-        isError = isError || value.length > maxLength,
-        supportingText = {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(if (isError) stringResource(Res.string.field_error) else "")
-                Text(stringResource(Res.string.character_count, value.length, maxLength))
-            }
-        },
-    )
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+        if (labelAbove) Text(label, style = MaterialTheme.typography.labelLarge)
+        OutlinedTextField(
+            value,
+            onValueChange,
+            modifier.fillMaxWidth().semantics { if (labelAbove) contentDescription = label },
+            label = if (labelAbove) null else ({ Text(label) }),
+            singleLine = singleLine,
+            minLines = minLines,
+            shape = AppShapes.field,
+            colors =
+                if (labelAbove) {
+                    OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        errorContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    )
+                } else {
+                    OutlinedTextFieldDefaults.colors()
+                },
+            isError = isError || value.length > maxLength,
+            supportingText = {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    Text(
+                        if (isError) stringResource(Res.string.field_error) else helperText.orEmpty(),
+                        Modifier.weight(1f),
+                    )
+                    Text(stringResource(Res.string.character_count, value.length, maxLength))
+                }
+            },
+        )
+    }
 }
 
 enum class StatusTone { NEUTRAL, TODAY, ACTIVE, ERROR }

@@ -1,0 +1,530 @@
+package com.alad1nks.you2.ui
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import com.alad1nks.you2.core.model.Couple
+import com.alad1nks.you2.core.model.WishCategory
+import com.alad1nks.you2.core.model.WishDraft
+import com.alad1nks.you2.core.model.WishImage
+import com.alad1nks.you2.feature.designsystem.components.AppTextField
+import com.alad1nks.you2.feature.designsystem.components.CategoryChip
+import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
+import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
+import com.alad1nks.you2.feature.designsystem.theme.AppShapes
+import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
+import com.alad1nks.you2.resources.generated.Res
+import com.alad1nks.you2.resources.generated.add_images
+import com.alad1nks.you2.resources.generated.add_main_image
+import com.alad1nks.you2.resources.generated.add_to_wishes
+import com.alad1nks.you2.resources.generated.add_wish
+import com.alad1nks.you2.resources.generated.attachments_hint
+import com.alad1nks.you2.resources.generated.cancel
+import com.alad1nks.you2.resources.generated.choose_category
+import com.alad1nks.you2.resources.generated.choose_date
+import com.alad1nks.you2.resources.generated.choose_images
+import com.alad1nks.you2.resources.generated.complete_by
+import com.alad1nks.you2.resources.generated.couple_label
+import com.alad1nks.you2.resources.generated.cover_hint
+import com.alad1nks.you2.resources.generated.cover_selected_hint
+import com.alad1nks.you2.resources.generated.dates_error
+import com.alad1nks.you2.resources.generated.deadline_hint
+import com.alad1nks.you2.resources.generated.deadline_mode
+import com.alad1nks.you2.resources.generated.description_hint
+import com.alad1nks.you2.resources.generated.description_images
+import com.alad1nks.you2.resources.generated.edit_wish
+import com.alad1nks.you2.resources.generated.end_date
+import com.alad1nks.you2.resources.generated.form_description
+import com.alad1nks.you2.resources.generated.form_shared_hint
+import com.alad1nks.you2.resources.generated.form_shared_title
+import com.alad1nks.you2.resources.generated.form_subtitle
+import com.alad1nks.you2.resources.generated.form_title
+import com.alad1nks.you2.resources.generated.icon_add
+import com.alad1nks.you2.resources.generated.icon_add_image
+import com.alad1nks.you2.resources.generated.icon_back
+import com.alad1nks.you2.resources.generated.icon_calendar
+import com.alad1nks.you2.resources.generated.icon_delete
+import com.alad1nks.you2.resources.generated.icon_heart
+import com.alad1nks.you2.resources.generated.local_images_hint
+import com.alad1nks.you2.resources.generated.main_image
+import com.alad1nks.you2.resources.generated.no_date
+import com.alad1nks.you2.resources.generated.no_date_hint
+import com.alad1nks.you2.resources.generated.pair_initials
+import com.alad1nks.you2.resources.generated.range_hint
+import com.alad1nks.you2.resources.generated.range_mode
+import com.alad1nks.you2.resources.generated.remove_attachment
+import com.alad1nks.you2.resources.generated.remove_image
+import com.alad1nks.you2.resources.generated.replace_image
+import com.alad1nks.you2.resources.generated.save_changes
+import com.alad1nks.you2.resources.generated.select_date
+import com.alad1nks.you2.resources.generated.start_date
+import com.alad1nks.you2.resources.generated.title_hint
+import com.alad1nks.you2.resources.generated.use_images
+import com.alad1nks.you2.resources.generated.when_label
+import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+internal fun WishForm(
+    wishId: String?,
+    initial: WishDraft?,
+    couple: Couple,
+    today: LocalDate,
+    onCancel: () -> Unit,
+    onSave: (WishDraft) -> Unit,
+) {
+    val state = rememberSaveable(wishId, saver = WishFormState.Saver) { WishFormState(initial) }
+    var pickingImage by rememberSaveable { mutableStateOf<String?>(null) }
+    var pickingDate by rememberSaveable { mutableStateOf<String?>(null) }
+    Scaffold(
+        topBar = {
+            Row(
+                Modifier.fillMaxWidth().heightIn(
+                    min = AppDimensions.headerHeight,
+                ).padding(horizontal = AppSpacing.large),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onCancel) {
+                    Icon(painterResource(Res.drawable.icon_back), null, Modifier.size(20.dp))
+                    Text(stringResource(Res.string.cancel))
+                }
+                Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
+                    Row(
+                        Modifier.padding(AppSpacing.medium),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    ) {
+                        Text(
+                            stringResource(
+                                Res.string.pair_initials,
+                                couple.you.name.take(1),
+                                couple.partner.name.take(1),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Text(
+                            stringResource(Res.string.couple_label, couple.partner.name),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+        },
+        bottomBar = {
+            PrimaryButton(
+                stringResource(if (wishId == null) Res.string.add_to_wishes else Res.string.save_changes),
+                { state.draftOrNull()?.let(onSave) },
+                Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small).testTag("save-wish"),
+                enabled = state.draftOrNull() != null,
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            Modifier.fillMaxSize().padding(padding).testTag("wish-form"),
+            contentPadding = PaddingValues(horizontal = AppSpacing.page, vertical = AppSpacing.large),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.page),
+        ) {
+            item {
+                Text(
+                    stringResource(if (wishId == null) Res.string.add_wish else Res.string.edit_wish),
+                    style = MaterialTheme.typography.headlineLarge,
+                )
+                FormHint(stringResource(Res.string.form_subtitle))
+            }
+            item {
+                AppTextField(
+                    state.title,
+                    {
+                        state.title = it
+                        state.titleTouched = true
+                    },
+                    stringResource(Res.string.form_title),
+                    Modifier.testTag("wish-title"),
+                    isError = state.titleTouched && state.title.isBlank(),
+                    labelAbove = true,
+                    helperText = stringResource(Res.string.title_hint),
+                )
+            }
+            item {
+                FormLabel(stringResource(Res.string.choose_category))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    WishCategory.entries.forEach { category ->
+                        CategoryChip(
+                            stringResource(category.label),
+                            state.category == category,
+                            { state.category = category },
+                        )
+                    }
+                }
+            }
+            item {
+                FormLabel(stringResource(Res.string.when_label))
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    WishDateMode.entries.forEach { mode ->
+                        CategoryChip(
+                            stringResource(
+                                when (mode) {
+                                    WishDateMode.NONE -> Res.string.no_date
+                                    WishDateMode.DEADLINE -> Res.string.deadline_mode
+                                    WishDateMode.RANGE -> Res.string.range_mode
+                                },
+                            ),
+                            state.mode == mode,
+                            { state.selectMode(mode) },
+                        )
+                    }
+                }
+                if (state.mode != WishDateMode.NONE) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
+                        DateField(
+                            stringResource(
+                                if (state.mode == WishDateMode.DEADLINE) {
+                                    Res.string.complete_by
+                                } else {
+                                    Res.string.start_date
+                                },
+                            ),
+                            state.start,
+                            Modifier.weight(1f).testTag("start-date"),
+                        ) { pickingDate = "start" }
+                        if (state.mode == WishDateMode.RANGE) {
+                            DateField(
+                                stringResource(Res.string.end_date),
+                                state.end,
+                                Modifier.weight(1f).testTag("end-date"),
+                            ) { pickingDate = "end" }
+                        }
+                    }
+                }
+                FormHint(
+                    stringResource(
+                        when {
+                            state.datesInvalid -> Res.string.dates_error
+                            state.mode == WishDateMode.NONE -> Res.string.no_date_hint
+                            state.mode == WishDateMode.DEADLINE -> Res.string.deadline_hint
+                            else -> Res.string.range_hint
+                        },
+                    ),
+                    error = state.datesInvalid,
+                )
+            }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    FormLabel(stringResource(Res.string.main_image))
+                    val cover = state.cover
+                    if (cover == null) {
+                        ImageAction(
+                            stringResource(Res.string.add_main_image),
+                            Res.drawable.icon_add_image,
+                        ) { pickingImage = "cover" }
+                    } else {
+                        Image(
+                            painterResource(cover.category.image),
+                            stringResource(Res.string.main_image),
+                            Modifier.fillMaxWidth().heightIn(min = 116.dp, max = 116.dp).clip(AppShapes.field),
+                            contentScale = ContentScale.Crop,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                            OutlinedButton(
+                                { pickingImage = "cover" },
+                                Modifier.weight(1f),
+                            ) { Text(stringResource(Res.string.replace_image)) }
+                            OutlinedButton(
+                                { state.cover = null },
+                                Modifier.weight(1f),
+                            ) { Text(stringResource(Res.string.remove_image)) }
+                        }
+                    }
+                    FormHint(
+                        stringResource(if (cover == null) Res.string.cover_hint else Res.string.cover_selected_hint),
+                    )
+                }
+            }
+            item {
+                AppTextField(
+                    state.description,
+                    { state.description = it },
+                    stringResource(Res.string.form_description),
+                    Modifier.testTag("wish-description"),
+                    maxLength = 500,
+                    singleLine = false,
+                    minLines = 4,
+                    labelAbove = true,
+                    helperText = stringResource(Res.string.description_hint),
+                )
+            }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    FormLabel(stringResource(Res.string.description_images))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    ) {
+                        state.attachments.forEachIndexed { index, image ->
+                            Box(Modifier.size(104.dp).testTag("form-attachment-$index")) {
+                                Image(
+                                    painterResource(image.category.image),
+                                    stringResource(image.category.label),
+                                    Modifier.fillMaxSize().clip(AppShapes.field),
+                                    contentScale = ContentScale.Crop,
+                                )
+                                IconButton(
+                                    {
+                                        state.attachments =
+                                            state.attachments.filterIndexed {
+                                                i,
+                                                _,
+                                                ->
+                                                i != index
+                                            }
+                                    },
+                                    Modifier.align(Alignment.TopEnd),
+                                ) {
+                                    Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
+                                        Icon(
+                                            painterResource(Res.drawable.icon_delete),
+                                            stringResource(Res.string.remove_attachment, index + 1),
+                                            Modifier.padding(6.dp).size(20.dp),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    ImageAction(
+                        stringResource(Res.string.add_images),
+                        Res.drawable.icon_add,
+                    ) { pickingImage = "attachments" }
+                    FormHint(stringResource(Res.string.attachments_hint))
+                }
+            }
+            item {
+                Surface(shape = AppShapes.card, color = MaterialTheme.colorScheme.primaryContainer) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(AppSpacing.large),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painterResource(Res.drawable.icon_heart),
+                            null,
+                            Modifier.size(AppDimensions.icon),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Column {
+                            FormLabel(stringResource(Res.string.form_shared_title))
+                            FormHint(stringResource(Res.string.form_shared_hint, couple.partner.name))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    pickingImage?.let { target ->
+        DemoImagePicker(multiple = target == "attachments", onDismiss = { pickingImage = null }) { images ->
+            if (target == "cover") state.cover = images.first() else state.attachments = state.attachments + images
+            pickingImage = null
+        }
+    }
+    pickingDate?.let { target ->
+        WishDatePicker(
+            if (target == "start") state.start else state.end,
+            today,
+            onDismiss = { pickingDate = null },
+            onSelect = {
+                if (target == "start") state.start = it else state.end = it
+                pickingDate = null
+            },
+        )
+    }
+}
+
+@Composable
+private fun FormLabel(text: String) = Text(text, style = MaterialTheme.typography.labelLarge)
+
+@Composable
+private fun FormHint(text: String, error: Boolean = false) =
+    Text(
+        text,
+        style = MaterialTheme.typography.bodySmall,
+        color = if (error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
+    )
+
+@Composable
+private fun ImageAction(label: String, icon: DrawableResource, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = AppShapes.field,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.heightIn(min = 72.dp).padding(AppSpacing.large),
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painterResource(icon),
+                null,
+                Modifier.size(AppDimensions.icon),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Column {
+                Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                FormHint(stringResource(Res.string.local_images_hint))
+            }
+        }
+    }
+}
+
+@Composable
+private fun DateField(label: String, date: LocalDate?, modifier: Modifier, onClick: () -> Unit) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+        FormHint(label)
+        OutlinedButton(
+            onClick,
+            Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            shape = AppShapes.field,
+            contentPadding = PaddingValues(AppSpacing.small),
+        ) {
+            Text(if (date == null) stringResource(Res.string.choose_date) else wishDateText(date), Modifier.weight(1f))
+            Icon(painterResource(Res.drawable.icon_calendar), null, Modifier.size(AppDimensions.dateIcon))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WishDatePicker(
+    initial: LocalDate?,
+    today: LocalDate,
+    onDismiss: () -> Unit,
+    onSelect: (LocalDate) -> Unit,
+) {
+    // Material date pickers use midnight UTC, independent of the device time zone.
+    val picker =
+        rememberDatePickerState(
+            initialSelectedDateMillis = initial?.toEpochDays()?.times(86_400_000L),
+            initialDisplayedMonthMillis = (initial ?: today).toEpochDays() * 86_400_000L,
+        )
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                { picker.selectedDateMillis?.let { onSelect(LocalDate.fromEpochDays((it / 86_400_000L).toInt())) } },
+                enabled = picker.selectedDateMillis != null,
+            ) { Text(stringResource(Res.string.select_date)) }
+        },
+        dismissButton = { TextButton(onDismiss) { Text(stringResource(Res.string.cancel)) } },
+    ) { DatePicker(picker) }
+}
+
+@Composable
+private fun DemoImagePicker(multiple: Boolean, onDismiss: () -> Unit, onSelect: (List<WishImage>) -> Unit) {
+    var selected by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.choose_images)) },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                item { FormHint(stringResource(Res.string.local_images_hint)) }
+                WishCategory.entries.forEach { category ->
+                    item {
+                        Surface(
+                            modifier =
+                                Modifier.testTag("demo-image-${category.name}").semantics {
+                                    this.selected = category.name in selected
+                                },
+                            onClick = {
+                                selected =
+                                    if (!multiple) {
+                                        listOf(category.name)
+                                    } else if (category.name in selected) {
+                                        selected - category.name
+                                    } else {
+                                        selected + category.name
+                                    }
+                            },
+                            shape = AppShapes.field,
+                            border =
+                                BorderStroke(
+                                    if (category.name in selected) 3.dp else 1.dp,
+                                    if (category.name in selected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.outlineVariant
+                                    },
+                                ),
+                        ) {
+                            Row(
+                                Modifier.fillMaxWidth().padding(AppSpacing.small),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                            ) {
+                                Image(
+                                    painterResource(category.image),
+                                    null,
+                                    Modifier.width(64.dp).heightIn(min = 48.dp, max = 48.dp).clip(AppShapes.symbol),
+                                    contentScale = ContentScale.Crop,
+                                )
+                                Text(stringResource(category.label))
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                { onSelect(selected.map { WishImage(WishCategory.valueOf(it)) }) },
+                enabled = selected.isNotEmpty(),
+            ) {
+                Text(stringResource(Res.string.use_images))
+            }
+        },
+        dismissButton = { TextButton(onDismiss) { Text(stringResource(Res.string.cancel)) } },
+    )
+}

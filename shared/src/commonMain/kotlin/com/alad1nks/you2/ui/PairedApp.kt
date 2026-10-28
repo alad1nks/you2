@@ -26,10 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -41,8 +37,8 @@ import com.alad1nks.you2.core.model.DateStatus
 import com.alad1nks.you2.core.model.PairedSpace
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
+import com.alad1nks.you2.core.model.WishDraft
 import com.alad1nks.you2.core.model.status
-import com.alad1nks.you2.feature.designsystem.components.AppTextField
 import com.alad1nks.you2.feature.designsystem.components.Avatar
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.CoupleHeader
@@ -67,7 +63,6 @@ import com.alad1nks.you2.resources.generated.connected
 import com.alad1nks.you2.resources.generated.date_range
 import com.alad1nks.you2.resources.generated.demo_signout
 import com.alad1nks.you2.resources.generated.due_today
-import com.alad1nks.you2.resources.generated.edit_wish
 import com.alad1nks.you2.resources.generated.empty_list
 import com.alad1nks.you2.resources.generated.ended
 import com.alad1nks.you2.resources.generated.formatted_date
@@ -91,7 +86,6 @@ import com.alad1nks.you2.resources.generated.short_months
 import com.alad1nks.you2.resources.generated.subtitle
 import com.alad1nks.you2.resources.generated.summary_counts
 import com.alad1nks.you2.resources.generated.summary_title
-import com.alad1nks.you2.resources.generated.title_label
 import com.alad1nks.you2.resources.generated.tv_series
 import com.alad1nks.you2.resources.generated.upcoming_deadline
 import com.alad1nks.you2.resources.generated.upcoming_range
@@ -110,6 +104,7 @@ internal fun AppContent(
     today: LocalDate,
     onDeleteWish: (String) -> Unit = {},
     onCompleteWish: (String) -> Unit = {},
+    onSaveWish: (String?, WishDraft) -> Unit = { _, _ -> },
 ) {
     val navigation = rememberPairedNavigation()
     val wishesScroll = rememberLazyListState()
@@ -295,42 +290,17 @@ internal fun AppContent(
                             }
 
                             is OverlayRoute.Form -> {
-                                Column {
-                                    TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
-                                    LazyColumn(
-                                        Modifier.fillMaxSize(),
-                                        contentPadding =
-                                            androidx.compose.foundation.layout.PaddingValues(
-                                                AppSpacing.page,
-                                            ),
-                                        verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
-                                    ) {
-                                        item {
-                                            Text(
-                                                stringResource(
-                                                    if (route.wishId == null) {
-                                                        Res.string.add_wish
-                                                    } else {
-                                                        Res.string.edit_wish
-                                                    },
-                                                ),
-                                                style = MaterialTheme.typography.headlineLarge,
-                                            )
-                                        }
-                                        item {
-                                            FormPreview(
-                                                route.wishId,
-                                                space.wishes.find { it.id == route.wishId }?.content?.title.orEmpty(),
-                                            )
-                                        }
-                                        item {
-                                            Text(
-                                                stringResource(Res.string.scaffold_notice),
-                                                style = MaterialTheme.typography.bodySmall,
-                                            )
-                                        }
-                                    }
-                                }
+                                WishForm(
+                                    wishId = route.wishId,
+                                    initial = space.wishes.find { it.id == route.wishId }?.content,
+                                    couple = space.couple,
+                                    today = today,
+                                    onCancel = navigation::back,
+                                    onSave = { draft ->
+                                        onSaveWish(route.wishId, draft)
+                                        navigation.back()
+                                    },
+                                )
                             }
                         }
                     }
@@ -338,12 +308,6 @@ internal fun AppContent(
             }
         }
     }
-}
-
-@Composable
-private fun FormPreview(wishId: String?, initialTitle: String) {
-    var title by rememberSaveable(wishId) { mutableStateOf(initialTitle) }
-    AppTextField(title, { title = it }, stringResource(Res.string.title_label))
 }
 
 @Composable
@@ -454,7 +418,7 @@ internal fun WishDateBadge(dates: WishDates, today: LocalDate) {
 }
 
 @Composable
-private fun wishDateText(date: LocalDate): String =
+internal fun wishDateText(date: LocalDate): String =
     stringResource(
         Res.string.formatted_date,
         date.day,

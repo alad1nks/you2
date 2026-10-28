@@ -47,3 +47,10 @@ reuse the existing category covers, heart, more and calendar resources.
 English is the first UI reference. Interface copy is in `values/strings.xml`;
 Russian and Kazakh translations and the language picker are part of the Us stage.
 Demo wish content represents user-authored data and intentionally remains English.
+
+Add/Edit wish reuses the local category illustrations as the demo image collection.
+The original 24 x 24 add-image vectors from `37:406` and `34:698` were downloaded
+on 2026-10-29. Unmodified SVG sources are `design/icons/add_image.svg` and
+`design/icons/add.svg`; resvg renders their intrinsic size to `icon_add_image.png`
+and `icon_add.png`. The form uses these in the cover and attachment actions,
+and reuses back (20 dp), calendar (14 dp), heart (24 dp), and delete (20 dp).
