@@ -55,7 +55,7 @@ class AppScreenshotTest {
             runOnIdle { space = initial.copy(wishes = initial.memories) }
             onNodeWithText("Your shared list is waiting for its first wish.").assertIsDisplayed()
             onNodeWithText("Add a wish").performClick()
-            onNodeWithText("Wish title").assertExists()
+            onNodeWithText("What would you love to do?").assertExists()
         }
 
     @Test
@@ -178,7 +178,7 @@ class AppScreenshotTest {
             onNodeWithText("Wishes").performClick()
             onNodeWithText("A book for each other").assertExists()
             onNodeWithText("Add a wish").performClick()
-            onNodeWithText("Wish title").assertExists()
-            onNodeWithText("Back").performClick()
+            onNodeWithText("What would you love to do?").assertExists()
+            onNodeWithText("Cancel").performClick()
         }
 }

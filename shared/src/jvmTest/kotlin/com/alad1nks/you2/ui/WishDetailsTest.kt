@@ -63,7 +63,7 @@ class WishDetailsTest {
             onNodeWithContentDescription("More options").performClick()
             onNodeWithText("Edit wish").performClick()
             onNode(hasText("A little gift, just because") and hasAnyAncestor(isDialog())).assertExists()
-            onNodeWithText("Back").performClick()
+            onNodeWithText("Cancel").performClick()
             onNodeWithText("Mark as done").assertIsDisplayed()
             runOnIdle { assertEquals(initial, repository.space.value) }
             onNodeWithContentDescription("More options").performClick()
