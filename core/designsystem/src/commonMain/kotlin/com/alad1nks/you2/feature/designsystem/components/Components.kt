@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
@@ -176,12 +177,19 @@ fun WishCard(
                 )
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-                Text(title, style = MaterialTheme.typography.labelLarge)
+                Text(
+                    title,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 if (description.isNotBlank()) {
                     Text(
                         description,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 Text(author, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
