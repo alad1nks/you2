@@ -20,6 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
@@ -48,6 +50,7 @@ import com.alad1nks.you2.resources.generated.delete_action
 import com.alad1nks.you2.resources.generated.delete_message
 import com.alad1nks.you2.resources.generated.delete_title
 import com.alad1nks.you2.resources.generated.field_error
+import com.alad1nks.you2.resources.generated.icon_calendar
 import com.alad1nks.you2.resources.generated.icon_heart
 import com.alad1nks.you2.resources.generated.icon_more
 import com.alad1nks.you2.resources.generated.more_options
@@ -57,14 +60,26 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun PrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: @Composable (() -> Unit)? = null,
+) {
     Button(
         onClick,
         modifier.fillMaxWidth().heightIn(min = AppDimensions.buttonHeight),
         enabled = enabled,
         shape = AppShapes.pill,
     ) {
-        Text(text)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            leadingIcon?.invoke()
+            Text(text)
+        }
     }
 }
 
@@ -117,7 +132,19 @@ fun Avatar(name: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun CategoryChip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    FilterChip(selected = selected, onClick = onClick, label = { Text(label) }, modifier = modifier)
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        leadingIcon = if (selected) ({ Text("✓") }) else null,
+        colors =
+            FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+            ),
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -131,27 +158,40 @@ fun WishCard(
 ) {
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().heightIn(min = 94.dp),
         shape = AppShapes.card,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
-            Modifier.padding(14.dp),
+            Modifier.padding(AppSpacing.cardInset),
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Surface(shape = AppShapes.field, color = MaterialTheme.colorScheme.surfaceContainer) {
+            Surface(shape = AppShapes.symbol, color = MaterialTheme.colorScheme.surfaceContainer) {
                 Icon(
                     painterResource(Res.drawable.icon_heart),
                     null,
-                    Modifier.padding(10.dp).size(AppDimensions.icon),
+                    Modifier.padding(horizontal = 10.dp, vertical = 14.dp).size(AppDimensions.icon),
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-                Text(title, style = MaterialTheme.typography.labelLarge)
-                if (description.isNotBlank()) Text(description, style = MaterialTheme.typography.bodySmall)
+                Text(
+                    title,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (description.isNotBlank()) {
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Text(author, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 date()
             }
@@ -232,13 +272,20 @@ fun DateBadge(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
             StatusTone.ACTIVE -> colors.onPrimaryContainer
             StatusTone.ERROR -> colors.onErrorContainer
         }
-    Surface(modifier, shape = AppShapes.field, color = background) {
-        Text(
-            text,
-            Modifier.padding(horizontal = AppSpacing.small, vertical = AppSpacing.xs),
-            color = foreground,
-            style = MaterialTheme.typography.bodySmall,
-        )
+    Surface(modifier.fillMaxWidth(), shape = AppShapes.date, color = background) {
+        Row(
+            Modifier.padding(horizontal = 6.dp, vertical = AppSpacing.xs),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painterResource(Res.drawable.icon_calendar),
+                null,
+                Modifier.size(AppDimensions.dateIcon),
+                tint = foreground,
+            )
+            Text(text, color = foreground, style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
 

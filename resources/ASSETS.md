@@ -28,6 +28,11 @@ background), because direct Figma PNG exports include the page background.
 PNG is used for shared Android, iOS, JVM and JS resource support.
 `Icon` applies the current theme's tint.
 
+The calendar icon is the original 14 × 14 SVG from date layer `I43:897;42:526`
+in the Wishes screen (`1:2`), exported on 2026-10-28. Its unmodified source is
+`design/icons/calendar.svg`; `icon_calendar.png` is rendered with resvg at its
+intrinsic size and displayed at 14 dp, tinted for each date status.
+
 Roboto Regular, Medium and Bold are bundled from
 [googlefonts/roboto-2](https://github.com/googlefonts/roboto-2/tree/main/src/hinted).
 Their Apache 2.0 license is included in `Roboto-LICENSE.txt`.

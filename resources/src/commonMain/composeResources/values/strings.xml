@@ -51,4 +51,19 @@
     <string name="demo_signout">Sign out is unavailable in this paired demo.</string>
     <string name="edit_memory">Edit memory</string>
     <string name="restore">Move back to Wishes</string>
+    <string name="waiting_to_happen">Waiting to happen</string>
+    <string name="newest_first">Newest first ↓</string>
+    <string name="wish_attribution">%1$s · %2$s added this</string>
+    <string name="wish_attribution_you">%1$s · You added this</string>
+    <string name="empty_wishes">Your shared list is waiting for its first wish.</string>
+    <string name="empty_wishes_hint">Add a little idea for the two of you.</string>
+    <string name="no_filter_results">No wishes in this category yet.</string>
+    <string name="show_all_wishes">Show all wishes</string>
+    <string name="formatted_date">%1$d %2$s %3$d</string>
+    <string name="same_month_range">%1$d–%2$d %3$s %4$d</string>
+    <string-array name="short_months">
+        <item>Jan</item><item>Feb</item><item>Mar</item><item>Apr</item>
+        <item>May</item><item>Jun</item><item>Jul</item><item>Aug</item>
+        <item>Sep</item><item>Oct</item><item>Nov</item><item>Dec</item>
+    </string-array>
 </resources>
