@@ -50,7 +50,6 @@ import com.alad1nks.you2.feature.designsystem.components.DateBadge
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.components.StatusTone
 import com.alad1nks.you2.feature.designsystem.components.WishCard
-import com.alad1nks.you2.feature.designsystem.components.WishCover
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
@@ -68,6 +67,7 @@ import com.alad1nks.you2.resources.generated.connected
 import com.alad1nks.you2.resources.generated.date_range
 import com.alad1nks.you2.resources.generated.demo_signout
 import com.alad1nks.you2.resources.generated.due_today
+import com.alad1nks.you2.resources.generated.edit_wish
 import com.alad1nks.you2.resources.generated.empty_list
 import com.alad1nks.you2.resources.generated.ended
 import com.alad1nks.you2.resources.generated.formatted_date
@@ -105,7 +105,12 @@ import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun AppContent(space: PairedSpace, today: LocalDate) {
+internal fun AppContent(
+    space: PairedSpace,
+    today: LocalDate,
+    onDeleteWish: (String) -> Unit = {},
+    onCompleteWish: (String) -> Unit = {},
+) {
     val navigation = rememberPairedNavigation()
     val wishesScroll = rememberLazyListState()
     val memoriesScroll = rememberLazyListState()
@@ -265,48 +270,66 @@ internal fun AppContent(space: PairedSpace, today: LocalDate) {
                         ).fillMaxSize().safeDrawingPadding().imePadding(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        Column {
-                            TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
-                            LazyColumn(
-                                Modifier.fillMaxSize(),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(AppSpacing.page),
-                                verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
-                            ) {
-                                when (route) {
-                                    is OverlayRoute.Details -> {
-                                        val wish = space.wishes.find { it.id == route.wishId }
-                                        if (wish != null) {
-                                            item {
-                                                Text(
-                                                    wish.content.title,
-                                                    style = MaterialTheme.typography.headlineLarge,
-                                                )
-                                            }
-                                            item {
-                                                WishCover(
-                                                    (wish.content.cover?.category ?: wish.content.category).image,
-                                                )
-                                            }
-                                            item { WishDateBadge(wish.content.dates, today) }
-                                            item { ContentCard { Text(wish.content.description) } }
-                                        }
-                                    }
+                        when (route) {
+                            is OverlayRoute.Details -> {
+                                val wish = space.wishes.find { it.id == route.wishId }
+                                if (wish != null) {
+                                    WishDetails(
+                                        wish,
+                                        space.couple,
+                                        today,
+                                        onBack = navigation::back,
+                                        onEdit = { navigation.open(OverlayRoute.Form(wish.id)) },
+                                        onDelete = {
+                                            onDeleteWish(wish.id)
+                                            navigation.back()
+                                        },
+                                        onComplete = {
+                                            onCompleteWish(wish.id)
+                                            navigation.back()
+                                        },
+                                    )
+                                } else {
+                                    TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
+                                }
+                            }
 
-                                    is OverlayRoute.Form -> {
+                            is OverlayRoute.Form -> {
+                                Column {
+                                    TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
+                                    LazyColumn(
+                                        Modifier.fillMaxSize(),
+                                        contentPadding =
+                                            androidx.compose.foundation.layout.PaddingValues(
+                                                AppSpacing.page,
+                                            ),
+                                        verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
+                                    ) {
                                         item {
                                             Text(
-                                                stringResource(Res.string.add_wish),
+                                                stringResource(
+                                                    if (route.wishId == null) {
+                                                        Res.string.add_wish
+                                                    } else {
+                                                        Res.string.edit_wish
+                                                    },
+                                                ),
                                                 style = MaterialTheme.typography.headlineLarge,
                                             )
                                         }
-                                        item { FormPreview() }
+                                        item {
+                                            FormPreview(
+                                                route.wishId,
+                                                space.wishes.find { it.id == route.wishId }?.content?.title.orEmpty(),
+                                            )
+                                        }
+                                        item {
+                                            Text(
+                                                stringResource(Res.string.scaffold_notice),
+                                                style = MaterialTheme.typography.bodySmall,
+                                            )
+                                        }
                                     }
-                                }
-                                item {
-                                    Text(
-                                        stringResource(Res.string.scaffold_notice),
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
                                 }
                             }
                         }
@@ -318,8 +341,8 @@ internal fun AppContent(space: PairedSpace, today: LocalDate) {
 }
 
 @Composable
-private fun FormPreview() {
-    var title by rememberSaveable { mutableStateOf("") }
+private fun FormPreview(wishId: String?, initialTitle: String) {
+    var title by rememberSaveable(wishId) { mutableStateOf(initialTitle) }
     AppTextField(title, { title = it }, stringResource(Res.string.title_label))
 }
 

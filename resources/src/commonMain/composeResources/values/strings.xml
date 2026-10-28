@@ -66,4 +66,14 @@
         <item>May</item><item>Jun</item><item>Jul</item><item>Aug</item>
         <item>Sep</item><item>Oct</item><item>Nov</item><item>Dec</item>
     </string-array>
+    <string name="added_by_you">Added by you</string>
+    <string name="for_couple">For you &amp; %1$s</string>
+    <string name="shared_wish">On your shared list</string>
+    <string name="shared_adventures">A little escape for the two of you.</string>
+    <string name="shared_presents">Small surprises, shared happiness.</string>
+    <string name="shared_plans">A little time for the two of you.</string>
+    <string name="shared_movies">A movie night for the two of you.</string>
+    <string name="shared_tv_series">Your next favorite thing to watch.</string>
+    <string name="shared_other">There’s room for every little idea.</string>
+    <string name="completion_hint">Mark it as done to move it to Memories.</string>
 </resources>

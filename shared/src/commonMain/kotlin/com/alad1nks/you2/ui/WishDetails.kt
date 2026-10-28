@@ -1,0 +1,254 @@
+package com.alad1nks.you2.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.alad1nks.you2.core.model.Couple
+import com.alad1nks.you2.core.model.Wish
+import com.alad1nks.you2.core.model.WishCategory
+import com.alad1nks.you2.core.model.WishDates
+import com.alad1nks.you2.feature.designsystem.components.Avatar
+import com.alad1nks.you2.feature.designsystem.components.ContentCard
+import com.alad1nks.you2.feature.designsystem.components.DeleteWishDialog
+import com.alad1nks.you2.feature.designsystem.components.MenuAction
+import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
+import com.alad1nks.you2.feature.designsystem.components.WishCover
+import com.alad1nks.you2.feature.designsystem.components.WishMenu
+import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
+import com.alad1nks.you2.feature.designsystem.theme.AppShapes
+import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
+import com.alad1nks.you2.resources.generated.Res
+import com.alad1nks.you2.resources.generated.added_by
+import com.alad1nks.you2.resources.generated.added_by_you
+import com.alad1nks.you2.resources.generated.back
+import com.alad1nks.you2.resources.generated.completed
+import com.alad1nks.you2.resources.generated.completion_hint
+import com.alad1nks.you2.resources.generated.delete_wish
+import com.alad1nks.you2.resources.generated.details
+import com.alad1nks.you2.resources.generated.edit_wish
+import com.alad1nks.you2.resources.generated.for_couple
+import com.alad1nks.you2.resources.generated.icon_back
+import com.alad1nks.you2.resources.generated.icon_delete
+import com.alad1nks.you2.resources.generated.icon_edit
+import com.alad1nks.you2.resources.generated.icon_heart
+import com.alad1nks.you2.resources.generated.mark_done
+import com.alad1nks.you2.resources.generated.shared_adventures
+import com.alad1nks.you2.resources.generated.shared_movies
+import com.alad1nks.you2.resources.generated.shared_other
+import com.alad1nks.you2.resources.generated.shared_plans
+import com.alad1nks.you2.resources.generated.shared_presents
+import com.alad1nks.you2.resources.generated.shared_tv_series
+import com.alad1nks.you2.resources.generated.shared_wish
+import com.alad1nks.you2.resources.generated.waiting_to_happen
+import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+internal fun WishDetails(
+    wish: Wish,
+    couple: Couple,
+    today: LocalDate,
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onComplete: () -> Unit,
+) {
+    var menuOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
+    var deleteOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
+    Scaffold(
+        topBar = {
+            Row(
+                Modifier.fillMaxWidth().heightIn(
+                    min = AppDimensions.headerHeight,
+                ).padding(horizontal = AppSpacing.page),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onBack) {
+                    Icon(painterResource(Res.drawable.icon_back), null, Modifier.size(20.dp))
+                    Text(stringResource(Res.string.back))
+                }
+                WishMenu(
+                    menuOpen,
+                    { menuOpen = it },
+                    buildList {
+                        if (wish.completion == null) {
+                            add(MenuAction(stringResource(Res.string.edit_wish), onEdit, Res.drawable.icon_edit))
+                        }
+                        add(
+                            MenuAction(
+                                stringResource(Res.string.delete_wish),
+                                { deleteOpen = true },
+                                Res.drawable.icon_delete,
+                                true,
+                            ),
+                        )
+                    },
+                )
+            }
+        },
+        bottomBar = {
+            if (wish.completion == null) {
+                PrimaryButton(
+                    stringResource(Res.string.mark_done),
+                    onComplete,
+                    Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.listGap),
+                )
+            }
+        },
+    ) { padding ->
+        LazyColumn(
+            Modifier.fillMaxSize().padding(padding).testTag("wish-details"),
+            contentPadding = PaddingValues(horizontal = AppSpacing.page, vertical = AppSpacing.large),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.detailsGap),
+        ) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
+                            Text(
+                                stringResource(wish.content.category.label),
+                                Modifier.padding(horizontal = AppSpacing.large, vertical = AppSpacing.xs),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        Text(
+                            stringResource(
+                                if (wish.completion == null) Res.string.waiting_to_happen else Res.string.completed,
+                            ),
+                            Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                    Text(wish.content.title, style = MaterialTheme.typography.headlineLarge)
+                }
+            }
+            item { WishCover((wish.content.cover?.category ?: wish.content.category).image) }
+            item {
+                val author = if (wish.authorId == couple.you.id) couple.you else couple.partner
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Avatar(author.name)
+                    Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+                        Text(
+                            if (author.id == couple.you.id) {
+                                stringResource(
+                                    Res.string.added_by_you,
+                                )
+                            } else {
+                                stringResource(Res.string.added_by, author.name)
+                            },
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text(
+                            stringResource(Res.string.for_couple, couple.partner.name),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+            }
+            if (wish.content.dates != WishDates.NoDate) {
+                item { WishDateBadge(wish.content.dates, today) }
+            }
+            if (wish.content.description.isNotBlank()) {
+                item {
+                    ContentCard {
+                        Text(stringResource(Res.string.details), style = MaterialTheme.typography.labelLarge)
+                        Text(wish.content.description)
+                    }
+                }
+            }
+            itemsIndexed(wish.content.attachments) { index, attachment ->
+                WishCover(attachment.category.image, Modifier.testTag("wish-attachment-$index"))
+            }
+            item {
+                Surface(shape = AppShapes.card, color = MaterialTheme.colorScheme.primaryContainer) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(AppSpacing.large),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
+                            Icon(
+                                painterResource(Res.drawable.icon_heart),
+                                null,
+                                Modifier.padding(AppSpacing.small).size(AppDimensions.icon),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+                            Text(stringResource(Res.string.shared_wish), style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                stringResource(wish.content.category.sharedHint),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            }
+            if (wish.completion == null) {
+                item {
+                    Text(
+                        stringResource(Res.string.completion_hint),
+                        Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            }
+        }
+    }
+    if (deleteOpen) {
+        DeleteWishDialog(wish.content.title, couple.partner.name, { deleteOpen = false }, {
+            deleteOpen = false
+            onDelete()
+        })
+    }
+}
+
+private val WishCategory.sharedHint
+    get() =
+        when (this) {
+            WishCategory.ADVENTURES -> Res.string.shared_adventures
+            WishCategory.PRESENTS -> Res.string.shared_presents
+            WishCategory.PLANS -> Res.string.shared_plans
+            WishCategory.MOVIES -> Res.string.shared_movies
+            WishCategory.TV_SERIES -> Res.string.shared_tv_series
+            WishCategory.OTHER -> Res.string.shared_other
+        }

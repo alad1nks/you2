@@ -2,6 +2,7 @@ package com.alad1nks.you2.feature.designsystem.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -24,19 +26,29 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
@@ -289,25 +301,79 @@ fun DateBadge(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
     }
 }
 
-data class MenuAction(val label: String, val onClick: () -> Unit)
+data class MenuAction(
+    val label: String,
+    val onClick: () -> Unit,
+    val icon: DrawableResource? = null,
+    val destructive: Boolean = false,
+)
 
 @Composable
 fun WishMenu(expanded: Boolean, onExpandedChange: (Boolean) -> Unit, actions: List<MenuAction>) {
+    val menuFocus = remember { FocusRequester() }
     Box {
         IconButton(onClick = { onExpandedChange(true) }) {
             Icon(
                 painterResource(Res.drawable.icon_more),
                 stringResource(Res.string.more_options),
                 Modifier.size(AppDimensions.icon),
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
-        DropdownMenu(expanded, onDismissRequest = { onExpandedChange(false) }) {
+        DropdownMenu(
+            expanded,
+            onDismissRequest = { onExpandedChange(false) },
+            modifier =
+                Modifier.width(220.dp).onPreviewKeyEvent {
+                    if (it.key == Key.Escape || it.key == Key.Back) {
+                        onExpandedChange(false)
+                        true
+                    } else {
+                        false
+                    }
+                }.focusRequester(menuFocus).focusable(),
+            shape = AppShapes.field,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ) {
+            LaunchedEffect(expanded) {
+                if (expanded) menuFocus.requestFocus()
+            }
             actions.forEach {
                 action ->
-                DropdownMenuItem(text = { Text(action.label) }, onClick = {
-                    onExpandedChange(false)
-                    action.onClick()
-                })
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            action.label,
+                            color =
+                                if (action.destructive) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                        )
+                    },
+                    leadingIcon =
+                        action.icon?.let {
+                            icon ->
+                            {
+                                Icon(
+                                    painterResource(icon),
+                                    null,
+                                    Modifier.size(20.dp),
+                                    tint =
+                                        if (action.destructive) {
+                                            MaterialTheme.colorScheme.error
+                                        } else {
+                                            MaterialTheme.colorScheme.primary
+                                        },
+                                )
+                            }
+                        },
+                    onClick = {
+                        onExpandedChange(false)
+                        action.onClick()
+                    },
+                )
             }
         }
     }
@@ -315,20 +381,39 @@ fun WishMenu(expanded: Boolean, onExpandedChange: (Boolean) -> Unit, actions: Li
 
 @Composable
 fun DeleteWishDialog(title: String, partnerName: String, onDismiss: () -> Unit, onDelete: () -> Unit) {
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.delete_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.large)) {
-                Text(stringResource(Res.string.delete_message, title, partnerName))
-                Text(stringResource(Res.string.cannot_undo), style = MaterialTheme.typography.bodySmall)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            Modifier.padding(horizontal = AppSpacing.page).widthIn(max = 364.dp).fillMaxWidth(),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.background,
+        ) {
+            Column(Modifier.padding(AppSpacing.page), verticalArrangement = Arrangement.spacedBy(AppSpacing.large)) {
+                Text(stringResource(Res.string.delete_title), style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    stringResource(Res.string.delete_message, title, partnerName),
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+                Text(
+                    stringResource(Res.string.cannot_undo),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
+                    OutlinedButton(onDismiss, Modifier.weight(1f).heightIn(min = 48.dp)) {
+                        Text(stringResource(Res.string.cancel))
+                    }
+                    Button(
+                        onDelete,
+                        Modifier.weight(1f).heightIn(min = 48.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    ) {
+                        Text(stringResource(Res.string.delete_action))
+                    }
+                }
             }
-        },
-        dismissButton = { TextButton(onDismiss) { Text(stringResource(Res.string.cancel)) } },
-        confirmButton = {
-            Button(onDelete, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
-                Text(stringResource(Res.string.delete_action))
-            }
-        },
-    )
+        }
+    }
 }
