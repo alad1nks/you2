@@ -2,16 +2,18 @@
 
 Category illustrations are original image fills from the you2 Figma file
 `4NzqzLDkOMaaGQGKYhEeuT`, section `23:118`, downloaded on 2026-10-28.
+They are encoded as lossless WebP with unchanged dimensions and decoded pixels.
+The six illustrations total 4,584,340 bytes (41.2% smaller than their PNG sources).
 They are bundled locally; the application never requests temporary Figma URLs.
 
 | Resource | Figma image layer |
 | --- | --- |
-| `category_adventures.png` | `23:142` |
-| `category_presents.png` | `23:199` |
-| `category_plans.png` | `23:256` |
-| `category_movies.png` | `23:314` |
-| `category_tv_series.png` | `23:371` |
-| `category_other.png` | `23:428` |
+| `category_adventures.webp` | `23:142` |
+| `category_presents.webp` | `23:199` |
+| `category_plans.webp` | `23:256` |
+| `category_movies.webp` | `23:314` |
+| `category_tv_series.webp` | `23:371` |
+| `category_other.webp` | `23:428` |
 
 `WishCover` resolves these by category and uses a full-width, 160 dp high crop.
 The image corner radius follows the implementation plan's 24 dp token.
