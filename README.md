@@ -288,7 +288,7 @@ The first command checks Kotlin code; the second fixes formatting and modifies f
 Rules are defined in [.editorconfig](.editorconfig); ktlint is enabled for all Gradle subprojects.
 The CLI version is set by `ktlint-cli` in the version catalog, independently of the `ktlint` Gradle plugin version.
 
-The `shared` module's `commonTest` source set has a `kotlin-test` dependency, but the repository currently contains no test sources.
+The `shared` module's `commonTest` source set has a `kotlin-test` dependency.
 Add shared tests to `shared/src/commonTest/kotlin` and run them on the JVM:
 
 ```bash
@@ -297,6 +297,36 @@ Add shared tests to `shared/src/commonTest/kotlin` and run them on the JVM:
 
 For tests in other modules, first add the appropriate dependencies to their `build.gradle.kts` files.
 A successful task with no test sources does not indicate test coverage.
+
+### Screenshot tests
+
+Shared Compose UI screenshots use [Roborazzi](https://github.com/takahirom/roborazzi) on the JVM,
+without an emulator. `AppScreenshotTest` covers light and dark themes before and after opening the
+demo content. It renders the production `AppContent` with a fixed greeting, 360 x 640 viewport,
+density and font scale of 1, and waits for animations to finish. Settings storage and DI are bypassed.
+These tests cover shared layout and styling; they do not check native Android/iOS rendering.
+
+Run on Windows with JDK 21, matching the `windows-2025` PR runner. Desktop font rendering can differ
+across operating systems; do not regenerate these reference images on macOS or Linux.
+
+```powershell
+# Compare against committed images; missing or changed references fail the build.
+./gradlew.bat :shared:verifyRoborazziJvm
+
+# After an intentional UI change, regenerate and visually review the PNG diff before committing.
+./gradlew.bat :shared:recordRoborazziJvm
+./gradlew.bat :shared:verifyRoborazziJvm
+```
+
+Reference PNGs live in `shared/src/jvmTest/screenshots` and must be committed with UI changes.
+Verification never updates them. A plain `:shared:jvmTest` runs the interactions but does not verify pixels;
+use `verifyRoborazziJvm` for visual regression checking. Add new scenarios under `shared/src/jvmTest/kotlin`
+with unique screenshot names in the same reference directory.
+
+PRs run the **Screenshot tests** job independently of platform builds. Its `screenshot-test-reports`
+artifact contains Roborazzi comparison images/reports and JVM test results, including on failure.
+Local reports are in `shared/build/reports/roborazzi` and `shared/build/reports/tests/jvmTest`;
+comparison images are in `shared/build/outputs/roborazzi`.
 
 ## GitHub Actions
 
@@ -310,7 +340,7 @@ The JS check runs `:webApp:jsBrowserProductionWebpack` without preparing externa
 
 | Workflow | Trigger | Defined behavior |
 | --- | --- | --- |
-| [pr-checks.yml](.github/workflows/pr-checks.yml) | PR targeting `main` or `master` | Android, iOS framework, JS, and JVM builds, plus ktlint |
+| [pr-checks.yml](.github/workflows/pr-checks.yml) | PR targeting `main` or `master` | Android, iOS framework, JS, and JVM builds, plus ktlint and screenshot verification |
 | [build-and-deploy.yml](.github/workflows/build-and-deploy.yml) | Push to `main` | Release APK and an artifact commit to `alad1nks/alad1nks.github.io` |
 | [release.yml](.github/workflows/release.yml) | Push to `release/*` | Release AAB and an artifact commit to the same external repository |
 
