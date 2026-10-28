@@ -1,8 +1,15 @@
 # you2
 
-A Kotlin Multiplatform starter template for new Android, iOS, Desktop (JVM), and Web (Kotlin/JS) applications.
-Clone the repository, replace the name, identifiers, and publishing settings, and build your application
-on a modular foundation with a shared Compose Multiplatform interface.
+you2 is an application for couples in a relationship to keep their shared wishes and plans in one place.
+Each partner registers an account, then they add each other to form a couple.
+Once connected, both partners can add wishes with descriptions to a shared list.
+
+The list can include adventures, presents, shared plans, movies, TV series, and other things
+the couple would like to experience or enjoy together.
+
+These are the intended product features. The current implementation is a Kotlin Multiplatform
+starter foundation for Android, iOS, Desktop (JVM), and Web (Kotlin/JS), with a shared
+Compose Multiplatform interface. Registration, couple linking, and shared wish lists are not yet implemented.
 
 ## Included features
 
