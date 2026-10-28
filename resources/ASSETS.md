@@ -1,0 +1,33 @@
+# Paired UI assets
+
+Category illustrations are original image fills from the you2 Figma file
+`4NzqzLDkOMaaGQGKYhEeuT`, section `23:118`, downloaded on 2026-10-28.
+They are bundled locally; the application never requests temporary Figma URLs.
+
+| Resource | Figma image layer |
+| --- | --- |
+| `category_adventures.png` | `23:142` |
+| `category_presents.png` | `23:199` |
+| `category_plans.png` | `23:256` |
+| `category_movies.png` | `23:314` |
+| `category_tv_series.png` | `23:371` |
+| `category_other.png` | `23:428` |
+
+`WishCover` resolves these by category and uses a full-width, 160 dp high crop.
+The image corner radius follows the implementation plan's 24 dp token.
+The reference category panels use 364 × 160 slots with a 20 px radius.
+
+The 24 × 24 icons come from the original vector nodes: heart `43:727`,
+Memories `43:782`, couple `43:787`, more `23:131`. Unmodified SVG sources are in
+`design/icons`. These SVGs are rendered to PNG with resvg (intrinsic size, transparent
+background), because direct Figma PNG exports include the page background.
+PNG is used for shared Android, iOS, JVM and JS resource support.
+`Icon` applies the current theme's tint.
+
+Roboto Regular, Medium and Bold are bundled from
+[googlefonts/roboto-2](https://github.com/googlefonts/roboto-2/tree/main/src/hinted).
+Their Apache 2.0 license is included in `Roboto-LICENSE.txt`.
+
+English is the first UI reference. Interface copy is in `values/strings.xml`;
+Russian and Kazakh translations and the language picker are part of the Us stage.
+Demo wish content represents user-authored data and intentionally remains English.
