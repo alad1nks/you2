@@ -111,4 +111,26 @@
     <string name="select_date">Select date</string>
     <string name="choose_images">Choose images</string>
     <string name="use_images">Use selected images</string>
+    <string name="memories_subtitle">Once a wish. Now a story we share.</string>
+    <string name="memories_summary">%1$d wishes brought to life</string>
+    <string name="memories_summary_hint">Here’s to everything we’ve done together.</string>
+    <string name="memory_count">%1$d memories</string>
+    <string name="one_memory">1 memory</string>
+    <string name="memory_month">%1$s %2$d</string>
+    <string name="memory_metadata">%1$s · %2$s</string>
+    <string name="empty_memories">Your stories are still ahead.</string>
+    <string name="empty_memories_hint">Complete a wish to save it here.</string>
+    <string name="back_to_memories">Back to Memories</string>
+    <string name="completed_on">Completed on %1$s</string>
+    <string name="completed_by">Marked as done by %1$s · Saved to Memories</string>
+    <string name="completed_by_you">Marked as done by you · Saved to Memories</string>
+    <string name="original_wish">The wish</string>
+    <string name="little_memory">A little memory</string>
+    <string name="no_memory">No memory added yet.</string>
+    <string name="memory_hint">Optional. Keep a little moment from your time together.</string>
+    <string-array name="full_months">
+        <item>January</item><item>February</item><item>March</item><item>April</item>
+        <item>May</item><item>June</item><item>July</item><item>August</item>
+        <item>September</item><item>October</item><item>November</item><item>December</item>
+    </string-array>
 </resources>

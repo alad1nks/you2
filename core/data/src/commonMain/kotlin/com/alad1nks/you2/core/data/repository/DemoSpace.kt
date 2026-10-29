@@ -33,10 +33,10 @@ object DemoSpace {
                 "A book for each other",
                 "Try a new recipe",
                 "A classic movie marathon",
-                "Our first autumn walk",
-                "A cozy movie night",
-                "Birthday surprises",
-                "Coffee by the sea",
+                "Our first pottery class",
+                "A night under the stars",
+                "Finally watched About Time",
+                "A sunrise by the lake",
             )
         val categories =
             listOf(
@@ -52,10 +52,10 @@ object DemoSpace {
                 WishCategory.PRESENTS,
                 WishCategory.PLANS,
                 WishCategory.MOVIES,
+                WishCategory.PLANS,
                 WishCategory.ADVENTURES,
                 WishCategory.MOVIES,
-                WishCategory.PRESENTS,
-                WishCategory.OTHER,
+                WishCategory.ADVENTURES,
             )
         val descriptions =
             listOf(
@@ -71,6 +71,10 @@ object DemoSpace {
                 "Choose a story you think I will love.",
                 "Make a mess. Make something delicious.",
                 "Two films, one very cozy evening.",
+                "Learn to make pottery and create two mugs for our morning coffee.",
+                "Take a blanket and a flask of tea to watch the stars.",
+                "Make time for a film we have both been wanting to see.",
+                "Wake up early and watch the sunrise by the lake.",
             )
         val dates =
             listOf(
@@ -114,8 +118,14 @@ object DemoSpace {
                     completion =
                         if (index >= 12) {
                             Completion(
-                                LocalDate(2026, if (index < 14) 10 else 9, 12 + index % 2),
+                                LocalDate(2026, if (index < 14) 10 else 9, listOf(24, 10, 27, 13)[index - 12]),
                                 if (index % 2 == 0) "alex" else "mia",
+                                listOf(
+                                    "Two wonky mugs. A perfect afternoon.",
+                                    "Cold hands, hot tea, our favorite sky.",
+                                    "We laughed. We cried. We hit replay.",
+                                    "Worth every sleepy minute.",
+                                )[index - 12],
                             )
                         } else {
                             null

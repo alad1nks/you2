@@ -170,6 +170,8 @@ fun WishCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     date: @Composable () -> Unit = {},
+    symbol: DrawableResource = Res.drawable.icon_heart,
+    completed: Boolean = false,
 ) {
     Card(
         onClick = onClick,
@@ -183,9 +185,17 @@ fun WishCard(
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Surface(shape = AppShapes.symbol, color = MaterialTheme.colorScheme.surfaceContainer) {
+            Surface(
+                shape = AppShapes.symbol,
+                color =
+                    if (completed) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainer
+                    },
+            ) {
                 Icon(
-                    painterResource(Res.drawable.icon_heart),
+                    painterResource(symbol),
                     null,
                     Modifier.padding(horizontal = 10.dp, vertical = 14.dp).size(AppDimensions.icon),
                     tint = MaterialTheme.colorScheme.primary,
@@ -231,11 +241,11 @@ fun ContentCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.
 }
 
 @Composable
-fun WishCover(image: DrawableResource, modifier: Modifier = Modifier) {
+fun WishCover(image: DrawableResource, modifier: Modifier = Modifier, height: androidx.compose.ui.unit.Dp = 160.dp) {
     Image(
         painterResource(image),
         null,
-        modifier.fillMaxWidth().heightIn(min = 160.dp, max = 160.dp).clip(AppShapes.image),
+        modifier.fillMaxWidth().heightIn(min = height, max = height).clip(AppShapes.image),
         contentScale = ContentScale.Crop,
     )
 }

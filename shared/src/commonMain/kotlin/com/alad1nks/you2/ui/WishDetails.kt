@@ -45,17 +45,28 @@ import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.added_by
 import com.alad1nks.you2.resources.generated.added_by_you
 import com.alad1nks.you2.resources.generated.back
+import com.alad1nks.you2.resources.generated.back_to_memories
 import com.alad1nks.you2.resources.generated.completed
+import com.alad1nks.you2.resources.generated.completed_by
+import com.alad1nks.you2.resources.generated.completed_by_you
+import com.alad1nks.you2.resources.generated.completed_on
 import com.alad1nks.you2.resources.generated.completion_hint
 import com.alad1nks.you2.resources.generated.delete_wish
 import com.alad1nks.you2.resources.generated.details
+import com.alad1nks.you2.resources.generated.edit_memory
 import com.alad1nks.you2.resources.generated.edit_wish
 import com.alad1nks.you2.resources.generated.for_couple
 import com.alad1nks.you2.resources.generated.icon_back
 import com.alad1nks.you2.resources.generated.icon_delete
 import com.alad1nks.you2.resources.generated.icon_edit
 import com.alad1nks.you2.resources.generated.icon_heart
+import com.alad1nks.you2.resources.generated.icon_restore
+import com.alad1nks.you2.resources.generated.little_memory
 import com.alad1nks.you2.resources.generated.mark_done
+import com.alad1nks.you2.resources.generated.memories
+import com.alad1nks.you2.resources.generated.no_memory
+import com.alad1nks.you2.resources.generated.original_wish
+import com.alad1nks.you2.resources.generated.restore
 import com.alad1nks.you2.resources.generated.shared_adventures
 import com.alad1nks.you2.resources.generated.shared_movies
 import com.alad1nks.you2.resources.generated.shared_other
@@ -77,7 +88,11 @@ internal fun WishDetails(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onComplete: () -> Unit,
+    onRestore: () -> Unit = {},
+    onEditMemory: (String) -> Unit = {},
 ) {
+    val completion = wish.completion
+    var editMemoryOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     var menuOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     var deleteOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     Scaffold(
@@ -91,7 +106,7 @@ internal fun WishDetails(
             ) {
                 TextButton(onBack) {
                     Icon(painterResource(Res.drawable.icon_back), null, Modifier.size(20.dp))
-                    Text(stringResource(Res.string.back))
+                    Text(stringResource(if (completion == null) Res.string.back else Res.string.memories))
                 }
                 WishMenu(
                     menuOpen,
@@ -99,6 +114,21 @@ internal fun WishDetails(
                     buildList {
                         if (wish.completion == null) {
                             add(MenuAction(stringResource(Res.string.edit_wish), onEdit, Res.drawable.icon_edit))
+                        } else {
+                            add(
+                                MenuAction(
+                                    stringResource(Res.string.edit_memory),
+                                    { editMemoryOpen = true },
+                                    Res.drawable.icon_edit,
+                                ),
+                            )
+                            add(
+                                MenuAction(
+                                    stringResource(Res.string.restore),
+                                    onRestore,
+                                    Res.drawable.icon_restore,
+                                ),
+                            )
                         }
                         add(
                             MenuAction(
@@ -113,13 +143,11 @@ internal fun WishDetails(
             }
         },
         bottomBar = {
-            if (wish.completion == null) {
-                PrimaryButton(
-                    stringResource(Res.string.mark_done),
-                    onComplete,
-                    Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.listGap),
-                )
-            }
+            PrimaryButton(
+                stringResource(if (completion == null) Res.string.mark_done else Res.string.back_to_memories),
+                if (completion == null) onComplete else onBack,
+                Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.listGap),
+            )
         },
     ) { padding ->
         LazyColumn(
@@ -155,7 +183,24 @@ internal fun WishDetails(
                     Text(wish.content.title, style = MaterialTheme.typography.headlineLarge)
                 }
             }
-            item { WishCover((wish.content.cover?.category ?: wish.content.category).image) }
+            item {
+                WishCover(
+                    (wish.content.cover?.category ?: wish.content.category).image,
+                    height = if (completion == null) 160.dp else 144.dp,
+                )
+            }
+            if (completion != null) {
+                item {
+                    CompletionSummary(
+                        stringResource(Res.string.completed_on, wishDateText(completion.date)),
+                        if (completion.authorId == couple.you.id) {
+                            stringResource(Res.string.completed_by_you)
+                        } else {
+                            stringResource(Res.string.completed_by, couple.partner.name)
+                        },
+                    )
+                }
+            }
             item {
                 val author = if (wish.authorId == couple.you.id) couple.you else couple.partner
                 Row(
@@ -188,7 +233,10 @@ internal fun WishDetails(
             if (wish.content.description.isNotBlank()) {
                 item {
                     ContentCard {
-                        Text(stringResource(Res.string.details), style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            stringResource(if (completion == null) Res.string.details else Res.string.original_wish),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                         Text(wish.content.description)
                     }
                 }
@@ -196,27 +244,42 @@ internal fun WishDetails(
             itemsIndexed(wish.content.attachments) { index, attachment ->
                 WishCover(attachment.category.image, Modifier.testTag("wish-attachment-$index"))
             }
-            item {
-                Surface(shape = AppShapes.card, color = MaterialTheme.colorScheme.primaryContainer) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(AppSpacing.large),
-                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
-                            Icon(
-                                painterResource(Res.drawable.icon_heart),
-                                null,
-                                Modifier.padding(AppSpacing.small).size(AppDimensions.icon),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-                            Text(stringResource(Res.string.shared_wish), style = MaterialTheme.typography.labelLarge)
-                            Text(
-                                stringResource(wish.content.category.sharedHint),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
+            if (completion != null) {
+                item {
+                    ContentCard {
+                        Text(stringResource(Res.string.little_memory), style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            completion.memory.ifBlank { stringResource(Res.string.no_memory) },
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                }
+            } else {
+                item {
+                    Surface(shape = AppShapes.card, color = MaterialTheme.colorScheme.primaryContainer) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(AppSpacing.large),
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
+                                Icon(
+                                    painterResource(Res.drawable.icon_heart),
+                                    null,
+                                    Modifier.padding(AppSpacing.small).size(AppDimensions.icon),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+                                Text(
+                                    stringResource(Res.string.shared_wish),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                                Text(
+                                    stringResource(wish.content.category.sharedHint),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
                         }
                     }
                 }
@@ -233,6 +296,17 @@ internal fun WishDetails(
                 }
             }
         }
+    }
+    if (editMemoryOpen && completion != null) {
+        MemoryEditor(
+            wish.id,
+            completion.memory,
+            onDismiss = { editMemoryOpen = false },
+            onSave = {
+                onEditMemory(it)
+                editMemoryOpen = false
+            },
+        )
     }
     if (deleteOpen) {
         DeleteWishDialog(wish.content.title, couple.partner.name, { deleteOpen = false }, {

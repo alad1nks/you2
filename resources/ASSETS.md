@@ -54,3 +54,12 @@ on 2026-10-29. Unmodified SVG sources are `design/icons/add_image.svg` and
 `design/icons/add.svg`; resvg renders their intrinsic size to `icon_add_image.png`
 and `icon_add.png`. The form uses these in the cover and attachment actions,
 and reuses back (20 dp), calendar (14 dp), heart (24 dp), and delete (20 dp).
+
+Memories uses the original completion check from `46:989` (24 x 24) and restore
+arrow from `47:959` (20 x 20), downloaded on 2026-10-29. Unmodified sources are
+`design/icons/completed.svg` and `restore.svg`; resvg renders their intrinsic
+sizes to `icon_completed.png` and `icon_restore.png`. Checks appear in timeline
+cards and completion summaries at 24 dp; restore appears in the menu at 20 dp.
+Completed details reuse category covers in the reference's 144 dp high slot,
+plus the existing back, more, edit and delete icons. Cover radius follows the
+shared 24 dp plan token. System status and gesture bars remain platform-owned.
