@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.selected
@@ -45,6 +46,7 @@ import com.alad1nks.you2.core.model.Couple
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDraft
 import com.alad1nks.you2.core.model.WishImage
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.AppTextField
 import com.alad1nks.you2.feature.designsystem.components.CategoryChip
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
@@ -77,12 +79,6 @@ import com.alad1nks.you2.resources.generated.form_shared_hint
 import com.alad1nks.you2.resources.generated.form_shared_title
 import com.alad1nks.you2.resources.generated.form_subtitle
 import com.alad1nks.you2.resources.generated.form_title
-import com.alad1nks.you2.resources.generated.icon_add
-import com.alad1nks.you2.resources.generated.icon_add_image
-import com.alad1nks.you2.resources.generated.icon_back
-import com.alad1nks.you2.resources.generated.icon_calendar
-import com.alad1nks.you2.resources.generated.icon_delete
-import com.alad1nks.you2.resources.generated.icon_heart
 import com.alad1nks.you2.resources.generated.local_images_hint
 import com.alad1nks.you2.resources.generated.main_image
 import com.alad1nks.you2.resources.generated.no_date
@@ -100,7 +96,6 @@ import com.alad1nks.you2.resources.generated.title_hint
 import com.alad1nks.you2.resources.generated.use_images
 import com.alad1nks.you2.resources.generated.when_label
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -126,7 +121,7 @@ internal fun WishForm(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextButton(onCancel) {
-                    Icon(painterResource(Res.drawable.icon_back), null, Modifier.size(20.dp))
+                    Icon(AppIcons.ArrowBack, null, Modifier.size(20.dp))
                     Text(stringResource(Res.string.cancel))
                 }
                 Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
@@ -256,7 +251,7 @@ internal fun WishForm(
                     if (cover == null) {
                         ImageAction(
                             stringResource(Res.string.add_main_image),
-                            Res.drawable.icon_add_image,
+                            AppIcons.AddPhotoAlternate,
                         ) { pickingImage = "cover" }
                     } else {
                         Image(
@@ -323,7 +318,7 @@ internal fun WishForm(
                                 ) {
                                     Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
                                         Icon(
-                                            painterResource(Res.drawable.icon_delete),
+                                            AppIcons.DeleteOutline,
                                             stringResource(Res.string.remove_attachment, index + 1),
                                             Modifier.padding(6.dp).size(20.dp),
                                             tint = MaterialTheme.colorScheme.primary,
@@ -335,7 +330,7 @@ internal fun WishForm(
                     }
                     ImageAction(
                         stringResource(Res.string.add_images),
-                        Res.drawable.icon_add,
+                        AppIcons.Add,
                     ) { pickingImage = "attachments" }
                     FormHint(stringResource(Res.string.attachments_hint))
                 }
@@ -348,7 +343,7 @@ internal fun WishForm(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            painterResource(Res.drawable.icon_heart),
+                            AppIcons.FavoriteBorder,
                             null,
                             Modifier.size(AppDimensions.icon),
                             tint = MaterialTheme.colorScheme.primary,
@@ -393,7 +388,7 @@ private fun FormHint(text: String, error: Boolean = false) =
     )
 
 @Composable
-private fun ImageAction(label: String, icon: DrawableResource, onClick: () -> Unit) {
+private fun ImageAction(label: String, icon: ImageVector, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = AppShapes.field,
@@ -407,7 +402,7 @@ private fun ImageAction(label: String, icon: DrawableResource, onClick: () -> Un
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                painterResource(icon),
+                icon,
                 null,
                 Modifier.size(AppDimensions.icon),
                 tint = MaterialTheme.colorScheme.primary,
@@ -431,7 +426,7 @@ private fun DateField(label: String, date: LocalDate?, modifier: Modifier, onCli
             contentPadding = PaddingValues(AppSpacing.small),
         ) {
             Text(if (date == null) stringResource(Res.string.choose_date) else wishDateText(date), Modifier.weight(1f))
-            Icon(painterResource(Res.drawable.icon_calendar), null, Modifier.size(AppDimensions.dateIcon))
+            Icon(AppIcons.CalendarToday, null, Modifier.size(AppDimensions.dateIcon))
         }
     }
 }

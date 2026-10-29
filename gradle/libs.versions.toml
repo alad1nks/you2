@@ -14,9 +14,11 @@ kotlinx-coroutines = "1.11.0"
 ktlint = "14.2.0"
 ktlint-cli = "1.8.0"
 material3 = "1.9.0"
+material-icons = "1.7.3"
 roborazzi = "1.77.0"
 
 [libraries]
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.8.0" }
 roborazzi-compose-desktop = { module = "io.github.takahirom.roborazzi:roborazzi-compose-desktop", version.ref = "roborazzi" }
 compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "composeMultiplatform" }

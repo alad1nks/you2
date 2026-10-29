@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.alad1nks.you2.core.model.PairedSpace
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.WishCard
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
@@ -26,7 +27,6 @@ import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.empty_memories
 import com.alad1nks.you2.resources.generated.empty_memories_hint
 import com.alad1nks.you2.resources.generated.full_months
-import com.alad1nks.you2.resources.generated.icon_completed
 import com.alad1nks.you2.resources.generated.memories_subtitle
 import com.alad1nks.you2.resources.generated.memories_summary
 import com.alad1nks.you2.resources.generated.memories_summary_hint
@@ -36,7 +36,6 @@ import com.alad1nks.you2.resources.generated.memory_month
 import com.alad1nks.you2.resources.generated.one_memory
 import com.alad1nks.you2.resources.generated.our_memories
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -104,7 +103,7 @@ internal fun LazyListScope.memoriesContent(space: PairedSpace, onOpen: (String) 
                 ),
                 onClick = { onOpen(wish.id) },
                 modifier = Modifier.testTag("memory-${wish.id}"),
-                symbol = Res.drawable.icon_completed,
+                symbol = AppIcons.CheckCircle,
                 completed = true,
             )
         }
@@ -121,7 +120,7 @@ internal fun CompletionSummary(title: String, subtitle: String) {
         ) {
             Surface(shape = CircleShape, color = MaterialTheme.colorScheme.background) {
                 Icon(
-                    painterResource(Res.drawable.icon_completed),
+                    AppIcons.CheckCircle,
                     null,
                     Modifier.padding(AppSpacing.small).size(AppDimensions.icon),
                     tint = MaterialTheme.colorScheme.primary,

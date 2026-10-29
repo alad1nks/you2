@@ -43,6 +43,7 @@ import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
 import com.alad1nks.you2.core.model.WishDraft
 import com.alad1nks.you2.core.model.status
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.CoupleHeader
 import com.alad1nks.you2.feature.designsystem.components.DateBadge
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
@@ -63,9 +64,6 @@ import com.alad1nks.you2.resources.generated.date_range
 import com.alad1nks.you2.resources.generated.due_today
 import com.alad1nks.you2.resources.generated.ended
 import com.alad1nks.you2.resources.generated.formatted_date
-import com.alad1nks.you2.resources.generated.icon_couple
-import com.alad1nks.you2.resources.generated.icon_heart
-import com.alad1nks.you2.resources.generated.icon_memories
 import com.alad1nks.you2.resources.generated.in_progress
 import com.alad1nks.you2.resources.generated.memories
 import com.alad1nks.you2.resources.generated.movies
@@ -84,7 +82,6 @@ import com.alad1nks.you2.resources.generated.wishes
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -276,13 +273,11 @@ private fun BottomNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
                 label = { Text(label, style = MaterialTheme.typography.bodySmall) },
                 icon = {
                     Icon(
-                        painterResource(
-                            when (tab) {
-                                MainTab.WISHES -> Res.drawable.icon_heart
-                                MainTab.MEMORIES -> Res.drawable.icon_memories
-                                MainTab.US -> Res.drawable.icon_couple
-                            },
-                        ),
+                        when (tab) {
+                            MainTab.WISHES -> AppIcons.FavoriteBorder
+                            MainTab.MEMORIES -> AppIcons.PhotoLibrary
+                            MainTab.US -> AppIcons.People
+                        },
                         null,
                         Modifier.size(AppDimensions.icon),
                     )
