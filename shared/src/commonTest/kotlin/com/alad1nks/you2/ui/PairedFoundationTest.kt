@@ -61,6 +61,11 @@ class PairedFoundationTest {
         assertEquals(DateStatus.IN_PROGRESS, WishDates.Range(today, today).status(today))
         assertEquals(DateStatus.IN_PROGRESS, WishDates.Range(LocalDate(2026, 10, 27), today).status(today))
         assertEquals(DateStatus.IN_PROGRESS, WishDates.Range(today, LocalDate(2026, 10, 29)).status(today))
+        val range = WishDates.Range(LocalDate(2028, 2, 29), LocalDate(2028, 3, 1))
+        assertEquals(DateStatus.UPCOMING_RANGE, range.status(LocalDate(2028, 2, 28)))
+        assertEquals(DateStatus.IN_PROGRESS, range.status(LocalDate(2028, 2, 29)))
+        assertEquals(DateStatus.IN_PROGRESS, range.status(LocalDate(2028, 3, 1)))
+        assertEquals(DateStatus.ENDED, range.status(LocalDate(2028, 3, 2)))
         assertFailsWith<IllegalArgumentException> { WishDates.Range(LocalDate(2026, 10, 29), today) }
         assertEquals(12, InMemoryWishesRepository(DemoDateSource).space.value.active.size)
     }

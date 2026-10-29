@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,6 +51,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -93,7 +97,7 @@ fun PrimaryButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             leadingIcon?.invoke()
-            Text(text)
+            Text(text, textAlign = TextAlign.Center)
         }
     }
 }
@@ -430,7 +434,10 @@ fun DeleteWishDialog(title: String, partnerName: String, onDismiss: () -> Unit, 
             shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.background,
         ) {
-            Column(Modifier.padding(AppSpacing.page), verticalArrangement = Arrangement.spacedBy(AppSpacing.large)) {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()).padding(AppSpacing.page),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
+            ) {
                 Text(stringResource(Res.string.delete_title), style = MaterialTheme.typography.headlineMedium)
                 Text(
                     stringResource(Res.string.delete_message, title, partnerName),
@@ -441,13 +448,16 @@ fun DeleteWishDialog(title: String, partnerName: String, onDismiss: () -> Unit, 
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
-                    OutlinedButton(onDismiss, Modifier.weight(1f).heightIn(min = 48.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                ) {
+                    OutlinedButton(onDismiss, Modifier.weight(1f).widthIn(min = 136.dp).heightIn(min = 48.dp)) {
                         Text(stringResource(Res.string.cancel))
                     }
                     Button(
                         onDelete,
-                        Modifier.weight(1f).heightIn(min = 48.dp),
+                        Modifier.weight(1f).widthIn(min = 136.dp).heightIn(min = 48.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                     ) {
                         Text(stringResource(Res.string.delete_action))
