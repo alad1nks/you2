@@ -135,13 +135,20 @@ fun CoupleHeader(yourName: String, partnerName: String, modifier: Modifier = Mod
 }
 
 @Composable
-fun Avatar(name: String, modifier: Modifier = Modifier) {
+fun Avatar(
+    name: String,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+    textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyMedium,
+) {
     Surface(
         modifier.size(AppDimensions.avatar),
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainer,
+        color = containerColor,
     ) {
-        Box(contentAlignment = Alignment.Center) { Text(name.take(1), color = MaterialTheme.colorScheme.primary) }
+        Box(contentAlignment = Alignment.Center) {
+            Text(name.take(1), color = MaterialTheme.colorScheme.primary, style = textStyle)
+        }
     }
 }
 

@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,6 +24,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -33,13 +36,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.alad1nks.you2.core.model.DateStatus
+import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.core.model.PairedSpace
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
 import com.alad1nks.you2.core.model.WishDraft
 import com.alad1nks.you2.core.model.status
-import com.alad1nks.you2.feature.designsystem.components.Avatar
-import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.CoupleHeader
 import com.alad1nks.you2.feature.designsystem.components.DateBadge
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
@@ -56,9 +58,7 @@ import com.alad1nks.you2.resources.generated.category_other
 import com.alad1nks.you2.resources.generated.category_plans
 import com.alad1nks.you2.resources.generated.category_presents
 import com.alad1nks.you2.resources.generated.category_tv_series
-import com.alad1nks.you2.resources.generated.connected
 import com.alad1nks.you2.resources.generated.date_range
-import com.alad1nks.you2.resources.generated.demo_signout
 import com.alad1nks.you2.resources.generated.due_today
 import com.alad1nks.you2.resources.generated.ended
 import com.alad1nks.you2.resources.generated.formatted_date
@@ -70,18 +70,11 @@ import com.alad1nks.you2.resources.generated.memories
 import com.alad1nks.you2.resources.generated.movies
 import com.alad1nks.you2.resources.generated.no_date
 import com.alad1nks.you2.resources.generated.other
-import com.alad1nks.you2.resources.generated.our_memories
-import com.alad1nks.you2.resources.generated.our_wishes
 import com.alad1nks.you2.resources.generated.overdue
 import com.alad1nks.you2.resources.generated.plans
 import com.alad1nks.you2.resources.generated.presents
 import com.alad1nks.you2.resources.generated.same_month_range
-import com.alad1nks.you2.resources.generated.scaffold_notice
-import com.alad1nks.you2.resources.generated.shared_space
 import com.alad1nks.you2.resources.generated.short_months
-import com.alad1nks.you2.resources.generated.subtitle
-import com.alad1nks.you2.resources.generated.summary_counts
-import com.alad1nks.you2.resources.generated.summary_title
 import com.alad1nks.you2.resources.generated.tv_series
 import com.alad1nks.you2.resources.generated.upcoming_deadline
 import com.alad1nks.you2.resources.generated.upcoming_range
@@ -103,7 +96,13 @@ internal fun AppContent(
     onSaveWish: (String?, WishDraft) -> Unit = { _, _ -> },
     onRestoreWish: (String) -> Unit = {},
     onEditMemory: (String, String) -> Unit = { _, _ -> },
+    darkTheme: Boolean = false,
+    language: Language = Language.SYSTEM,
+    onRenameUser: (String) -> Unit = {},
+    onSetDarkTheme: (Boolean) -> Unit = {},
+    onSetLanguage: (Language) -> Unit = {},
 ) {
+    var usDialog by rememberSaveable { mutableStateOf<UsDialog?>(null) }
     val navigation = rememberPairedNavigation()
     val wishesScroll = rememberLazyListState()
     val memoriesScroll = rememberLazyListState()
@@ -150,7 +149,7 @@ internal fun AppContent(
                         },
                     verticalArrangement =
                         Arrangement.spacedBy(
-                            if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.large,
+                            if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.detailsGap,
                         ),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = AppSpacing.large),
                 ) {
@@ -165,75 +164,21 @@ internal fun AppContent(
                     } else if (navigation.tab == MainTab.MEMORIES) {
                         memoriesContent(space) { navigation.open(OverlayRoute.Details(it)) }
                     } else {
-                        item {
-                            Text(
-                                stringResource(
-                                    when (navigation.tab) {
-                                        MainTab.WISHES -> Res.string.our_wishes
-                                        MainTab.MEMORIES -> Res.string.our_memories
-                                        MainTab.US -> Res.string.shared_space
-                                    },
-                                ),
-                                style = MaterialTheme.typography.headlineLarge,
-                            )
-                            Text(
-                                stringResource(Res.string.subtitle),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        item {
-                            Surface(
-                                shape = MaterialTheme.shapes.large,
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                            ) {
-                                Column(
-                                    Modifier.fillMaxWidth().padding(AppSpacing.large),
-                                    verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
-                                ) {
-                                    Text(
-                                        stringResource(Res.string.summary_title),
-                                        style = MaterialTheme.typography.labelLarge,
-                                    )
-                                    Text(
-                                        stringResource(
-                                            Res.string.summary_counts,
-                                            space.active.size,
-                                            space.memories.size,
-                                        ),
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                            }
-                        }
-                        item {
-                            Text(
-                                stringResource(Res.string.scaffold_notice),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        }
-                        if (navigation.tab == MainTab.US) {
-                            item {
-                                ContentCard {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Avatar(space.couple.you.name)
-                                        Text(space.couple.you.name)
-                                        Avatar(space.couple.partner.name)
-                                        Text(space.couple.partner.name)
-                                    }
-                                    Text(stringResource(Res.string.connected))
-                                    Text(
-                                        stringResource(Res.string.demo_signout),
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                            }
-                        }
+                        usContent(space, darkTheme, language) { usDialog = it }
                     }
                 }
+            }
+            usDialog?.let { dialog ->
+                UsSettingsDialog(
+                    dialog,
+                    space.couple.you.name,
+                    darkTheme,
+                    language,
+                    onDismiss = { usDialog = null },
+                    onRenameUser = onRenameUser,
+                    onSetDarkTheme = onSetDarkTheme,
+                    onSetLanguage = onSetLanguage,
+                )
             }
             navigation.overlay?.let { route ->
                 Dialog(

@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.di.CommonModules
 import com.alad1nks.you2.di.PlatformModules
 import com.alad1nks.you2.feature.designsystem.theme.AppTheme
@@ -17,10 +18,10 @@ fun App() {
     KoinApplication(configuration = koinConfiguration { modules(CommonModules + PlatformModules) }) {
         val viewModel = koinViewModel<MainViewModel>()
         val darkTheme by viewModel.darkTheme.collectAsState(isSystemInDarkTheme())
-        val language by viewModel.language.collectAsState(null)
+        val language by viewModel.language.collectAsState(Language.SYSTEM)
         val space by viewModel.space.collectAsState()
         AppTheme(darkTheme = darkTheme) {
-            CompositionLocalProvider(LocalAppLocale provides language?.code) {
+            CompositionLocalProvider(LocalAppLocale provides language.code) {
                 AppContent(
                     space,
                     viewModel.today,
@@ -29,6 +30,11 @@ fun App() {
                     viewModel::saveWish,
                     viewModel::restoreWish,
                     viewModel::editMemory,
+                    darkTheme,
+                    language,
+                    viewModel::renameUser,
+                    viewModel::changeDarkTheme,
+                    viewModel::changeLanguage,
                 )
             }
         }

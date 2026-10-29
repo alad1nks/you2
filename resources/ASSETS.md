@@ -45,7 +45,8 @@ resvg at intrinsic size and displayed at 20 dp with theme-aware tints. Details
 reuse the existing category covers, heart, more and calendar resources.
 
 English is the first UI reference. Interface copy is in `values/strings.xml`;
-Russian and Kazakh translations and the language picker are part of the Us stage.
+Russian and Kazakh translations are in `values-ru` and `values-kk` and are available
+through the Us language picker (including the system locale).
 Demo wish content represents user-authored data and intentionally remains English.
 
 Add/Edit wish reuses the local category illustrations as the demo image collection.
@@ -63,3 +64,12 @@ cards and completion summaries at 24 dp; restore appears in the menu at 20 dp.
 Completed details reuse category covers in the reference's 144 dp high slot,
 plus the existing back, more, edit and delete icons. Cover radius follows the
 shared 24 dp plan token. System status and gesture bars remain platform-owned.
+
+Us uses the original chevron from `12:106` (20 x 20), connection check from
+`12:90` (16 x 16), and sign-out icon from `12:124` (20 x 20), downloaded on
+2026-10-29. Unmodified SVGs are `design/icons/chevron.svg`, `connected.svg`,
+and `sign_out.svg`. resvg renders their intrinsic sizes into the corresponding
+`icon_*.png` resources, displayed at the same dp sizes with theme-aware tints.
+The card reuses the original heart at 24 dp and the shared Avatar component at
+56 dp with heading typography. The existing header and navigation retain their
+original assets. The disabled sign-out action includes a visible demo explanation.

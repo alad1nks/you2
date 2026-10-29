@@ -1,2 +1,173 @@
 <resources>
+    <string name="brand">you2</string>
+    <string name="wishes">Желания</string>
+    <string name="memories">Воспоминания</string>
+    <string name="us">Мы</string>
+    <string name="our_wishes">Наши желания</string>
+    <string name="our_memories">Наши воспоминания</string>
+    <string name="shared_space">Наше общее пространство</string>
+    <string name="subtitle">Маленькие идеи. Больше моментов вместе.</string>
+    <string name="couple_label">Вы и %1$s</string>
+    <string name="pair_initials">%1$s + %2$s</string>
+    <string name="summary_title">Небольшой список для вас двоих</string>
+    <string name="summary_counts">Желаний: %1$d · Воспоминаний: %2$d</string>
+    <string name="connected">Вместе</string>
+    <string name="all_wishes">Все желания</string>
+    <string name="adventures">Приключения</string>
+    <string name="presents">Подарки</string>
+    <string name="plans">Планы</string>
+    <string name="movies">Фильмы</string>
+    <string name="tv_series">Сериалы</string>
+    <string name="other">Другое</string>
+    <string name="add_wish">Добавить желание</string>
+    <string name="edit_wish">Изменить желание</string>
+    <string name="delete_wish">Удалить желание</string>
+    <string name="delete_title">Удалить это желание?</string>
+    <string name="delete_message">«%1$s» исчезнет из общего списка — вашего и %2$s.</string>
+    <string name="cannot_undo">Это действие нельзя отменить.</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete_action">Удалить</string>
+    <string name="back">Назад</string>
+    <string name="more_options">Другие действия</string>
+    <string name="title_label">Название желания</string>
+    <string name="description_label">Описание</string>
+    <string name="save">Сохранить</string>
+    <string name="no_date">Без даты</string>
+    <string name="upcoming_deadline">До %1$s</string>
+    <string name="due_today">Сегодня · %1$s</string>
+    <string name="overdue">Просрочено · %1$s</string>
+    <string name="upcoming_range">%1$s · Впереди</string>
+    <string name="in_progress">%1$s · Сейчас</string>
+    <string name="ended">%1$s · Период завершён</string>
+    <string name="date_range">%1$s – %2$s</string>
+    <string name="added_by">Добавлено: %1$s</string>
+    <string name="completed">Выполнено</string>
+    <string name="mark_done">Отметить выполненным</string>
+    <string name="details">Маленькие детали</string>
+    <string name="scaffold_notice">Новые функции воспоминаний и настроек скоро появятся.</string>
+    <string name="character_count">%1$d / %2$d</string>
+    <string name="field_error">Проверьте значение</string>
+    <string name="empty_list">Здесь пока нет желаний.</string>
+    <string name="demo_signout">Выход недоступен в этой демоверсии для пары.</string>
+    <string name="edit_memory">Изменить воспоминание</string>
+    <string name="restore">Вернуть в желания</string>
+    <string name="waiting_to_happen">Ещё впереди</string>
+    <string name="newest_first">Сначала новые ↓</string>
+    <string name="wish_attribution">%1$s · Добавлено: %2$s</string>
+    <string name="wish_attribution_you">%1$s · Добавлено вами</string>
+    <string name="empty_wishes">Ваш общий список ждёт первого желания.</string>
+    <string name="empty_wishes_hint">Добавьте небольшую идею для вас двоих.</string>
+    <string name="no_filter_results">В этой категории пока нет желаний.</string>
+    <string name="show_all_wishes">Показать все желания</string>
+    <string name="formatted_date">%1$d %2$s %3$d</string>
+    <string name="same_month_range">%1$d–%2$d %3$s %4$d</string>
+    <string-array name="short_months">
+        <item>янв</item>
+        <item>фев</item>
+        <item>мар</item>
+        <item>апр</item>
+        <item>май</item>
+        <item>июн</item>
+        <item>июл</item>
+        <item>авг</item>
+        <item>сен</item>
+        <item>окт</item>
+        <item>ноя</item>
+        <item>дек</item>
+    </string-array>
+    <string name="added_by_you">Добавлено вами</string>
+    <string name="for_couple">Для вас и %1$s</string>
+    <string name="shared_wish">В вашем общем списке</string>
+    <string name="shared_adventures">Небольшое путешествие для вас двоих.</string>
+    <string name="shared_presents">Маленькие сюрпризы, общее счастье.</string>
+    <string name="shared_plans">Немного времени для вас двоих.</string>
+    <string name="shared_movies">Киновечер для вас двоих.</string>
+    <string name="shared_tv_series">Ваша следующая любимая история.</string>
+    <string name="shared_other">Место найдётся для каждой идеи.</string>
+    <string name="completion_hint">Отметьте выполненным, чтобы перенести в воспоминания.</string>
+    <string name="add_to_wishes">Добавить в наши желания</string>
+    <string name="save_changes">Сохранить изменения</string>
+    <string name="form_subtitle">Большие приключения. Маленькие радости.</string>
+    <string name="form_title">Чем бы вы хотели заняться?</string>
+    <string name="title_hint">Обязательно. Дайте желанию имя.</string>
+    <string name="choose_category">Выберите категорию</string>
+    <string name="when_label">Когда?</string>
+    <string name="deadline_mode">Срок</string>
+    <string name="range_mode">Период</string>
+    <string name="complete_by">Выполнить до</string>
+    <string name="start_date">Начало</string>
+    <string name="end_date">Конец</string>
+    <string name="dates_error">Выберите даты. Конец не может быть раньше начала.</string>
+    <string name="no_date_hint">Оставьте желание без срока.</string>
+    <string name="deadline_hint">День, к которому вы хотите исполнить желание.</string>
+    <string name="range_hint">«Без даты» очищает обе даты.</string>
+    <string name="main_image">Обложка</string>
+    <string name="add_main_image">Добавить обложку</string>
+    <string name="replace_image">Заменить изображение</string>
+    <string name="remove_image">Убрать изображение</string>
+    <string name="cover_hint">Необязательно. Иначе используем иллюстрацию категории.</string>
+    <string name="cover_selected_hint">Ваше изображение заменяет иллюстрацию категории.</string>
+    <string name="form_description">Ещё немного деталей</string>
+    <string name="description_hint">Необязательно. Что сделает этот момент особенным?</string>
+    <string name="description_images">Изображения к описанию</string>
+    <string name="remove_attachment">Удалить вложение %1$d</string>
+    <string name="add_images">Добавить изображения</string>
+    <string name="attachments_hint">Выберите несколько изображений. Они появятся в описании отдельно от обложки.</string>
+    <string name="form_shared_title">Желание для вас двоих</string>
+    <string name="form_shared_hint">%1$s увидит его в вашем общем списке.</string>
+    <string name="local_images_hint">Выберите из демонстрационной коллекции</string>
+    <string name="choose_date">Выбрать дату</string>
+    <string name="select_date">Выберите дату</string>
+    <string name="choose_images">Выберите изображения</string>
+    <string name="use_images">Использовать выбранные</string>
+    <string name="memories_subtitle">Когда-то желание. Теперь наша история.</string>
+    <string name="memories_summary">Исполнено желаний: %1$d</string>
+    <string name="memories_summary_hint">За всё, что мы сделали вместе.</string>
+    <string name="memory_count">Воспоминаний: %1$d</string>
+    <string name="one_memory">1 воспоминание</string>
+    <string name="memory_month">%1$s %2$d</string>
+    <string name="memory_metadata">%1$s · %2$s</string>
+    <string name="empty_memories">Ваши истории ещё впереди.</string>
+    <string name="empty_memories_hint">Выполните желание, чтобы сохранить его здесь.</string>
+    <string name="back_to_memories">К воспоминаниям</string>
+    <string name="completed_on">Выполнено %1$s</string>
+    <string name="completed_by">Выполнение отмечено: %1$s · В воспоминаниях</string>
+    <string name="completed_by_you">Вы отметили выполнение · В воспоминаниях</string>
+    <string name="original_wish">Желание</string>
+    <string name="little_memory">Небольшое воспоминание</string>
+    <string name="no_memory">Воспоминание пока не добавлено.</string>
+    <string name="memory_hint">Необязательно. Сохраните момент, проведённый вместе.</string>
+    <string-array name="full_months">
+        <item>Январь</item>
+        <item>Февраль</item>
+        <item>Март</item>
+        <item>Апрель</item>
+        <item>Май</item>
+        <item>Июнь</item>
+        <item>Июль</item>
+        <item>Август</item>
+        <item>Сентябрь</item>
+        <item>Октябрь</item>
+        <item>Ноябрь</item>
+        <item>Декабрь</item>
+    </string-array>
+    <string name="us_subtitle">Наш маленький уголок мира.</string>
+    <string name="us_couple_hint">Маленькое место для ваших больших идей.</string>
+    <string name="wishes_to_try">Желаний впереди</string>
+    <string name="memories_made">Воспоминаний</string>
+    <string name="make_it_yours">Настройте под себя</string>
+    <string name="your_profile">Ваш профиль</string>
+    <string name="edit_profile">Изменить</string>
+    <string name="appearance">Оформление</string>
+    <string name="language">Язык</string>
+    <string name="light_theme">Светлая</string>
+    <string name="dark_theme">Тёмная</string>
+    <string name="system_language">Как в системе</string>
+    <string name="english_language">English</string>
+    <string name="russian_language">Русский</string>
+    <string name="kazakh_language">Қазақша</string>
+    <string name="profile_name">Ваше имя</string>
+    <string name="profile_hint">Ваше имя в общем пространстве. Изменения действуют до перезапуска демо.</string>
+    <string name="sign_out">Выйти</string>
+    <string name="shared_space_note">Желания и воспоминания принадлежат вам обоим.</string>
 </resources>
