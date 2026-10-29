@@ -18,8 +18,7 @@ Registration, couple linking, networking and persistent wish storage are not yet
 
 The file groups screens by user flow: guest experience, Us and pairing, Wishes, adding a wish,
 wish details, and Memories. It also includes the color palette, typography, form elements,
-components, and category illustrations. These mockups describe the intended interface;
-the implemented stages, visual checks and remaining device checks are described in [the UI plan](docs/paired-user-ui-plan.md).
+components, and category illustrations. These mockups describe the intended interface.
 
 ## Included features
 
