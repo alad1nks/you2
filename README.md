@@ -1,37 +1,51 @@
 # you2
 
-you2 helps couples keep wishes, shared plans, and memories in one place. It is built with
-Kotlin Multiplatform and Compose Multiplatform for Android, iOS, Desktop (JVM), and Web (Kotlin/JS).
+you2 is an application for couples to keep wishes, shared plans, and memories in one place.
+From little surprises to big adventures, it gives partners a shared space for the things they want
+to do, give, watch, and enjoy together.
 
-## Current application
+The application is under active development, built with Kotlin Multiplatform and Compose Multiplatform
+for Android, iOS, Desktop (JVM), and Web (Kotlin/JS).
 
-The app currently opens a paired demo for Alex and Mia with 12 active wishes and four memories.
-It supports the following flows:
+## Product experience
+
+The product journey starts with exploring you2, creating an account or logging in, and connecting
+with a partner through an invitation. Each person has their own account; together they build a wish
+list and turn completed wishes into memories. The Figma design defines guest, unpaired, and paired
+states around three main areas:
 
 - **Wishes:** browse and filter six categories (adventures, presents, plans, movies, TV series,
   and other), view details, and create or edit wishes with descriptions, dates, covers, and attachments.
-- **Dates:** leave a wish undated, set a deadline, or choose a date range. Badges show upcoming,
+  Leave a wish undated, set a deadline, or choose a date range. Badges show upcoming,
   current, and overdue dates; dates do not automatically complete wishes.
 - **Memories:** complete a wish, browse completed wishes grouped by completion month, edit a memory,
   restore a wish to the active list, or delete it after confirmation.
 - **Us:** see the couple and shared counters, edit your display name, switch between light and dark
   themes, and select English, Russian, Kazakh, or the system language.
 
-Wish titles are required and limited to 80 characters; descriptions and memory text are limited to
-500 characters. The image picker uses bundled category illustrations as demo images.
+## Development status
 
-The paired space is held in memory. Wishes, memories, and profile edits reset when the app restarts
-(or the browser page reloads). Theme and language preferences use platform storage. All date-sensitive
-behavior uses the fixed demo date **October 28, 2026**, supplied by `DemoDateSource`.
+The shared Wishes, Memories, and Us screens are implemented, including wish creation/editing,
+date validation, completion and restoration, memory editing, profile-name editing, and theme/language
+controls. Wish titles are required and limited to 80 characters; descriptions and memory text are
+limited to 500 characters.
 
-Account registration, authentication, couple linking, synchronization between devices, durable wish
-storage, and picking personal photos are not implemented. Sign out is disabled with an explanation
-in the UI. Demo wish content stays in English when the interface language changes.
+Account registration, authentication, partner invitations and linking, synchronization between devices,
+durable wish storage, and personal photo selection remain to be implemented. Sign out is currently
+disabled. These are outstanding parts of the application’s development.
+
+For development and UI validation, the current build starts with seeded data for Alex and Mia:
+12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
+profile changes reset on restart or browser reload. `DemoDateSource` currently supplies the fixed date
+**October 28, 2026**. The image picker currently uses bundled illustrations. Theme and language
+preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
 ## Design and resources
 
 The [you2 Figma design](https://www.figma.com/design/4NzqzLDkOMaaGQGKYhEeuT/you2-%E2%80%94-Our-wishes)
-is the product design reference. The implemented app currently covers the paired experience.
+is the product design reference. It covers guest previews, Us and pairing, wish lists and timing,
+wish forms and images, wish details and actions, and completed wishes and memories. Its design system
+defines the shared colors, typography, forms, components, spacing, and category illustrations.
 Shared strings, Roboto fonts, and category illustrations live in [resources](resources).
 See [the asset guide](resources/ASSETS.md) for their locations, provenance, and usage.
 
@@ -125,7 +139,7 @@ Build and archive the full iOS application in Xcode.
 | [webApp](webApp) | Browser entry point, HTML, and CSS |
 | [shared](shared) | App composition, paired navigation, Wishes/Memories/Us screens, forms, `MainViewModel`, and platform adapters |
 | [core/model](core/model) | Couple, user, wish, completion, category, date, image, and language models; draft validation and date status |
-| [core/data](core/data) | `WishesRepository`, its in-memory implementation, demo data/date source, and `SettingsRepository` |
+| [core/data](core/data) | `WishesRepository`, its current in-memory implementation, seeded development data/date source, and `SettingsRepository` |
 | [core/domain](core/domain) | Theme and language read/write use cases |
 | [core/storage/common](core/storage/common) | `Storage`, `StorageImpl`, and `AppPreferences` contracts |
 | [core/storage/datastore](core/storage/datastore) | DataStore Preferences for Android, iOS, and JVM |
@@ -171,7 +185,7 @@ The existing `core/domain` use cases cover settings; wish operations currently g
 
 Add interface copy to `resources/src/commonMain/composeResources/values/strings.xml` and update
 `values-ru` and `values-kk` alongside it. Use shared design tokens and `AppIcons` for new UI.
-Changes to demo data or the fixed date can affect many screenshot references.
+Changes to seeded development data or the fixed date can affect many screenshot references.
 
 ## Validation
 

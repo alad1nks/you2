@@ -23,8 +23,9 @@ The application loads these local resources without requesting Figma image URLs.
 
 `WishCover` crops its supplied image to the available width and defaults to 160 dp height.
 Completed wish details use a 144 dp cover. Both use the shared `AppShapes.image` 24 dp corner radius.
-The Add/Edit wish image picker reuses these illustrations for demo covers and attachments;
-`WishImage` stores a category key rather than a file or remote URL.
+The current Add/Edit wish image picker reuses these illustrations for covers and attachments.
+Personal photo selection remains to be implemented. `WishImage` currently stores a category key
+rather than a file or remote URL.
 
 ## UI icons
 
@@ -62,7 +63,7 @@ They were sourced from `googlefonts/roboto-2` (`src/hinted`); their Apache 2.0 l
 
 English interface strings live in `src/commonMain/composeResources/values/strings.xml`.
 Russian and Kazakh translations live in `values-ru` and `values-kk`. The Us language picker also offers
-the system locale. Keep all three string sets updated together. Demo wish titles, descriptions, and
+the system locale. Keep all three string sets updated together. Seeded wish titles, descriptions, and
 memories represent user-authored content and remain English when the UI language changes.
 
 After changing visible assets, fonts, or copy, run the shared screenshot verification described in
