@@ -1,169 +1,96 @@
 # you2
 
-you2 is an application for couples in a relationship to keep their shared wishes and plans in one place.
-Each partner registers an account, then they add each other to form a couple.
-Once connected, both partners can add wishes with descriptions to a shared list.
+you2 is an application for couples to keep wishes, shared plans, and memories in one place.
+From little surprises to big adventures, it gives partners a shared space for the things they want
+to do, give, watch, and enjoy together.
 
-The list can include adventures, presents, shared plans, movies, TV series, and other things
-the couple would like to experience or enjoy together.
+The application is under active development, built with Kotlin Multiplatform and Compose Multiplatform
+for Android, iOS, Desktop (JVM), and Web (Kotlin/JS).
 
-The current implementation is an interactive paired-user prototype in Kotlin Multiplatform
-for Android, iOS, Desktop (JVM), and Web (Kotlin/JS), with a shared
-Compose Multiplatform interface. A paired demo starts with Alex and Mia, 12 active wishes and four memories.
-Registration, couple linking, networking and persistent wish storage are not yet implemented.
+## Product experience
 
-## Design
+The product journey starts with exploring you2, creating an account or logging in, and connecting
+with a partner through an invitation. Each person has their own account; together they build a wish
+list and turn completed wishes into memories. The Figma design defines guest, unpaired, and paired
+states around three main areas:
 
-[Open the you2 mockup in Figma](https://www.figma.com/design/4NzqzLDkOMaaGQGKYhEeuT/you2-%E2%80%94-Our-wishes?m=auto&t=vTKmz2XhR6KV8954-1).
+- **Wishes:** browse and filter six categories (adventures, presents, plans, movies, TV series,
+  and other), view details, and create or edit wishes with descriptions, dates, covers, and attachments.
+  Leave a wish undated, set a deadline, or choose a date range. Badges show upcoming,
+  current, and overdue dates; dates do not automatically complete wishes.
+- **Memories:** complete a wish, browse completed wishes grouped by completion month, edit a memory,
+  restore a wish to the active list, or delete it after confirmation.
+- **Us:** see the couple and shared counters, edit your display name, switch between light and dark
+  themes, and select English, Russian, Kazakh, or the system language.
 
-The file groups screens by user flow: guest experience, Us and pairing, Wishes, adding a wish,
-wish details, and Memories. It also includes the color palette, typography, form elements,
-components, and category illustrations. These mockups describe the intended interface.
+## Development status
 
-## Included features
+The shared Wishes, Memories, and Us screens are implemented, including wish creation/editing,
+date validation, completion and restoration, memory editing, profile-name editing, and theme/language
+controls. Wish titles are required and limited to 80 characters; descriptions and memory text are
+limited to 500 characters.
 
-- Shared UI built with Compose Multiplatform and Material 3, with separate entry points for four platforms.
-- Separate layers for UI, use cases, the repository, models, and settings storage.
-- Koin dependency injection, with ViewModel and Flow for UI state.
-- Theme and language persistence using DataStore on Android/iOS/Desktop and `localStorage` in the browser.
-- Light and dark color schemes, with infrastructure for system, Russian, English, and Kazakh language selection.
-- A Gradle version catalog and ktlint for Kotlin code.
+Account registration, authentication, partner invitations and linking, synchronization between devices,
+durable wish storage, and personal photo selection remain to be implemented. Sign out is currently
+disabled. These are outstanding parts of the application’s development.
 
-The app provides Wishes, Memories and Us, category filters, validated add/edit forms with dates and demo images,
-wish details, completion, memory editing, restoration and confirmed deletion.
-Us shows shared counters, profile editing, theme and language settings. English, Russian and Kazakh UI resources,
-Roboto and bundled Figma illustrations are included. Sign out is unavailable in this paired demo.
-A Koin singleton repository exposes the demo through StateFlow and keeps all screens in sync.
-The injected demo date is October 28, 2026; restarting resets wishes, while theme/language preferences persist.
-JVM UI tests cover the complete wish lifecycle, narrow screens, enlarged text and screenshot regressions.
-Real mobile keyboard/inset/back-gesture behavior and iOS still need device/macOS validation.
-The GitHub Actions workflows need to be adapted before use in a new repository.
+For development and UI validation, the current build starts with seeded data for Alex and Mia:
+12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
+profile changes reset on restart or browser reload. `DemoDateSource` currently supplies the fixed date
+**October 28, 2026**. The image picker currently uses bundled illustrations. Theme and language
+preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
-## Environment
+## Design and resources
 
-Dependencies were checked on October 4, 2026 against Google Maven, Maven Central, Gradle Plugin Portal,
-and official releases. The selected versions were the latest stable releases; alpha, beta, and RC releases were excluded.
-The dependency version source of truth is
-[gradle/libs.versions.toml](gradle/libs.versions.toml).
+The [you2 Figma design](https://www.figma.com/design/4NzqzLDkOMaaGQGKYhEeuT/you2-%E2%80%94-Our-wishes)
+is the product design reference. It covers guest previews, Us and pairing, wish lists and timing,
+wish forms and images, wish details and actions, and completed wishes and memories. Its design system
+defines the shared colors, typography, forms, components, spacing, and category illustrations.
+Shared strings, Roboto fonts, and category illustrations live in [resources](resources).
+See [the asset guide](resources/ASSETS.md) for their locations, provenance, and usage.
 
-| Component | Project value |
-| --- | --- |
-| Kotlin (including Compose Compiler and kotlin-test) | 2.4.20 |
-| Compose Multiplatform | 1.12.1 |
-| Material 3 | 1.9.0 |
-| Android Gradle Plugin | 9.4.1 |
-| Gradle Wrapper | 9.8.0 |
-| Gradle daemon JVM | Amazon JDK 21 |
-| Android SDK | compile/target 37, min 28 |
-| iOS deployment target | 18.2 |
-| Koin / DataStore / Coroutines | 4.2.2 / 1.2.1 / 1.11.0 |
-| AndroidX Activity | 1.13.0 |
-| JetBrains Lifecycle | 2.11.0 |
-| Kotlin Wrappers (kotlin-browser) | 2026.9.3 |
-| ktlint Gradle plugin / ktlint CLI | 14.2.0 / 1.8.0 |
-| Foojay resolver convention | 1.0.0 |
+## Development setup
 
-Material 3 is versioned separately from Compose Multiplatform: `1.9.0` was the latest stable release of the
-[Material 3 artifact](https://repo.maven.apache.org/maven2/org/jetbrains/compose/material3/material3/maven-metadata.xml)
-at the time of the check. Koin module versions are aligned through the BOM. The ktlint engine version is set explicitly:
-updating the Gradle plugin alone does not guarantee that its CLI is updated.
+Clone the application and open the repository in your IDE:
 
-To check for updates, see the [Kotlin releases](https://kotlinlang.org/docs/releases.html),
-[Compose Multiplatform releases](https://github.com/JetBrains/compose-multiplatform/releases),
-[AGP releases](https://developer.android.com/build/releases/about-agp), and
-[current Gradle release](https://services.gradle.org/versions/current).
-According to the [Kotlin compatibility table](https://kotlinlang.org/docs/gradle-configure-project.html),
-Kotlin 2.4.20 is fully tested with Gradle up to 9.7.0 and AGP up to 9.3.1.
-This project uses newer stable versions, Gradle 9.8.0 and AGP 9.4.1. This combination is outside the stated
-fully supported range, so verify builds for all targets when updating dependencies.
+```bash
+git clone https://github.com/alad1nks/you2.git
+cd you2
+```
 
-Git and an installed JDK are required. Gradle daemon JVM criteria are defined in
-[gradle/gradle-daemon-jvm.properties](gradle/gradle-daemon-jvm.properties): version 21, vendor Amazon.
-If a matching JVM is unavailable, Gradle can download it from the URLs in that file; the first build requires network access.
-Android's `jvmTarget = JVM_11` setting controls bytecode compatibility, not the JVM version used to run Gradle.
+Install Git and a JDK to launch the Gradle wrapper. The Gradle daemon is configured to use
+Amazon JDK 21 in [gradle/gradle-daemon-jvm.properties](gradle/gradle-daemon-jvm.properties).
+Gradle can download the matching JVM; initial builds require network access for toolchains and dependencies.
 
-For Android, install the Android SDK with API 37 and configure its location through Android Studio
-or `sdk.dir` in a local `local.properties` file (excluded from Git).
-iOS requires macOS and Xcode with an SDK that supports the project's deployment target.
-The configured targets are `iosArm64` and `iosSimulatorArm64`; there is no Intel simulator target (`iosX64`).
-Web requires a browser. Gradle is configured for Kotlin/JS; there is no Wasm target.
+Platform requirements:
 
-## Creating your own project
+- **Android:** Android Studio and Android SDK API 37. Configure the SDK through Android Studio or
+  `sdk.dir` in an untracked `local.properties`. The minimum supported Android API is 28.
+- **Desktop:** a desktop environment and the configured JDK.
+- **Web:** a browser. The project targets Kotlin/JS.
+- **iOS:** macOS and Xcode with support for the configured iOS 18.2 deployment target.
+  Kotlin targets are `iosArm64` and `iosSimulatorArm64`.
 
-1. Clone the template into a directory for your new application:
-
-   ```bash
-   git clone https://github.com/alad1nks/you2.git my-app
-   cd my-app
-   ```
-
-2. Create an empty repository and replace `origin` with your URL:
-
-   ```bash
-   git remote set-url origin https://github.com/YOUR_ACCOUNT/YOUR_REPOSITORY.git
-   ```
-
-   This preserves the template's history. Before the first push, adapt or remove the workflows
-   described in the GitHub Actions section.
-
-3. Rename the application using the table below. For example, use `myapp` as the project name
-   and `com.example.myapp` as the base package. IDE refactoring can update Kotlin package declarations,
-   imports, and source directories together.
-
-| What to replace | Location |
-| --- | --- |
-| `rootProject.name = "you2"` | [settings.gradle.kts](settings.gradle.kts) |
-| `com.alad1nks.you2`: packages, imports, and matching directories | Kotlin sources across all modules |
-| `namespace` in all Android/KMP modules; the application's `applicationId`, `versionCode`, and `versionName` | Module `build.gradle.kts` files, including [androidApp/build.gradle.kts](androidApp/build.gradle.kts) |
-| Android app name and icons | [strings.xml](androidApp/src/main/res/values/strings.xml), `mipmap*` and `drawable*` resources in `androidApp/src/main/res` |
-| `PRODUCT_NAME`, `PRODUCT_BUNDLE_IDENTIFIER`, `TEAM_ID`, and versions | [Config.xcconfig](iosApp/Configuration/Config.xcconfig) |
-| References to `you2.app` and the iOS icon | [project.pbxproj](iosApp/iosApp.xcodeproj/project.pbxproj), [AppIcon.appiconset](iosApp/iosApp/Assets.xcassets/AppIcon.appiconset) |
-| Desktop `mainClass`, `packageName`, and `packageVersion` | [desktopApp/build.gradle.kts](desktopApp/build.gradle.kts) |
-| Desktop window title | [main.kt](desktopApp/src/main/kotlin/com/alad1nks/you2/main.kt) |
-| Web page title | [index.html](webApp/src/webMain/resources/index.html) |
-| Settings filename `you2.preferences_pb` | [StorageDataStoreFileName.kt](core/storage/datastore/src/commonMain/kotlin/com/alad1nks/you2/core/storage/datastore/StorageDataStoreFileName.kt) |
-| Publishing repository, artifact paths and names, and commit author | [.github/workflows](.github/workflows) |
-
-The current iOS bundle identifier is `com.alad1nks.you2.you2$(TEAM_ID)`;
-set your own identifier explicitly. `TEAM_ID` is also used for application signing.
-
-Product resources use the explicit package `com.alad1nks.you2.resources.generated`.
-After changing the package name in `resources/build.gradle.kts`, update the resource imports.
-Do not edit generated files in `build/`.
-
-You can keep the module names `shared`, `androidApp`, `desktopApp`, and `webApp`, and the framework name `Shared`.
-If you rename `Shared`, update both `baseName` in `shared/build.gradle.kts`
-and `import Shared` in `iosApp/iosApp/ContentView.swift`. If you rename `webApp`, also check
-the `webApp.js` script name in the HTML. If you rename `shared`, update the Gradle command in the Xcode build phase.
-
-4. Check for remaining references to the original project (this command uses ripgrep):
-
-   ```bash
-   rg -n --hidden -g '!.git' -g '!**/build/**' -g '!.gradle' -g '!.kotlin' \
-     'you2|alad1nks' .
-   ```
-
-5. Sync the project in your IDE, build the required platforms, and replace the demo screen with your own.
-   Update this README for your application.
+Dependency versions are defined in [gradle/libs.versions.toml](gradle/libs.versions.toml),
+with Gradle 9.8.0 pinned in [the wrapper configuration](gradle/wrapper/gradle-wrapper.properties).
+The project currently pins Kotlin 2.4.20, Compose Multiplatform 1.12.1, Material 3 1.9.0,
+and Android Gradle Plugin 9.4.1. These are repository settings, not a claim about the latest releases.
 
 ## Running and building
 
-Run commands from the repository root. On Windows, use `gradlew.bat` instead of `./gradlew`.
-If the executable bit is missing on Unix, run `chmod +x gradlew`.
-The commands below match the configured modules and plugins; running them requires the appropriate SDK/JDK.
+Run commands from the repository root. In PowerShell, replace `./gradlew` with `.\gradlew.bat`.
+On Unix, run `chmod +x gradlew` if needed.
 
 ### Android
 
 ```bash
 ./gradlew :androidApp:assembleDebug
+./gradlew :androidApp:installDebug
 ```
 
-APK: `androidApp/build/outputs/apk/debug/androidApp-debug.apk`.
-To run the application, select the `androidApp` module and a device/emulator in Android Studio, or install the build
-on a connected device with `./gradlew :androidApp:installDebug`.
-
-There is currently no release signing configuration in `androidApp/build.gradle.kts`.
-Configure signing before publishing the application; the build does not currently read the CI `SIGNING_*` variables.
+The APK is written to `androidApp/build/outputs/apk/debug/androidApp-debug.apk`.
+Installation requires a connected device or emulator. You can also run the `androidApp` configuration
+from Android Studio. The application ID is `com.alad1nks.you2`.
 
 ### Desktop
 
@@ -171,11 +98,9 @@ Configure signing before publishing the application; the build does not currentl
 ./gradlew :desktopApp:run
 ```
 
-The distribution settings include DMG, MSI, and DEB.
-Build a package for the current OS with `./gradlew :desktopApp:packageDistributionForCurrentOS`;
-outputs are placed in `desktopApp/build/compose/binaries`.
-Build each format on its corresponding OS.
-The Compose Hot Reload plugin is not enabled in the current configuration, so `hotRun` is not included in these instructions.
+Build an installer for the current OS with `:desktopApp:packageDistributionForCurrentOS`.
+DMG, MSI, and DEB formats are configured; build each on its corresponding OS.
+Outputs are under `desktopApp/build/compose/binaries`.
 
 ### Web
 
@@ -183,189 +108,142 @@ The Compose Hot Reload plugin is not enabled in the current configuration, so `h
 ./gradlew :webApp:jsBrowserDevelopmentRun
 ```
 
-For a production build:
-
-```bash
-./gradlew :webApp:jsBrowserDistribution
-```
-
-Static build files are placed in `webApp/build/dist/js/productionExecutable`.
-The entry point and HTML are in `webApp/src/webMain`.
+Build static production files with `:webApp:jsBrowserDistribution`.
+Outputs are in `webApp/build/dist/js/productionExecutable`.
+The browser entry point, HTML, and CSS are under `webApp/src/webMain`.
 
 ### iOS
 
-Open [iosApp/iosApp.xcodeproj](iosApp/iosApp.xcodeproj) in Xcode, select the `iosApp` scheme,
-and choose a device or ARM64 simulator. To run on a device, configure the development team and bundle identifier
-in `Config.xcconfig`, then run the application from Xcode.
+Open [iosApp/iosApp.xcodeproj](iosApp/iosApp.xcodeproj) in Xcode and select the `iosApp` scheme
+and an ARM64 simulator or device. For a device build, configure the team and bundle identifier in
+[iosApp/Configuration/Config.xcconfig](iosApp/Configuration/Config.xcconfig).
 
-The `Compile Kotlin Framework` build phase calls `:shared:embedAndSignAppleFrameworkForXcode`.
-The shared UI is exported in the static `Shared` framework, which is used by SwiftUI.
-To check the framework build separately on macOS:
+Xcode's `Compile Kotlin Framework` phase runs `:shared:embedAndSignAppleFrameworkForXcode`.
+SwiftUI hosts the shared Compose UI through `MainViewController` in the static `Shared` framework.
+To build just the framework on macOS:
 
 ```bash
 ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 ./gradlew :shared:linkReleaseFrameworkIosArm64
 ```
 
-These commands build the framework. Build the complete iOS application and distribution archive in Xcode.
+Build and archive the full iOS application in Xcode.
 
-## Project structure
+## Code organization
 
-| Module / directory | Purpose |
+| Module / directory | Responsibility |
 | --- | --- |
-| [androidApp](androidApp) | Android application, `MainActivity`, manifest, and launcher resources |
-| [iosApp](iosApp) | Xcode project and SwiftUI wrapper around `MainViewController` |
-| [desktopApp](desktopApp) | JVM entry point, window, and installer settings |
-| [webApp](webApp) | Browser entry point using `ComposeViewport`, HTML, and CSS |
-| [shared](shared) | Paired UI scaffold, navigation, `MainViewModel`, DI setup, and platform adapters |
-| [core/model](core/model) | Shared models, currently `Language` |
-| [core/domain](core/domain) | `GetDarkTheme`, `SetDarkTheme`, `GetLanguage`, `SetLanguage`, and their implementations |
-| [core/data](core/data) | `SettingsRepository`, which converts the stored language code into a model |
-| [core/storage/common](core/storage/common) | `AppPreferences` and `Storage` contracts, and the shared `StorageImpl` implementation |
+| [androidApp](androidApp) | Android activity, manifest, launcher resources, and application build |
+| [iosApp](iosApp) | Xcode project and SwiftUI host |
+| [desktopApp](desktopApp) | JVM entry point, window, and installer configuration |
+| [webApp](webApp) | Browser entry point, HTML, and CSS |
+| [shared](shared) | App composition, paired navigation, Wishes/Memories/Us screens, forms, `MainViewModel`, and platform adapters |
+| [core/model](core/model) | Couple, user, wish, completion, category, date, image, and language models; draft validation and date status |
+| [core/data](core/data) | `WishesRepository`, its current in-memory implementation, seeded development data/date source, and `SettingsRepository` |
+| [core/domain](core/domain) | Theme and language read/write use cases |
+| [core/storage/common](core/storage/common) | `Storage`, `StorageImpl`, and `AppPreferences` contracts |
 | [core/storage/datastore](core/storage/datastore) | DataStore Preferences for Android, iOS, and JVM |
-| [core/storage/js](core/storage/js) | `AppPreferences` implementation using browser `localStorage` |
-| [core/designsystem](core/designsystem) | `AppTheme` and Material 3 color schemes |
-| [resources](resources) | Shared string resources and the `AppResource` placeholder |
+| [core/storage/js](core/storage/js) | Browser `localStorage` preferences |
+| [core/designsystem](core/designsystem) | Shared components, Material icons, color schemes, typography, spacing, and shape tokens |
+| [resources](resources) | Shared localized strings, fonts, and category images |
+| [design/icons](design/icons) | Original SVG design references |
 
-Settings access flow:
+`App()` creates Koin with `CommonModules + PlatformModules`. `MainViewModel` observes the singleton
+`WishesRepository.space` StateFlow and sends wish, memory, and profile mutations directly to that
+repository. Screens share the same `PairedSpace`, so lists and counters update together.
+`PairedNavigation` holds tab, filter, and overlay state.
 
-```text
-App → MainViewModel → GetDarkTheme / GetLanguage
-                           ↓
-                    SettingsRepository
-                           ↓
-                    Storage → AppPreferences
-                                  ├─ DataStore (Android / iOS / JVM)
-                                  └─ localStorage (JS)
-```
+Settings follow a separate path: `MainViewModel` calls the theme/language use cases in `core/domain`,
+which delegate to `SettingsRepository`, then `Storage` and the platform `AppPreferences` implementation.
+`App` applies those flows through `AppTheme` and `LocalAppLocale`.
 
-`core/domain` depends on `core/data` and `core/model`; `core/data` depends on `core/model` and `core/storage/common`.
-The concrete storage implementation is connected through the platform dependencies of `shared`.
+Shared Kotlin code lives in `src/commonMain`, with platform adapters in `androidMain`, `iosMain`,
+`jvmMain`, and `jsMain`. Platform entry points use `webMain` in `webApp` and `main` in `desktopApp`.
 
-Shared code lives in `src/commonMain`; platform code lives in `androidMain`, `iosMain`, `jvmMain`, and `jsMain`.
-The entry point is in `webMain` for `webApp` and in `main` for `desktopApp`.
-Platform differences use `expect`/`actual`: `getPlatform`, `LocalAppLocale`,
-`PlatformModules`, and the DataStore file path.
+### Settings persistence
 
-`App()` creates a `KoinApplication` and loads `CommonModules + PlatformModules`.
-Shared modules register the ViewModel, use cases, repository, and `Storage`;
-platform modules register the `AppPreferences` implementation.
-
-### Theme, language, and settings persistence
-
-`MainViewModel` exposes theme and language flows. `App` applies the theme through `AppTheme` and the language through `LocalAppLocale`.
-The `SetDarkTheme` and `SetLanguage` use cases are already registered in Koin, but UI to invoke them still needs to be added.
-
-If no theme is saved, `GetDarkThemeImpl` returns `false`: the light theme is selected after settings are read.
-The system theme is only used as the initial value when the UI subscribes.
-An unknown or missing language code maps to `Language.SYSTEM`.
+Us exposes both the theme and language controls. An unset theme resolves to light after preferences
+load; the system theme is only the initial subscription value. Missing or unknown language codes
+resolve to `Language.SYSTEM`.
 
 | Platform | Settings location |
 | --- | --- |
 | Android | `filesDir/you2.preferences_pb` |
-| iOS | The application's Documents directory, `you2.preferences_pb` |
+| iOS | App Documents directory, `you2.preferences_pb` |
 | Desktop | `java.io.tmpdir/you2.preferences_pb` |
-| Web | `localStorage` for the current origin, using the keys `dark_theme` and `language` |
+| Web | Current origin's `localStorage`, keys `dark_theme` and `language` |
 
-For Desktop, choose a persistent user data directory before releasing the application:
-the temporary directory may be cleared, and template copies that retain the same filename share the same path.
-On Web, applications on the same origin use the same keys; add an application-specific prefix if needed.
+Desktop settings currently use a temporary directory and may be cleared by the OS.
+A durable user data directory is still needed for release. Browser settings are scoped to the origin.
 
-### Extending the template
+### Making changes
 
-- Add shared screens and their ViewModels to `shared`; place shared visual components and themes in `core/designsystem`.
-- Place models in `core/model`, use cases in `core/domain`, and data access in `core/data`.
-- For a new setting, extend `Storage`/`StorageImpl`, the repository, and the use cases.
-  If strings and Booleans are sufficient, the existing `AppPreferences` already provides the required operations.
-- Register dependencies in the DI module for the relevant layer. Connect new Koin modules through
-  `CommonModules` or the platform `PlatformModules`; add new Gradle modules through `settings.gradle.kts`.
-- Add strings to `resources/src/commonMain/composeResources/values/strings.xml`
-  and translations to `values-ru` and `values-kk`. To add a language, extend `Language` and add a resource directory.
-  The demo image is currently stored separately in `shared/src/commonMain/composeResources`.
+Keep product screens and their state in `shared`, reusable visuals in `core/designsystem`, models in
+`core/model`, and data access in `core/data`. Register dependencies in the owning module's Koin module.
+The existing `core/domain` use cases cover settings; wish operations currently go directly through
+`WishesRepository`.
 
-## Checks
+Add interface copy to `resources/src/commonMain/composeResources/values/strings.xml` and update
+`values-ru` and `values-kk` alongside it. Use shared design tokens and `AppIcons` for new UI.
+Changes to seeded development data or the fixed date can affect many screenshot references.
+
+## Validation
 
 ```bash
 ./gradlew ktlintCheck
-./gradlew ktlintFormat
-```
-
-The first command checks Kotlin code; the second fixes formatting and modifies files.
-Rules are defined in [.editorconfig](.editorconfig); ktlint is enabled for all Gradle subprojects.
-The CLI version is set by `ktlint-cli` in the version catalog, independently of the `ktlint` Gradle plugin version.
-
-The `shared` module's `commonTest` source set has a `kotlin-test` dependency.
-Add shared tests to `shared/src/commonTest/kotlin` and run them on the JVM:
-
-```bash
 ./gradlew :shared:jvmTest
 ```
 
-For tests in other modules, first add the appropriate dependencies to their `build.gradle.kts` files.
-A successful task with no test sources does not indicate test coverage.
+`ktlintCheck` checks Kotlin formatting using [.editorconfig](.editorconfig).
+`ktlintFormat` applies formatting changes. `:shared:jvmTest` runs the common tests and JVM tests:
 
-### Screenshot tests
+- Common tests cover draft validation, date boundaries, repository transitions, navigation state,
+  and grouping memories by completion date.
+- JVM Compose tests cover forms, wish details, memories, profile/settings controls, and complete
+  wish lifecycle journeys in English, Russian, and Kazakh, including narrow screens and enlarged text.
+- `SettingsTest` checks repository/domain recreation against a shared in-memory storage fake;
+  it does not validate native persistence on a device.
 
-Shared Compose UI screenshots use [Roborazzi](https://github.com/takahirom/roborazzi) on the JVM,
-without an emulator. `AppScreenshotTest` covers the paired scaffold in light and dark themes at 412 x 917,
-a narrow 320 x 917 viewport and all six category illustrations. It renders production `AppContent`
-with fixed shared demo data, density and font scale of 1. It also exercises tab switching,
-filter retention, form dismissal and returning from details without losing the list position.
-Settings storage and DI are bypassed. `PairedFoundationTest` checks date boundaries, validation,
-repository transitions and navigation state.
-These tests cover shared layout and styling; they do not check native Android/iOS rendering.
+### Screenshot regression tests
 
-Run on Windows with JDK 21, matching the `windows-2025` PR runner. Desktop font rendering can differ
-across operating systems; do not regenerate these reference images on macOS or Linux.
+Roborazzi captures the production shared UI on the JVM without an emulator. References are committed
+under `shared/src/jvmTest/screenshots`. Generate and verify them on **Windows with JDK 21**, matching
+the `windows-2025` CI runner; font rendering can differ on other operating systems.
 
 ```powershell
-# Compare against committed images; missing or changed references fail the build.
-./gradlew.bat :shared:verifyRoborazziJvm
+# Compare with committed references; missing or changed images fail verification.
+.\gradlew.bat :shared:verifyRoborazziJvm
 
-# After an intentional UI change, regenerate and visually review the PNG diff before committing.
-./gradlew.bat :shared:recordRoborazziJvm
-./gradlew.bat :shared:verifyRoborazziJvm
+# For intentional visual changes, record and review the changed PNGs before committing.
+.\gradlew.bat :shared:recordRoborazziJvm
+.\gradlew.bat :shared:verifyRoborazziJvm
 ```
 
-Reference PNGs live in `shared/src/jvmTest/screenshots` and must be committed with UI changes.
-Verification never updates them. A plain `:shared:jvmTest` runs the interactions but does not verify pixels;
-use `verifyRoborazziJvm` for visual regression checking. Add new scenarios under `shared/src/jvmTest/kotlin`
-with unique screenshot names in the same reference directory.
-
-PRs run the **Screenshot tests** job independently of platform builds. Its `screenshot-test-reports`
-artifact contains Roborazzi comparison images/reports and JVM test results, including on failure.
+A plain `:shared:jvmTest` runs interactions without pixel verification. Screenshot scenarios cover
+light/dark themes, category covers, empty and long content, dialogs, forms, details, and complete journeys.
 Local reports are in `shared/build/reports/roborazzi` and `shared/build/reports/tests/jvmTest`;
-comparison images are in `shared/build/outputs/roborazzi`.
+comparison images are under `shared/build/outputs/roborazzi`.
 
-## GitHub Actions
+These JVM checks do not establish native Android/iOS rendering or keyboard, inset, and back-gesture
+behavior. Those need device/emulator validation, and iOS builds require macOS/Xcode.
 
-The current workflows contain settings from the original project and require changes when cloning.
-They use Amazon Corretto 21, matching the Gradle daemon criteria, and these Actions versions:
-`actions/checkout@v7.0.1`, `actions/setup-java@v6.0.1`,
-`actions/upload-artifact@v7.0.1`, `actions/download-artifact@v8.0.1`.
+## CI and distribution
 
-The project does not use Firebase: its SDK, configuration files, and build secrets are not required.
-The JS check runs `:webApp:jsBrowserProductionWebpack` without preparing external configuration files.
-
-| Workflow | Trigger | Defined behavior |
+| Workflow | Trigger | Configured behavior |
 | --- | --- | --- |
-| [pr-checks.yml](.github/workflows/pr-checks.yml) | PR targeting `main` or `master` | Android, iOS framework, JS, and JVM builds, plus ktlint and screenshot verification |
-| [build-and-deploy.yml](.github/workflows/build-and-deploy.yml) | Push to `main` | Release APK and an artifact commit to `alad1nks/alad1nks.github.io` |
-| [release.yml](.github/workflows/release.yml) | Push to `release/*` | Release AAB and an artifact commit to the same external repository |
+| [pr-checks.yml](.github/workflows/pr-checks.yml) | PRs targeting `main` or `master` | Android debug build, iOS release framework, production JS webpack build, shared JVM jars, ktlint, and Windows screenshot verification |
+| [build-and-deploy.yml](.github/workflows/build-and-deploy.yml) | Push to `main` | Tests and release APK build, followed by APK publication under `you2` in `alad1nks/alad1nks.github.io` |
+| [release.yml](.github/workflows/release.yml) | Push to `release/*` | Tests and release AAB build, followed by AAB publication to the same repository |
 
-Before enabling CI in your project:
+CI uses Amazon Corretto 21. The screenshot job uploads `screenshot-test-reports`, including on failure.
+The PR JVM command is `jvmJar`, which does not build the Desktop application entry point;
+use `:desktopApp:jar` or run/package Desktop when changing that target. The iOS job builds the Kotlin
+framework, not the complete SwiftUI app.
 
-1. Replace or remove `post-build`, which publishes files to `alad1nks/alad1nks.github.io`.
-   Update the commit author name and email, `you2` paths, and artifact names.
-2. When changing the project JVM, update Java in CI and the criteria in `gradle-daemon-jvm.properties` together.
-3. Configure Android release signing and the actual output file paths. The workflows currently decode a keystore
-   and pass `SIGNING_*` variables, but Gradle does not use them, so this does not produce the expected signed APK.
-4. Use module-specific tasks: for the JVM application, use `:desktopApp:jar` or a packaging task;
-   for shared JVM code, use `:shared:jvmJar`. The current `jvmJar` invocation does not check the Desktop entry point.
-   Building `linkReleaseFrameworkIosArm64` checks the framework, not the complete SwiftUI application.
+Release publication is configured but still has a signing gap: the workflows decode a keystore and
+pass `SIGNING_*` variables, while `androidApp/build.gradle.kts` has no release signing configuration
+and does not consume those variables. The APK workflow also expects `androidApp-release.apk`.
+Signing and the resulting artifact filename must be aligned before relying on release publication.
 
-The existing workflows use the secrets `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`,
-`KEYSTORE_PASSWORD`, and `ACCESS_TOKEN`.
-These belong to those CI workflows; they are not needed for a local debug build of the template.
-If you keep the release workflows, add the keystore and private configuration files to `.gitignore`
-before creating them locally; there are currently no specific ignore rules for them.
+The publishing workflows reference `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `KEYSTORE_PASSWORD`,
+and `ACCESS_TOKEN`. These are not required for local debug builds or the PR checks.
