@@ -1,12 +1,16 @@
-# Paired UI assets
+# you2 assets
 
-Category illustrations are original image fills from the you2 Figma file
-`4NzqzLDkOMaaGQGKYhEeuT`, section `23:118`, downloaded on 2026-10-28.
-The original 1891 ? 832 fills are resized with Lanczos to 1092 ? 480 pixels,
-matching the 364 ? 160 dp slot at 3? density, then encoded as lossless WebP.
-The six illustrations total 1,989,900 bytes. A decoded RGBA image needs about 2 MiB
-instead of 6 MiB for the original resolution. Displays above 3? may upscale the image.
-They are bundled locally; the application never requests temporary Figma URLs.
+Runtime resources live in `src/commonMain/composeResources` within this module and use the generated
+package `com.alad1nks.you2.resources.generated`. Shared UI components and resource mappings live in
+`core/designsystem` and `shared`.
+
+## Category illustrations
+
+The six bundled lossless WebP images are in `src/commonMain/composeResources/drawable`.
+They are image fills exported from the you2 Figma file `4NzqzLDkOMaaGQGKYhEeuT`, section `23:118`,
+on October 28, 2026. The original 1891 x 832 fills were resized with Lanczos to 1092 x 480 pixels,
+matching a 364 x 160 dp slot at 3x density. Higher densities may upscale them.
+The application loads these local resources without requesting Figma image URLs.
 
 | Resource | Figma image layer |
 | --- | --- |
@@ -17,52 +21,50 @@ They are bundled locally; the application never requests temporary Figma URLs.
 | `category_tv_series.webp` | `23:371` |
 | `category_other.webp` | `23:428` |
 
-`WishCover` resolves these by category and uses a full-width, 160 dp high crop.
-The image corner radius follows the implementation plan's 24 dp token.
-The reference category panels use 364 × 160 slots with a 20 px radius.
+`WishCover` crops its supplied image to the available width and defaults to 160 dp height.
+Completed wish details use a 144 dp cover. Both use the shared `AppShapes.image` 24 dp corner radius.
+The Add/Edit wish image picker reuses these illustrations for demo covers and attachments;
+`WishImage` stores a category key rather than a file or remote URL.
 
 ## UI icons
 
-UI icons use `org.jetbrains.compose.material:material-icons-extended:1.7.3`
-through `AppIcons` in `core/designsystem`. This dependency is versioned separately
-from Compose Multiplatform and Material 3. Icons use the Outlined family;
-back, restore and sign-out use AutoMirrored variants. Existing dp sizes,
-theme tints and accessibility descriptions are preserved.
+Use `AppIcons` in `core/designsystem` for interface icons. It wraps Material Outlined vectors from
+`org.jetbrains.compose.material:material-icons-extended`; the version is pinned independently of
+Compose Multiplatform and Material 3 in `gradle/libs.versions.toml`.
 
-| Previous PNG | Material icon |
+| Use | AppIcons property |
 | --- | --- |
-| `icon_heart` | `FavoriteBorder` |
-| `icon_memories` | `PhotoLibrary` |
-| `icon_couple` | `People` |
-| `icon_more` | `MoreHoriz` |
-| `icon_calendar` | `CalendarToday` |
-| `icon_back` | `ArrowBack` (AutoMirrored) |
-| `icon_edit` | `Edit` |
-| `icon_delete` | `DeleteOutline` |
-| `icon_add_image` | `AddPhotoAlternate` |
-| `icon_add` | `Add` |
-| `icon_completed` | `CheckCircle` |
-| `icon_restore` | `Undo` (AutoMirrored) |
-| `icon_chevron` | `ChevronRight` |
-| `icon_connected` | `Link` |
-| `icon_sign_out` | `Logout` (AutoMirrored) |
+| Wishes | `FavoriteBorder` |
+| Memories | `PhotoLibrary` |
+| Couple / Us | `People` |
+| More actions | `MoreHoriz` |
+| Dates | `CalendarToday` |
+| Back | `ArrowBack` (AutoMirrored) |
+| Edit | `Edit` |
+| Delete | `DeleteOutline` |
+| Add image | `AddPhotoAlternate` |
+| Add wish | `Add` |
+| Completed wish | `CheckCircle` |
+| Restore wish | `Undo` (AutoMirrored) |
+| Row navigation | `ChevronRight` |
+| Connected status | `Link` |
+| Sign out | `Logout` (AutoMirrored) |
 
-The old `icon_*.png` resources have been removed. Original Figma SVG exports in
-`design/icons` remain as design references, not runtime assets. Category images,
-fonts and application launcher icons are unchanged.
+Original SVG exports under `design/icons` are design references. Runtime UI icons are Material vectors;
+launcher icons are maintained separately in the platform applications.
 
 ## Fonts and copy
 
-Roboto Regular, Medium and Bold are bundled from
-[googlefonts/roboto-2](https://github.com/googlefonts/roboto-2/tree/main/src/hinted).
-Their Apache 2.0 license is included in `Roboto-LICENSE.txt`.
+Roboto Regular, Medium, and Bold are bundled in `src/commonMain/composeResources/font`.
+They were sourced from `googlefonts/roboto-2` (`src/hinted`); their Apache 2.0 license is included in
+[Roboto-LICENSE.txt](Roboto-LICENSE.txt). `AppTheme` applies them through the typography in
+`core/designsystem`.
 
-English is the first UI reference. Interface copy is in `values/strings.xml`;
-Russian and Kazakh translations are in `values-ru` and `values-kk` and are available
-through the Us language picker (including the system locale).
-Demo wish content represents user-authored data and intentionally remains English.
+English interface strings live in `src/commonMain/composeResources/values/strings.xml`.
+Russian and Kazakh translations live in `values-ru` and `values-kk`. The Us language picker also offers
+the system locale. Keep all three string sets updated together. Demo wish titles, descriptions, and
+memories represent user-authored content and remain English when the UI language changes.
 
-Add/Edit wish reuses the local category illustrations as the demo image collection.
-Completed details use category covers in a 144 dp high slot with the shared
-24 dp corner radius. System status and gesture bars remain platform-owned.
-The disabled sign-out action includes a visible demo explanation.
+After changing visible assets, fonts, or copy, run the shared screenshot verification described in
+[the README](../README.md#screenshot-regression-tests). Record new references on Windows with JDK 21
+only for intentional changes, and visually review the PNG differences before committing.
