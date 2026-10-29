@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.core.model.PairedSpace
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.AppTextField
 import com.alad1nks.you2.feature.designsystem.components.Avatar
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
@@ -48,10 +49,6 @@ import com.alad1nks.you2.resources.generated.dark_theme
 import com.alad1nks.you2.resources.generated.demo_signout
 import com.alad1nks.you2.resources.generated.edit_profile
 import com.alad1nks.you2.resources.generated.english_language
-import com.alad1nks.you2.resources.generated.icon_chevron
-import com.alad1nks.you2.resources.generated.icon_connected
-import com.alad1nks.you2.resources.generated.icon_heart
-import com.alad1nks.you2.resources.generated.icon_sign_out
 import com.alad1nks.you2.resources.generated.kazakh_language
 import com.alad1nks.you2.resources.generated.language
 import com.alad1nks.you2.resources.generated.light_theme
@@ -70,7 +67,6 @@ import com.alad1nks.you2.resources.generated.us_subtitle
 import com.alad1nks.you2.resources.generated.wishes_to_try
 import com.alad1nks.you2.resources.generated.your_profile
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal enum class UsDialog { PROFILE, APPEARANCE, LANGUAGE }
@@ -105,7 +101,7 @@ internal fun LazyListScope.usContent(
                         MaterialTheme.typography.headlineMedium,
                     )
                     Icon(
-                        painterResource(Res.drawable.icon_heart),
+                        AppIcons.FavoriteBorder,
                         null,
                         Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.primary,
@@ -131,7 +127,7 @@ internal fun LazyListScope.usContent(
                     horizontalArrangement = Arrangement.spacedBy(AppSpacing.xs),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(painterResource(Res.drawable.icon_connected), null, Modifier.size(16.dp))
+                    Icon(AppIcons.Link, null, Modifier.size(16.dp))
                     Text(stringResource(Res.string.connected), style = MaterialTheme.typography.bodySmall)
                 }
             }
@@ -178,7 +174,7 @@ internal fun LazyListScope.usContent(
     item {
         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
             OutlinedButton({}, Modifier.fillMaxWidth().heightIn(min = 52.dp), enabled = false) {
-                Icon(painterResource(Res.drawable.icon_sign_out), null, Modifier.size(20.dp))
+                Icon(AppIcons.Logout, null, Modifier.size(20.dp))
                 Text(stringResource(Res.string.sign_out), Modifier.padding(start = AppSpacing.small))
             }
             Text(
@@ -248,7 +244,7 @@ private fun SettingsRow(label: StringResource, value: String, onClick: () -> Uni
                 color = MaterialTheme.colorScheme.secondary,
             )
             Icon(
-                painterResource(Res.drawable.icon_chevron),
+                AppIcons.ChevronRight,
                 null,
                 Modifier.size(20.dp),
                 tint = MaterialTheme.colorScheme.secondary,

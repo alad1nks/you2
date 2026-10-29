@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.core.model.PairedSpace
 import com.alad1nks.you2.core.model.WishCategory
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.CategoryChip
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.WishCard
@@ -39,7 +40,6 @@ import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.all_wishes
 import com.alad1nks.you2.resources.generated.empty_wishes
 import com.alad1nks.you2.resources.generated.empty_wishes_hint
-import com.alad1nks.you2.resources.generated.icon_heart
 import com.alad1nks.you2.resources.generated.newest_first
 import com.alad1nks.you2.resources.generated.no_filter_results
 import com.alad1nks.you2.resources.generated.our_wishes
@@ -51,7 +51,6 @@ import com.alad1nks.you2.resources.generated.waiting_to_happen
 import com.alad1nks.you2.resources.generated.wish_attribution
 import com.alad1nks.you2.resources.generated.wish_attribution_you
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 /** Stable sorting preserves the repository's newest-first insertion order within a day. */
@@ -84,7 +83,7 @@ internal fun LazyListScope.wishesContent(
             ) {
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.background) {
                     Icon(
-                        painterResource(Res.drawable.icon_heart),
+                        AppIcons.FavoriteBorder,
                         null,
                         Modifier.padding(AppSpacing.listGap).size(AppDimensions.icon),
                         tint = MaterialTheme.colorScheme.primary,

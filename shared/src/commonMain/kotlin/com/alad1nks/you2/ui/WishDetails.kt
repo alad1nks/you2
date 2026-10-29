@@ -31,6 +31,7 @@ import com.alad1nks.you2.core.model.Couple
 import com.alad1nks.you2.core.model.Wish
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.Avatar
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.DeleteWishDialog
@@ -56,11 +57,6 @@ import com.alad1nks.you2.resources.generated.details
 import com.alad1nks.you2.resources.generated.edit_memory
 import com.alad1nks.you2.resources.generated.edit_wish
 import com.alad1nks.you2.resources.generated.for_couple
-import com.alad1nks.you2.resources.generated.icon_back
-import com.alad1nks.you2.resources.generated.icon_delete
-import com.alad1nks.you2.resources.generated.icon_edit
-import com.alad1nks.you2.resources.generated.icon_heart
-import com.alad1nks.you2.resources.generated.icon_restore
 import com.alad1nks.you2.resources.generated.little_memory
 import com.alad1nks.you2.resources.generated.mark_done
 import com.alad1nks.you2.resources.generated.memories
@@ -76,7 +72,6 @@ import com.alad1nks.you2.resources.generated.shared_tv_series
 import com.alad1nks.you2.resources.generated.shared_wish
 import com.alad1nks.you2.resources.generated.waiting_to_happen
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -105,7 +100,7 @@ internal fun WishDetails(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 TextButton(onBack) {
-                    Icon(painterResource(Res.drawable.icon_back), null, Modifier.size(20.dp))
+                    Icon(AppIcons.ArrowBack, null, Modifier.size(20.dp))
                     Text(stringResource(if (completion == null) Res.string.back else Res.string.memories))
                 }
                 WishMenu(
@@ -113,20 +108,20 @@ internal fun WishDetails(
                     { menuOpen = it },
                     buildList {
                         if (wish.completion == null) {
-                            add(MenuAction(stringResource(Res.string.edit_wish), onEdit, Res.drawable.icon_edit))
+                            add(MenuAction(stringResource(Res.string.edit_wish), onEdit, AppIcons.Edit))
                         } else {
                             add(
                                 MenuAction(
                                     stringResource(Res.string.edit_memory),
                                     { editMemoryOpen = true },
-                                    Res.drawable.icon_edit,
+                                    AppIcons.Edit,
                                 ),
                             )
                             add(
                                 MenuAction(
                                     stringResource(Res.string.restore),
                                     onRestore,
-                                    Res.drawable.icon_restore,
+                                    AppIcons.Undo,
                                 ),
                             )
                         }
@@ -134,7 +129,7 @@ internal fun WishDetails(
                             MenuAction(
                                 stringResource(Res.string.delete_wish),
                                 { deleteOpen = true },
-                                Res.drawable.icon_delete,
+                                AppIcons.DeleteOutline,
                                 true,
                             ),
                         )
@@ -264,7 +259,7 @@ internal fun WishDetails(
                         ) {
                             Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
                                 Icon(
-                                    painterResource(Res.drawable.icon_heart),
+                                    AppIcons.FavoriteBorder,
                                     null,
                                     Modifier.padding(AppSpacing.small).size(AppDimensions.icon),
                                     tint = MaterialTheme.colorScheme.primary,

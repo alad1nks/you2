@@ -45,6 +45,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
@@ -69,9 +71,6 @@ import com.alad1nks.you2.resources.generated.delete_action
 import com.alad1nks.you2.resources.generated.delete_message
 import com.alad1nks.you2.resources.generated.delete_title
 import com.alad1nks.you2.resources.generated.field_error
-import com.alad1nks.you2.resources.generated.icon_calendar
-import com.alad1nks.you2.resources.generated.icon_heart
-import com.alad1nks.you2.resources.generated.icon_more
 import com.alad1nks.you2.resources.generated.more_options
 import com.alad1nks.you2.resources.generated.pair_initials
 import org.jetbrains.compose.resources.DrawableResource
@@ -114,7 +113,7 @@ fun CoupleHeader(yourName: String, partnerName: String, modifier: Modifier = Mod
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                painterResource(Res.drawable.icon_heart),
+                AppIcons.FavoriteBorder,
                 null,
                 Modifier.size(AppDimensions.icon),
                 tint = MaterialTheme.colorScheme.primary,
@@ -181,7 +180,7 @@ fun WishCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     date: @Composable () -> Unit = {},
-    symbol: DrawableResource = Res.drawable.icon_heart,
+    symbol: ImageVector = AppIcons.FavoriteBorder,
     completed: Boolean = false,
 ) {
     Card(
@@ -206,7 +205,7 @@ fun WishCard(
                     },
             ) {
                 Icon(
-                    painterResource(symbol),
+                    symbol,
                     null,
                     Modifier.padding(horizontal = 10.dp, vertical = 14.dp).size(AppDimensions.icon),
                     tint = MaterialTheme.colorScheme.primary,
@@ -335,7 +334,7 @@ fun DateBadge(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                painterResource(Res.drawable.icon_calendar),
+                AppIcons.CalendarToday,
                 null,
                 Modifier.size(AppDimensions.dateIcon),
                 tint = foreground,
@@ -348,7 +347,7 @@ fun DateBadge(text: String, tone: StatusTone, modifier: Modifier = Modifier) {
 data class MenuAction(
     val label: String,
     val onClick: () -> Unit,
-    val icon: DrawableResource? = null,
+    val icon: ImageVector? = null,
     val destructive: Boolean = false,
 )
 
@@ -358,7 +357,7 @@ fun WishMenu(expanded: Boolean, onExpandedChange: (Boolean) -> Unit, actions: Li
     Box {
         IconButton(onClick = { onExpandedChange(true) }) {
             Icon(
-                painterResource(Res.drawable.icon_more),
+                AppIcons.MoreHoriz,
                 stringResource(Res.string.more_options),
                 Modifier.size(AppDimensions.icon),
                 tint = MaterialTheme.colorScheme.primary,
@@ -401,7 +400,7 @@ fun WishMenu(expanded: Boolean, onExpandedChange: (Boolean) -> Unit, actions: Li
                             icon ->
                             {
                                 Icon(
-                                    painterResource(icon),
+                                    icon,
                                     null,
                                     Modifier.size(20.dp),
                                     tint =
