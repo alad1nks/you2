@@ -1,2 +1,173 @@
 <resources>
+    <string name="brand">you2</string>
+    <string name="wishes">Тілектер</string>
+    <string name="memories">Естеліктер</string>
+    <string name="us">Біз</string>
+    <string name="our_wishes">Біздің тілектер</string>
+    <string name="our_memories">Біздің естеліктер</string>
+    <string name="shared_space">Біздің ортақ кеңістік</string>
+    <string name="subtitle">Шағын идеялар. Бірге өткізетін сәттер көп болсын.</string>
+    <string name="couple_label">Сіз және %1$s</string>
+    <string name="pair_initials">%1$s + %2$s</string>
+    <string name="summary_title">Екеуіңізге арналған шағын тізім</string>
+    <string name="summary_counts">Тілектер: %1$d · Естеліктер: %2$d</string>
+    <string name="connected">Біргеміз</string>
+    <string name="all_wishes">Барлық тілектер</string>
+    <string name="adventures">Шытырман оқиғалар</string>
+    <string name="presents">Сыйлықтар</string>
+    <string name="plans">Жоспарлар</string>
+    <string name="movies">Фильмдер</string>
+    <string name="tv_series">Сериалдар</string>
+    <string name="other">Басқа</string>
+    <string name="add_wish">Тілек қосу</string>
+    <string name="edit_wish">Тілекті өңдеу</string>
+    <string name="delete_wish">Тілекті жою</string>
+    <string name="delete_title">Осы тілекті жою керек пе?</string>
+    <string name="delete_message">«%1$s» сіз бен %2$s үшін ортақ тізімнен жойылады.</string>
+    <string name="cannot_undo">Бұл әрекетті кері қайтару мүмкін емес.</string>
+    <string name="cancel">Бас тарту</string>
+    <string name="delete_action">Жою</string>
+    <string name="back">Артқа</string>
+    <string name="more_options">Басқа әрекеттер</string>
+    <string name="title_label">Тілек атауы</string>
+    <string name="description_label">Сипаттама</string>
+    <string name="save">Сақтау</string>
+    <string name="no_date">Күні белгісіз</string>
+    <string name="upcoming_deadline">%1$s дейін</string>
+    <string name="due_today">Бүгін · %1$s</string>
+    <string name="overdue">Мерзімі өтті · %1$s</string>
+    <string name="upcoming_range">%1$s · Алда</string>
+    <string name="in_progress">%1$s · Қазір</string>
+    <string name="ended">%1$s · Кезең аяқталды</string>
+    <string name="date_range">%1$s – %2$s</string>
+    <string name="added_by">Қосқан: %1$s</string>
+    <string name="completed">Орындалды</string>
+    <string name="mark_done">Орындалды деп белгілеу</string>
+    <string name="details">Шағын мәліметтер</string>
+    <string name="scaffold_notice">Естеліктер мен баптаулардың жаңа мүмкіндіктері жақында қосылады.</string>
+    <string name="character_count">%1$d / %2$d</string>
+    <string name="field_error">Мәнді тексеріңіз</string>
+    <string name="empty_list">Мұнда әлі тілектер жоқ.</string>
+    <string name="demo_signout">Жұпқа арналған осы демода шығу мүмкін емес.</string>
+    <string name="edit_memory">Естелікті өңдеу</string>
+    <string name="restore">Тілектерге қайтару</string>
+    <string name="waiting_to_happen">Әлі алда</string>
+    <string name="newest_first">Жаңалары алдымен ↓</string>
+    <string name="wish_attribution">%1$s · Қосқан: %2$s</string>
+    <string name="wish_attribution_you">%1$s · Сіз қостыңыз</string>
+    <string name="empty_wishes">Ортақ тізіміңіз алғашқы тілекті күтуде.</string>
+    <string name="empty_wishes_hint">Екеуіңізге арналған шағын идея қосыңыз.</string>
+    <string name="no_filter_results">Бұл санатта әлі тілектер жоқ.</string>
+    <string name="show_all_wishes">Барлық тілектерді көрсету</string>
+    <string name="formatted_date">%1$d %2$s %3$d</string>
+    <string name="same_month_range">%1$d–%2$d %3$s %4$d</string>
+    <string-array name="short_months">
+        <item>қаң</item>
+        <item>ақп</item>
+        <item>нау</item>
+        <item>сәу</item>
+        <item>мам</item>
+        <item>мау</item>
+        <item>шіл</item>
+        <item>там</item>
+        <item>қыр</item>
+        <item>қаз</item>
+        <item>қар</item>
+        <item>жел</item>
+    </string-array>
+    <string name="added_by_you">Сіз қостыңыз</string>
+    <string name="for_couple">Сіз және %1$s үшін</string>
+    <string name="shared_wish">Ортақ тізіміңізде</string>
+    <string name="shared_adventures">Екеуіңізге арналған шағын саяхат.</string>
+    <string name="shared_presents">Шағын тосынсыйлар, ортақ бақыт.</string>
+    <string name="shared_plans">Екеуіңізге арналған аздаған уақыт.</string>
+    <string name="shared_movies">Екеуіңізге арналған кино кеші.</string>
+    <string name="shared_tv_series">Келесі сүйікті хикаяңыз.</string>
+    <string name="shared_other">Әрбір идеяға орын бар.</string>
+    <string name="completion_hint">Естеліктерге көшіру үшін орындалды деп белгілеңіз.</string>
+    <string name="add_to_wishes">Тілектерімізге қосу</string>
+    <string name="save_changes">Өзгерістерді сақтау</string>
+    <string name="form_subtitle">Үлкен шытырман оқиғалар. Күнделікті шағын қуаныштар.</string>
+    <string name="form_title">Не істегіңіз келеді?</string>
+    <string name="title_hint">Міндетті. Тілекке атау беріңіз.</string>
+    <string name="choose_category">Санатты таңдаңыз</string>
+    <string name="when_label">Қашан?</string>
+    <string name="deadline_mode">Мерзім</string>
+    <string name="range_mode">Күндер аралығы</string>
+    <string name="complete_by">Осы күнге дейін орындау</string>
+    <string name="start_date">Басталу күні</string>
+    <string name="end_date">Аяқталу күні</string>
+    <string name="dates_error">Күндерді таңдаңыз. Аяқталу күні басталу күнінен ерте болмауы керек.</string>
+    <string name="no_date_hint">Тілекті мерзімсіз қалдырыңыз.</string>
+    <string name="deadline_hint">Тілекті орындағыңыз келетін күн.</string>
+    <string name="range_hint">«Күні белгісіз» екі күнді де өшіреді.</string>
+    <string name="main_image">Мұқаба</string>
+    <string name="add_main_image">Мұқаба қосу</string>
+    <string name="replace_image">Суретті ауыстыру</string>
+    <string name="remove_image">Суретті алып тастау</string>
+    <string name="cover_hint">Міндетті емес. Әйтпесе санат суретін қолданамыз.</string>
+    <string name="cover_selected_hint">Суретіңіз санат суретін алмастырады.</string>
+    <string name="form_description">Тағы біраз мәлімет</string>
+    <string name="description_hint">Міндетті емес. Бұл сәтті не ерекше етеді?</string>
+    <string name="description_images">Сипаттама суреттері</string>
+    <string name="remove_attachment">%1$d тіркемесін жою</string>
+    <string name="add_images">Суреттер қосу</string>
+    <string name="attachments_hint">Бірнеше сурет таңдаңыз. Олар сипаттамада мұқабадан бөлек көрсетіледі.</string>
+    <string name="form_shared_title">Екеуіңізге арналған тілек</string>
+    <string name="form_shared_hint">%1$s оны ортақ тізіміңізден көреді.</string>
+    <string name="local_images_hint">Демо суреттер жинағынан таңдаңыз</string>
+    <string name="choose_date">Күнді таңдау</string>
+    <string name="select_date">Күнді таңдаңыз</string>
+    <string name="choose_images">Суреттерді таңдаңыз</string>
+    <string name="use_images">Таңдалғандарын қолдану</string>
+    <string name="memories_subtitle">Бір кезде тілек еді. Енді ортақ хикаямыз.</string>
+    <string name="memories_summary">Орындалған тілектер: %1$d</string>
+    <string name="memories_summary_hint">Бірге жасаған барлығымыз үшін.</string>
+    <string name="memory_count">Естеліктер: %1$d</string>
+    <string name="one_memory">1 естелік</string>
+    <string name="memory_month">%1$s %2$d</string>
+    <string name="memory_metadata">%1$s · %2$s</string>
+    <string name="empty_memories">Хикаяларыңыз әлі алда.</string>
+    <string name="empty_memories_hint">Тілекті орындасаңыз, ол осында сақталады.</string>
+    <string name="back_to_memories">Естеліктерге оралу</string>
+    <string name="completed_on">%1$s орындалды</string>
+    <string name="completed_by">Орындалды деп белгілеген: %1$s · Естеліктерде</string>
+    <string name="completed_by_you">Сіз орындалды деп белгіледіңіз · Естеліктерде</string>
+    <string name="original_wish">Тілек</string>
+    <string name="little_memory">Шағын естелік</string>
+    <string name="no_memory">Естелік әлі қосылмаған.</string>
+    <string name="memory_hint">Міндетті емес. Бірге өткізген сәтті сақтаңыз.</string>
+    <string-array name="full_months">
+        <item>Қаңтар</item>
+        <item>Ақпан</item>
+        <item>Наурыз</item>
+        <item>Сәуір</item>
+        <item>Мамыр</item>
+        <item>Маусым</item>
+        <item>Шілде</item>
+        <item>Тамыз</item>
+        <item>Қыркүйек</item>
+        <item>Қазан</item>
+        <item>Қараша</item>
+        <item>Желтоқсан</item>
+    </string-array>
+    <string name="us_subtitle">Әлемдегі өзіміздің шағын бұрышымыз.</string>
+    <string name="us_couple_hint">Үлкен идеяларыңызға арналған шағын кеңістік.</string>
+    <string name="wishes_to_try">Алдағы тілектер</string>
+    <string name="memories_made">Естеліктер</string>
+    <string name="make_it_yours">Өзіңізге бейімдеңіз</string>
+    <string name="your_profile">Профиліңіз</string>
+    <string name="edit_profile">Өңдеу</string>
+    <string name="appearance">Сыртқы көрініс</string>
+    <string name="language">Тіл</string>
+    <string name="light_theme">Ашық</string>
+    <string name="dark_theme">Қараңғы</string>
+    <string name="system_language">Жүйедегідей</string>
+    <string name="english_language">English</string>
+    <string name="russian_language">Русский</string>
+    <string name="kazakh_language">Қазақша</string>
+    <string name="profile_name">Атыңыз</string>
+    <string name="profile_hint">Ортақ кеңістіктегі атыңыз. Өзгерістер демо қайта іске қосылғанша сақталады.</string>
+    <string name="sign_out">Шығу</string>
+    <string name="shared_space_note">Тілектер мен естеліктер екеуіңізге ортақ.</string>
 </resources>

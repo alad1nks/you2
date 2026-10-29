@@ -147,7 +147,7 @@ class AppScreenshotTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f, 1f), LocalAppLocale provides "en") {
                     AppTheme(darkTheme = darkTheme) {
-                        AppContent(DemoSpace.create(), DemoDateSource.today())
+                        AppContent(DemoSpace.create(), DemoDateSource.today(), darkTheme = darkTheme)
                     }
                 }
             }

@@ -133,4 +133,23 @@
         <item>May</item><item>June</item><item>July</item><item>August</item>
         <item>September</item><item>October</item><item>November</item><item>December</item>
     </string-array>
+    <string name="us_subtitle">Our own little corner of the world.</string>
+    <string name="us_couple_hint">One little space for your big ideas.</string>
+    <string name="wishes_to_try">Wishes to try</string>
+    <string name="memories_made">Memories made</string>
+    <string name="make_it_yours">Make it yours</string>
+    <string name="your_profile">Your profile</string>
+    <string name="edit_profile">Edit</string>
+    <string name="appearance">Appearance</string>
+    <string name="language">Language</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="system_language">System default</string>
+    <string name="english_language">English</string>
+    <string name="russian_language">Русский</string>
+    <string name="kazakh_language">Қазақша</string>
+    <string name="profile_name">Your name</string>
+    <string name="profile_hint">Your name in this shared space. Changes last until the demo restarts.</string>
+    <string name="sign_out">Sign out</string>
+    <string name="shared_space_note">Your wishes and memories belong to both of you.</string>
 </resources>
