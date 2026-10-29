@@ -21,7 +21,15 @@ fun App() {
         val space by viewModel.space.collectAsState()
         AppTheme(darkTheme = darkTheme) {
             CompositionLocalProvider(LocalAppLocale provides language?.code) {
-                AppContent(space, viewModel.today, viewModel::deleteWish, viewModel::completeWish, viewModel::saveWish)
+                AppContent(
+                    space,
+                    viewModel.today,
+                    viewModel::deleteWish,
+                    viewModel::completeWish,
+                    viewModel::saveWish,
+                    viewModel::restoreWish,
+                    viewModel::editMemory,
+                )
             }
         }
     }

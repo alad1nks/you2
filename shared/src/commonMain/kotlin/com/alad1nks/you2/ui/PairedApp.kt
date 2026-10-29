@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,12 +44,10 @@ import com.alad1nks.you2.feature.designsystem.components.CoupleHeader
 import com.alad1nks.you2.feature.designsystem.components.DateBadge
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.components.StatusTone
-import com.alad1nks.you2.feature.designsystem.components.WishCard
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.add_wish
-import com.alad1nks.you2.resources.generated.added_by
 import com.alad1nks.you2.resources.generated.adventures
 import com.alad1nks.you2.resources.generated.back
 import com.alad1nks.you2.resources.generated.category_adventures
@@ -63,7 +60,6 @@ import com.alad1nks.you2.resources.generated.connected
 import com.alad1nks.you2.resources.generated.date_range
 import com.alad1nks.you2.resources.generated.demo_signout
 import com.alad1nks.you2.resources.generated.due_today
-import com.alad1nks.you2.resources.generated.empty_list
 import com.alad1nks.you2.resources.generated.ended
 import com.alad1nks.you2.resources.generated.formatted_date
 import com.alad1nks.you2.resources.generated.icon_couple
@@ -105,6 +101,8 @@ internal fun AppContent(
     onDeleteWish: (String) -> Unit = {},
     onCompleteWish: (String) -> Unit = {},
     onSaveWish: (String?, WishDraft) -> Unit = { _, _ -> },
+    onRestoreWish: (String) -> Unit = {},
+    onEditMemory: (String, String) -> Unit = { _, _ -> },
 ) {
     val navigation = rememberPairedNavigation()
     val wishesScroll = rememberLazyListState()
@@ -152,7 +150,7 @@ internal fun AppContent(
                         },
                     verticalArrangement =
                         Arrangement.spacedBy(
-                            if (navigation.tab == MainTab.WISHES) AppSpacing.listGap else AppSpacing.large,
+                            if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.large,
                         ),
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = AppSpacing.large),
                 ) {
@@ -164,6 +162,8 @@ internal fun AppContent(
                             onCategory = { navigation.category = it },
                             onOpen = { navigation.open(OverlayRoute.Details(it)) },
                         )
+                    } else if (navigation.tab == MainTab.MEMORIES) {
+                        memoriesContent(space) { navigation.open(OverlayRoute.Details(it)) }
                     } else {
                         item {
                             Text(
@@ -231,25 +231,6 @@ internal fun AppContent(
                                     )
                                 }
                             }
-                        } else {
-                            val wishes = space.memories.sortedByDescending { it.completion?.date }
-                            if (wishes.isEmpty()) item { Text(stringResource(Res.string.empty_list)) }
-                            items(wishes, key = { it.id }) { wish ->
-                                WishCard(
-                                    wish.content.title,
-                                    wish.content.description,
-                                    stringResource(
-                                        Res.string.added_by,
-                                        if (wish.authorId == space.couple.you.id) {
-                                            space.couple.you.name
-                                        } else {
-                                            space.couple.partner.name
-                                        },
-                                    ),
-                                    onClick = { navigation.open(OverlayRoute.Details(wish.id)) },
-                                    date = { WishDateBadge(wish.content.dates, today) },
-                                )
-                            }
                         }
                     }
                 }
@@ -273,12 +254,25 @@ internal fun AppContent(
                                         wish,
                                         space.couple,
                                         today,
-                                        onBack = navigation::back,
+                                        onBack = {
+                                            if (wish.completion != null) {
+                                                navigation.select(
+                                                    MainTab.MEMORIES,
+                                                )
+                                            } else {
+                                                navigation.back()
+                                            }
+                                        },
                                         onEdit = { navigation.open(OverlayRoute.Form(wish.id)) },
                                         onDelete = {
                                             onDeleteWish(wish.id)
                                             navigation.back()
                                         },
+                                        onRestore = {
+                                            onRestoreWish(wish.id)
+                                            navigation.back()
+                                        },
+                                        onEditMemory = { onEditMemory(wish.id, it) },
                                         onComplete = {
                                             onCompleteWish(wish.id)
                                             navigation.back()

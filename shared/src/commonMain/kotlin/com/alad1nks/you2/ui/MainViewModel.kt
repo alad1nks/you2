@@ -24,5 +24,9 @@ internal class MainViewModel(
 
     fun deleteWish(id: String) = repository.delete(id)
 
+    fun restoreWish(id: String) = repository.restore(id)
+
+    fun editMemory(id: String, memory: String) = repository.editMemory(id, memory)
+
     fun completeWish(id: String) = repository.complete(id)
 }
