@@ -7,8 +7,8 @@ Once connected, both partners can add wishes with descriptions to a shared list.
 The list can include adventures, presents, shared plans, movies, TV series, and other things
 the couple would like to experience or enjoy together.
 
-These are the intended product features. The current implementation is a Kotlin Multiplatform
-starter foundation for Android, iOS, Desktop (JVM), and Web (Kotlin/JS), with a shared
+The current implementation is an interactive paired-user prototype in Kotlin Multiplatform
+for Android, iOS, Desktop (JVM), and Web (Kotlin/JS), with a shared
 Compose Multiplatform interface. A paired demo starts with Alex and Mia, 12 active wishes and four memories.
 Registration, couple linking, networking and persistent wish storage are not yet implemented.
 
@@ -19,7 +19,7 @@ Registration, couple linking, networking and persistent wish storage are not yet
 The file groups screens by user flow: guest experience, Us and pairing, Wishes, adding a wish,
 wish details, and Memories. It also includes the color palette, typography, form elements,
 components, and category illustrations. These mockups describe the intended interface;
-the full screens are being implemented in stages described in [the UI plan](docs/paired-user-ui-plan.md).
+the implemented stages, visual checks and remaining device checks are described in [the UI plan](docs/paired-user-ui-plan.md).
 
 ## Included features
 
@@ -30,11 +30,14 @@ the full screens are being implemented in stages described in [the UI plan](docs
 - Light and dark color schemes, with infrastructure for system, Russian, English, and Kazakh language selection.
 - A Gradle version catalog and ktlint for Kotlin code.
 
-The current app provides a three-tab paired-user scaffold, category filters and preliminary detail/form overlays.
-Shared components, Roboto, bundled Figma illustrations and English string resources are available for subsequent screens.
-A Koin singleton repository exposes the demo through StateFlow and supports local wish mutations.
+The app provides Wishes, Memories and Us, category filters, validated add/edit forms with dates and demo images,
+wish details, completion, memory editing, restoration and confirmed deletion.
+Us shows shared counters, profile editing, theme and language settings. English, Russian and Kazakh UI resources,
+Roboto and bundled Figma illustrations are included. Sign out is unavailable in this paired demo.
+A Koin singleton repository exposes the demo through StateFlow and keeps all screens in sync.
 The injected demo date is October 28, 2026; restarting resets wishes, while theme/language preferences persist.
-Full forms, detail actions, memory grouping, translations and settings UI belong to subsequent stages.
+JVM UI tests cover the complete wish lifecycle, narrow screens, enlarged text and screenshot regressions.
+Real mobile keyboard/inset/back-gesture behavior and iOS still need device/macOS validation.
 The GitHub Actions workflows need to be adapted before use in a new repository.
 
 ## Environment
