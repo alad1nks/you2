@@ -43,9 +43,13 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.auth)
             implementation(projects.core.storage.datastore)
         }
         commonMain.dependencies {
+            implementation(libs.compose.ui.backhandler)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)

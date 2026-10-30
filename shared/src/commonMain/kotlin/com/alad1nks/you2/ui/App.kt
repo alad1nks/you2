@@ -1,11 +1,17 @@
-﻿package com.alad1nks.you2.ui
+package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.ui.Modifier
+import com.alad1nks.you2.auth.AuthForm
+import com.alad1nks.you2.auth.AuthViewModel
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.di.CommonModules
 import com.alad1nks.you2.di.PlatformModules
@@ -18,26 +24,37 @@ import org.koin.dsl.koinConfiguration
 fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
     KoinApplication(configuration = koinConfiguration { modules(CommonModules + PlatformModules) }) {
         val viewModel = koinViewModel<MainViewModel>()
+        val authViewModel = koinViewModel<AuthViewModel>()
+        val auth by authViewModel.state.collectAsState()
         val darkTheme by viewModel.darkTheme.collectAsState(isSystemInDarkTheme())
         SideEffect { onDarkThemeChanged(darkTheme) }
         val language by viewModel.language.collectAsState(Language.SYSTEM)
         val space by viewModel.space.collectAsState()
         AppTheme(darkTheme = darkTheme) {
             CompositionLocalProvider(LocalAppLocale provides language.code) {
-                AppContent(
-                    space,
-                    viewModel.today,
-                    viewModel::deleteWish,
-                    viewModel::completeWish,
-                    viewModel::saveWish,
-                    viewModel::restoreWish,
-                    viewModel::editMemory,
-                    darkTheme,
-                    language,
-                    viewModel::renameUser,
-                    viewModel::changeDarkTheme,
-                    viewModel::changeLanguage,
-                )
+                Surface(Modifier.fillMaxSize()) {
+                    key(auth.user?.id) {
+                        if (authViewModel.isAvailable && auth.user == null) {
+                            AuthForm(auth, authViewModel)
+                        } else {
+                            AppContent(
+                                space,
+                                viewModel.today,
+                                viewModel::deleteWish,
+                                viewModel::completeWish,
+                                viewModel::saveWish,
+                                viewModel::restoreWish,
+                                viewModel::editMemory,
+                                darkTheme,
+                                language,
+                                viewModel::renameUser,
+                                viewModel::changeDarkTheme,
+                                viewModel::changeLanguage,
+                                onSignOut = if (authViewModel.isAvailable) authViewModel::signOut else null,
+                            )
+                        }
+                    }
+                }
             }
         }
     }

@@ -34,6 +34,23 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class UsTest {
     @Test
+    fun authenticatedUserCanSignOutFromUs() =
+        runDesktopComposeUiTest(width = 448, height = 917) {
+            var signOutCalls = 0
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, 1f), LocalAppLocale provides "en") {
+                    AppTheme(false) {
+                        AppContent(DemoSpace.create(), DemoDateSource.today(), onSignOut = { signOutCalls++ })
+                    }
+                }
+            }
+            onNodeWithText("Us").performClick()
+            onNodeWithTag("paired-list").performScrollToNode(hasText("Sign out"))
+            onNodeWithText("Sign out").performClick()
+            runOnIdle { assertEquals(1, signOutCalls) }
+        }
+
+    @Test
     fun profileDraftAndSharedCounters() =
         runDesktopComposeUiTest(width = 320, height = 917) {
             val repository = InMemoryWishesRepository(DemoDateSource)

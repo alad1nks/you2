@@ -1,0 +1,24 @@
+<resources>
+    <string name="auth_sign_in">Кіру</string>
+    <string name="auth_register">Аккаунт жасау</string>
+    <string name="auth_reset">Құпиясөзді қалпына келтіру</string>
+    <string name="auth_email">Электрондық пошта</string>
+    <string name="auth_password">Құпиясөз</string>
+    <string name="auth_confirm">Құпиясөзді қайталаңыз</string>
+    <string name="auth_show">Көрсету</string>
+    <string name="auth_hide">Жасыру</string>
+    <string name="auth_forgot">Құпиясөзді ұмыттыңыз ба?</string>
+    <string name="auth_back">Кіруге оралу</string>
+    <string name="auth_send_reset">Хат жіберу</string>
+    <string name="auth_reset_sent">Бұл поштаға тіркелген аккаунт болса, құпиясөзді қалпына келтіру сілтемесі жіберіледі. Кіріс хаттар мен спамды тексеріңіз.</string>
+    <string name="auth_error_email">Дұрыс пошта мекенжайын енгізіңіз.</string>
+    <string name="auth_error_password">Құпиясөзді енгізіңіз.</string>
+    <string name="auth_error_mismatch">Құпиясөздер сәйкес емес.</string>
+    <string name="auth_error_credentials">Кіру мүмкін болмады. Пошта мен құпиясөзді тексеріңіз.</string>
+    <string name="auth_error_weak">Кемінде 6 таңба қолданып, құпиясөз күрделілігі талаптарын орындаңыз.</string>
+    <string name="auth_error_in_use">Аккаунт жасау мүмкін болмады. Кіріп көріңіз немесе құпиясөзді қалпына келтіріңіз.</string>
+    <string name="auth_error_network">Интернет байланысын тексеріп, қайталап көріңіз.</string>
+    <string name="auth_error_rate">Әрекет саны тым көп. Кейінірек қайталап көріңіз.</string>
+    <string name="auth_error_unknown">Қате пайда болды. Қайталап көріңіз.</string>
+    <string name="auth_demo_note">Үлгі деректер. Мұндағы өзгерістер аккаунтыңызға сақталмайды.</string>
+</resources>

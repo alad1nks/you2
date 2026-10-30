@@ -42,6 +42,7 @@ import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.appearance
+import com.alad1nks.you2.resources.generated.auth_demo_note
 import com.alad1nks.you2.resources.generated.cancel
 import com.alad1nks.you2.resources.generated.connected
 import com.alad1nks.you2.resources.generated.couple_label
@@ -75,6 +76,7 @@ internal fun LazyListScope.usContent(
     space: PairedSpace,
     darkTheme: Boolean,
     language: Language,
+    onSignOut: (() -> Unit)? = null,
     onOpen: (UsDialog) -> Unit,
 ) {
     item {
@@ -173,12 +175,19 @@ internal fun LazyListScope.usContent(
     }
     item {
         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-            OutlinedButton({}, Modifier.fillMaxWidth().heightIn(min = 52.dp), enabled = false) {
+            OutlinedButton(
+                onSignOut ?: {},
+                Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                enabled = onSignOut != null,
+            ) {
                 Icon(AppIcons.Logout, null, Modifier.size(20.dp))
-                Text(stringResource(Res.string.sign_out), Modifier.padding(start = AppSpacing.small))
+                Text(
+                    stringResource(Res.string.sign_out),
+                    Modifier.padding(start = AppSpacing.small),
+                )
             }
             Text(
-                stringResource(Res.string.demo_signout),
+                stringResource(if (onSignOut == null) Res.string.demo_signout else Res.string.auth_demo_note),
                 Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,

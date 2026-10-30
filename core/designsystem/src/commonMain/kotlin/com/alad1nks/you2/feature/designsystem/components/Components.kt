@@ -462,7 +462,7 @@ fun DeleteWishDialog(title: String, partnerName: String, onDismiss: () -> Unit, 
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
-            Modifier.padding(horizontal = AppSpacing.page).widthIn(max = 364.dp).fillMaxWidth(),
+            Modifier.padding(horizontal = AppSpacing.page).fillMaxWidth(),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.background,
         ) {

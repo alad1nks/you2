@@ -7,6 +7,8 @@ androidx-activity = "1.13.0"
 androidx-lifecycle = "2.11.0"
 composeMultiplatform = "1.12.1"
 datastore = "1.2.1"
+google-services = "4.5.0"
+firebase-bom = "35.1.0"
 koin-bom = "4.2.2"
 kotlin = "2.4.20"
 kotlin-wrappers = "2026.9.3"
@@ -18,6 +20,9 @@ material-icons = "1.7.3"
 roborazzi = "1.77.0"
 
 [libraries]
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
 compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.8.0" }
 roborazzi-compose-desktop = { module = "io.github.takahirom.roborazzi:roborazzi-compose-desktop", version.ref = "roborazzi" }
@@ -44,6 +49,7 @@ kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 wrappers-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-wrappers" }
 
 [plugins]
+googleServices = { id = "com.google.gms.google-services", version.ref = "google-services" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }

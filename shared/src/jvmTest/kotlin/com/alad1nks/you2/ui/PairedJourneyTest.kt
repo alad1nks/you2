@@ -52,6 +52,25 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class PairedJourneyTest {
     @Test
+    fun phoneUsesOnlyThePageInsets() = assertContentInsets(448, 24f, 424f)
+
+    @Test
+    fun wideWindowAlsoUsesOnlyThePageInsets() = assertContentInsets(800, 24f, 776f)
+
+    private fun assertContentInsets(width: Int, left: Float, right: Float) =
+        runDesktopComposeUiTest(width = width, height = 917) {
+            val repository = InMemoryWishesRepository(DemoDateSource)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f, 1f), LocalAppLocale provides "en") {
+                    AppTheme(false) { AppContent(repository.space.value, DemoDateSource.today()) }
+                }
+            }
+            val bounds = onNodeWithTag("paired-list").fetchSemanticsNode().boundsInRoot
+            assertEquals(left, bounds.left)
+            assertEquals(right, bounds.right)
+        }
+
+    @Test
     fun englishJourney() = journey("en", false, 412, 917, 1f)
 
     @Test
