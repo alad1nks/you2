@@ -52,7 +52,9 @@
     <string name="edit_memory">Естелікті өңдеу</string>
     <string name="restore">Тілектерге қайтару</string>
     <string name="waiting_to_happen">Әлі алда</string>
-    <string name="newest_first">Жаңалары алдымен ↓</string>
+    <string name="newest_first">Жаңалары алдымен</string>
+    <string name="oldest_first">Ескілері алдымен</string>
+    <string name="soonest_date">Ең жақын күн</string>
     <string name="wish_attribution">%1$s · Қосқан: %2$s</string>
     <string name="wish_attribution_you">%1$s · Сіз қостыңыз</string>
     <string name="empty_wishes">Ортақ тізіміңіз алғашқы тілекті күтуде.</string>

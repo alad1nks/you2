@@ -52,7 +52,9 @@
     <string name="edit_memory">Edit memory</string>
     <string name="restore">Move back to Wishes</string>
     <string name="waiting_to_happen">Waiting to happen</string>
-    <string name="newest_first">Newest first ↓</string>
+    <string name="newest_first">Newest first</string>
+    <string name="oldest_first">Oldest first</string>
+    <string name="soonest_date">Soonest date</string>
     <string name="wish_attribution">%1$s · %2$s added this</string>
     <string name="wish_attribution_you">%1$s · You added this</string>
     <string name="empty_wishes">Your shared list is waiting for its first wish.</string>
