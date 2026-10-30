@@ -364,12 +364,16 @@ checks. Invalid month/day combinations are rejected in creation dates, deadlines
 
 ### Storage security and deployment
 
-The app currently uses bundled illustrations and does not upload media. `storage.rules` denies all client
-reads and writes, including uploads by pair members and requests for new download URLs. The former
-5 MiB per-file limit did not cap total storage, and client-supplied MIME types did not validate image bytes.
-Do not reopen client uploads until a trusted service enforces per-account storage/count quotas and
-decodes or re-encodes image contents before serving them. App Check can supplement these controls,
-but is not a quota or content-validation mechanism.
+Storage remains available to couple members: upload and read images for existing wishes, and delete
+images even after a wish is removed. The rules preserve the existing paths, image formats, and 5 MiB
+per-file limit. They reject application custom metadata, compressed content encodings, and arbitrary
+content-disposition overrides. Listing, overwrites, and metadata updates remain forbidden.
+
+These are access and metadata checks, not image-byte validation or aggregate quotas. Storage Rules
+cannot count all objects or atomically reserve total storage across uploads. A trusted backend must
+enforce account storage/count quotas and validate or re-encode actual image contents if those guarantees
+are required. Client-side checks and App Check do not replace those controls. This PR does not implement
+that backend or claim that unlimited aggregate uploads and spoofed image bytes are prevented.
 
 Deploy both rule files to apply this hardening (merging this PR does not deploy rules):
 
@@ -399,7 +403,7 @@ npm test
 
 The configured Firestore emulator port is `8185`; Storage uses `9199`. The suite covers access isolation,
 atomic pairing, concurrent acceptance, invitation read revocation, calendar validation, the complete
-wish/memory lifecycle, and denial of all client Storage access (including existing files).
+wish/memory lifecycle, member Storage access, outsider denial, and upload metadata validation.
 The same suite runs in PR CI. Shared tests cover document mapping and hiding data from a previous account.
 
 Before release, on two Android devices/accounts verify invitation creation/join, realtime edits,
@@ -422,6 +426,11 @@ Uploads must be nonempty, at most **5 MiB (5,242,880 bytes)**, and have a matchi
 `image/png`, or `image/webp` content type. Rules validate metadata, not the actual image bytes. The
 upload implementation must decode/re-encode images. These rules do not enforce a per-wish file count;
 the existing 12-attachment limit applies to the wish model, not the number of uploaded Storage objects.
+
+Omit application `customMetadata` (or send an empty map). Omit `contentEncoding` or set it to `identity`;
+compressed encodings such as `gzip` are rejected. Omit `contentDisposition` or use exactly `inline` or
+`attachment`; custom filenames and other disposition directives are rejected. These restrictions do
+not prevent Firebase from issuing download tokens, and must not be treated as token revocation.
 
 Save the wish document before uploading. Image replacement uses a new object path, followed by a
 Firestore reference update and deletion of the old object. Use authenticated SDK downloads for private
