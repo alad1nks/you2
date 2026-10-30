@@ -41,7 +41,21 @@ same Figma file on October 31, 2026. They are bundled locally with no runtime Fi
 `GuestIllustration` uses a responsive width and crops the image to a 160 dp height. Guest UI icons reuse
 the shared Material vectors, including `KeyboardArrowDown`, `PersonAdd`, and `FormatListBulleted`.
 
-## UI icons
+## App icon
+
+The app icon comes from [you2 / App icon, node 110:1990](https://www.figma.com/design/4NzqzLDkOMaaGQGKYhEeuT/you2?node-id=110-1990),
+exported on October 31, 2026. The unmodified SVG and opaque 1024 × 1024 PNG master are in
+`design/brand`. Run `python design/brand/generate_icons.py` with Pillow installed to regenerate
+the platform assets. The script preserves the artwork and aspect ratio, resizes with Lanczos,
+and applies only platform delivery masks and padding.
+
+Android uses density-specific legacy icons and an adaptive icon with the master centered in
+the 72 dp viewport of a 108 dp layer, with a matching green background extending into the bleed.
+iOS uses the opaque 1024 px image in the existing AppIcon asset catalog. Desktop uses a PNG
+window icon plus ICO, ICNS, and PNG native package icons. Web uses SVG/ICO favicons and a
+180 px Apple touch icon. All assets are local; no Figma URLs are requested at runtime.
+
+## Interface icons
 
 Use `AppIcons` in `core/designsystem` for interface icons. It wraps Material Outlined vectors from
 `org.jetbrains.compose.material:material-icons-extended`; the version is pinned independently of
