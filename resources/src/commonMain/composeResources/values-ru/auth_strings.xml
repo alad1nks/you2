@@ -1,12 +1,15 @@
 <resources>
+    <string name="auth_google">Продолжить с Google</string>
+    <string name="auth_email_separator">или по email</string>
+    <string name="auth_error_google">Не удалось войти через Google. Попробуйте ещё раз или используйте email.</string>
     <string name="auth_sign_in">Войти</string>
     <string name="auth_register">Создать аккаунт</string>
     <string name="auth_reset">Восстановление пароля</string>
     <string name="auth_email">Электронная почта</string>
     <string name="auth_password">Пароль</string>
     <string name="auth_confirm">Повторите пароль</string>
-    <string name="auth_show">Показать</string>
-    <string name="auth_hide">Скрыть</string>
+    <string name="auth_show">Показать пароль</string>
+    <string name="auth_hide">Скрыть пароль</string>
     <string name="auth_forgot">Забыли пароль?</string>
     <string name="auth_back">Вернуться ко входу</string>
     <string name="auth_send_reset">Отправить письмо</string>

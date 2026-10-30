@@ -4,6 +4,8 @@ android-compileSdk = "37"
 android-minSdk = "28"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
+androidx-credentials = "1.6.0"
+googleid = "1.2.1"
 androidx-lifecycle = "2.11.0"
 composeMultiplatform = "1.12.1"
 datastore = "1.2.1"
@@ -20,6 +22,9 @@ material-icons = "1.7.3"
 roborazzi = "1.77.0"
 
 [libraries]
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "androidx-credentials" }
+androidx-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }

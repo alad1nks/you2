@@ -19,10 +19,14 @@ import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /** Shared Material icons for navigation, actions and paired-space status. */
 object AppIcons {
+    val Visibility: ImageVector get() = Icons.Outlined.Visibility
+    val VisibilityOff: ImageVector get() = Icons.Outlined.VisibilityOff
     val KeyboardArrowDown: ImageVector get() = Icons.Outlined.KeyboardArrowDown
     val PersonAdd: ImageVector get() = Icons.Outlined.PersonAdd
     val FormatListBulleted: ImageVector get() = Icons.AutoMirrored.Outlined.FormatListBulleted

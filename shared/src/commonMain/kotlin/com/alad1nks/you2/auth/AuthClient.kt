@@ -12,6 +12,7 @@ internal enum class AuthError {
     NETWORK,
     TOO_MANY_REQUESTS,
     UNKNOWN,
+    GOOGLE,
 }
 
 internal interface AuthClient {
@@ -20,6 +21,8 @@ internal interface AuthClient {
     fun observeUser(onChange: (AuthUser?) -> Unit): () -> Unit
 
     fun signIn(email: String, password: String, complete: (AuthError?) -> Unit)
+
+    fun signInWithGoogle(idToken: String, complete: (AuthError?) -> Unit) = complete(AuthError.GOOGLE)
 
     fun register(email: String, password: String, complete: (AuthError?) -> Unit)
 

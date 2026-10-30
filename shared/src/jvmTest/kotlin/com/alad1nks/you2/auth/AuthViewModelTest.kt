@@ -9,6 +9,69 @@ import kotlin.test.assertTrue
 
 class AuthViewModelTest {
     @Test
+    fun googleSignInBlocksOtherRequestsAndExchangesTokenForSession() {
+        val client = FakeAuthClient()
+        val model = AuthViewModel(client)
+        var deliver: ((GoogleSignInResult) -> Unit)? = null
+        var launches = 0
+        val launch: GoogleSignInLauncher = {
+            launches++
+            deliver = it
+        }
+        model.signInWithGoogle(launch)
+        model.signInWithGoogle(launch)
+        model.submit("user@example.com", "password", "")
+        model.changeMode(AuthMode.REGISTER)
+        assertEquals(1, launches)
+        assertEquals(0, client.calls)
+        assertTrue(model.state.value.busy)
+        assertEquals(AuthMode.SIGN_IN, model.state.value.mode)
+        deliver!!(GoogleSignInResult.Token("google-token"))
+        deliver!!(GoogleSignInResult.Token("duplicate-token"))
+        assertEquals("google-token", client.token)
+        assertEquals(1, client.calls)
+        assertTrue(model.state.value.busy)
+        client.emit(AuthUser("google-user", "user@example.com"))
+        client.finish(null)
+        assertEquals("google-user", model.state.value.user?.id)
+        assertFalse(model.state.value.busy)
+        model.signOut()
+        assertEquals(AuthState(), model.state.value)
+    }
+
+    @Test
+    fun googleCancellationAndFailuresAllowRetryWithoutEmailValidation() {
+        val client = FakeAuthClient()
+        val model = AuthViewModel(client)
+        model.changeMode(AuthMode.REGISTER)
+        model.signInWithGoogle { it(GoogleSignInResult.Cancelled) }
+        assertFalse(model.state.value.busy)
+        assertNull(model.state.value.error)
+        model.signInWithGoogle { it(GoogleSignInResult.Failed) }
+        assertEquals(AuthError.GOOGLE, model.state.value.error)
+        model.signInWithGoogle { it(GoogleSignInResult.Token("token")) }
+        assertNull(model.state.value.error)
+        client.finish(AuthError.NETWORK)
+        assertFalse(model.state.value.busy)
+        assertEquals(AuthError.NETWORK, model.state.value.error)
+        model.changeMode(AuthMode.RESET)
+        model.signInWithGoogle { error("Reset must not launch Google") }
+    }
+
+    @Test
+    fun googleResultAfterDisposalDoesNotAuthenticate() {
+        val client = FakeAuthClient()
+        val model = AuthViewModel(client)
+        val store = ViewModelStore()
+        store.put("auth", model)
+        var deliver: ((GoogleSignInResult) -> Unit)? = null
+        model.signInWithGoogle { deliver = it }
+        store.clear()
+        deliver!!(GoogleSignInResult.Token("late-token"))
+        assertEquals(0, client.calls)
+    }
+
+    @Test
     fun platformsWithoutAuthKeepTheirExistingFlow() {
         val model = AuthViewModel(null)
         assertFalse(model.isAvailable)
@@ -113,6 +176,7 @@ private class FakeAuthClient(override var currentUser: AuthUser? = null) : AuthC
     var calls = 0
     var email = ""
     var password = ""
+    var token = ""
     var operation: AuthMode? = null
     var unsubscribed = false
     private var observer: ((AuthUser?) -> Unit)? = null
@@ -128,6 +192,11 @@ private class FakeAuthClient(override var currentUser: AuthUser? = null) : AuthC
 
     override fun signIn(email: String, password: String, complete: (AuthError?) -> Unit) {
         record(AuthMode.SIGN_IN, email, password, complete)
+    }
+
+    override fun signInWithGoogle(idToken: String, complete: (AuthError?) -> Unit) {
+        token = idToken
+        record(AuthMode.SIGN_IN, "", "", complete)
     }
 
     override fun register(email: String, password: String, complete: (AuthError?) -> Unit) {

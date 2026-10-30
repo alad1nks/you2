@@ -1,5 +1,7 @@
 package com.alad1nks.you2.auth
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -21,9 +23,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -58,6 +64,9 @@ import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
+import com.alad1nks.you2.feature.designsystem.theme.onSurfaceLight
+import com.alad1nks.you2.feature.designsystem.theme.outlineVariantLight
+import com.alad1nks.you2.feature.designsystem.theme.surfaceContainerLowestLight
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.auth_back
 import com.alad1nks.you2.resources.generated.auth_confirm
@@ -66,9 +75,11 @@ import com.alad1nks.you2.resources.generated.auth_create_password
 import com.alad1nks.you2.resources.generated.auth_create_title
 import com.alad1nks.you2.resources.generated.auth_email
 import com.alad1nks.you2.resources.generated.auth_email_placeholder
+import com.alad1nks.you2.resources.generated.auth_email_separator
 import com.alad1nks.you2.resources.generated.auth_enter_password
 import com.alad1nks.you2.resources.generated.auth_error_credentials
 import com.alad1nks.you2.resources.generated.auth_error_email
+import com.alad1nks.you2.resources.generated.auth_error_google
 import com.alad1nks.you2.resources.generated.auth_error_in_use
 import com.alad1nks.you2.resources.generated.auth_error_mismatch
 import com.alad1nks.you2.resources.generated.auth_error_network
@@ -78,6 +89,7 @@ import com.alad1nks.you2.resources.generated.auth_error_unknown
 import com.alad1nks.you2.resources.generated.auth_error_weak
 import com.alad1nks.you2.resources.generated.auth_existing_account
 import com.alad1nks.you2.resources.generated.auth_forgot
+import com.alad1nks.you2.resources.generated.auth_google
 import com.alad1nks.you2.resources.generated.auth_hide
 import com.alad1nks.you2.resources.generated.auth_new_here
 import com.alad1nks.you2.resources.generated.auth_password
@@ -90,9 +102,11 @@ import com.alad1nks.you2.resources.generated.auth_show
 import com.alad1nks.you2.resources.generated.auth_welcome
 import com.alad1nks.you2.resources.generated.auth_welcome_body
 import com.alad1nks.you2.resources.generated.back
+import com.alad1nks.you2.resources.generated.google
 import com.alad1nks.you2.resources.generated.guest_log_in
 import com.alad1nks.you2.ui.GuestLanguageSelector
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -103,6 +117,7 @@ internal fun AuthForm(
     language: Language = Language.SYSTEM,
     onSetLanguage: (Language) -> Unit = {},
     onBackToGuest: (() -> Unit)? = null,
+    googleSignIn: GoogleSignInLauncher? = rememberGoogleSignInLauncher(),
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     // Passwords deliberately never enter saved instance state, preferences, or logs.
@@ -169,6 +184,44 @@ internal fun AuthForm(
             }
         },
     ) {
+        if (state.mode != AuthMode.RESET && googleSignIn != null) {
+            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.large)) {
+                OutlinedButton(
+                    onClick = {
+                        focus.clearFocus()
+                        viewModel.signInWithGoogle(googleSignIn)
+                    },
+                    enabled = !state.busy,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("auth-google"),
+                    shape = AppShapes.pill,
+                    border = BorderStroke(1.dp, outlineVariantLight),
+                    colors =
+                        ButtonDefaults.outlinedButtonColors(
+                            containerColor = surfaceContainerLowestLight,
+                            contentColor = onSurfaceLight,
+                            disabledContainerColor = surfaceContainerLowestLight,
+                            disabledContentColor = onSurfaceLight.copy(alpha = 0.38f),
+                        ),
+                ) {
+                    Image(painterResource(Res.drawable.google), null, Modifier.size(20.dp))
+                    Spacer(Modifier.width(AppSpacing.medium))
+                    Text(stringResource(Res.string.auth_google), textAlign = TextAlign.Center)
+                }
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    HorizontalDivider(Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                    Text(
+                        stringResource(Res.string.auth_email_separator),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                    HorizontalDivider(Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                }
+            }
+        }
         AuthField(
             value = email,
             onValueChange = {
@@ -207,8 +260,18 @@ internal fun AuthForm(
                 onDone = submit,
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    TextButton(onClick = { showPassword = !showPassword }, enabled = !state.busy) {
-                        Text(stringResource(if (showPassword) Res.string.auth_hide else Res.string.auth_show))
+                    IconButton(
+                        onClick = { showPassword = !showPassword },
+                        enabled = !state.busy,
+                        modifier = Modifier.size(44.dp).testTag("auth-password-visibility"),
+                    ) {
+                        Icon(
+                            if (showPassword) AppIcons.VisibilityOff else AppIcons.Visibility,
+                            contentDescription =
+                                stringResource(if (showPassword) Res.string.auth_hide else Res.string.auth_show),
+                            modifier = Modifier.size(AppDimensions.icon),
+                            tint = MaterialTheme.colorScheme.secondary,
+                        )
                     }
                 },
                 tag = "auth-password",
@@ -408,4 +471,5 @@ private fun AuthError.messageId(): StringResource =
         AuthError.NETWORK -> Res.string.auth_error_network
         AuthError.TOO_MANY_REQUESTS -> Res.string.auth_error_rate
         AuthError.UNKNOWN -> Res.string.auth_error_unknown
+        AuthError.GOOGLE -> Res.string.auth_error_google
     }
