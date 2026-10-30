@@ -10,7 +10,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import com.alad1nks.you2.auth.AuthForm
 import com.alad1nks.you2.auth.AuthViewModel
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.di.CommonModules
@@ -35,7 +34,7 @@ fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
                 Surface(Modifier.fillMaxSize()) {
                     key(auth.user?.id) {
                         if (authViewModel.isAvailable && auth.user == null) {
-                            AuthForm(auth, authViewModel)
+                            GuestExperience(auth, authViewModel, language, viewModel::changeLanguage)
                         } else {
                             AppContent(
                                 space,

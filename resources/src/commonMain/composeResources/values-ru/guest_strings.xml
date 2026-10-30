@@ -1,0 +1,21 @@
+<resources>
+    <string name="guest_wishes_title">Мечтайте.\nПланируйте вместе.</string>
+    <string name="guest_wishes_body">От маленьких сюрпризов до больших приключений —\nсоберите все ваши желания в одном месте.</string>
+    <string name="guest_memories_title">Превращайте желания\nв воспоминания.</string>
+    <string name="guest_memories_body">Сохраняйте фотографии и маленькие детали,\nкоторые делают ваши моменты особенными.</string>
+    <string name="guest_us_title">Маленькие желания.\nБольше нас.</string>
+    <string name="guest_us_body">Общее место для того, что хочется сделать,\nподарить, посмотреть и пережить вместе.</string>
+    <string name="guest_account_each">У каждого свой аккаунт</string>
+    <string name="guest_shared_list">Список желаний, который вы создаёте вместе</string>
+    <string name="guest_shared_memories">Воспоминания, к которым хочется возвращаться</string>
+    <string name="guest_wish_title">Выходные у моря</string>
+    <string name="guest_wish_description">Неспешное утро, морской воздух, только мы.</string>
+    <string name="guest_wish_label">ПРИМЕР ЖЕЛАНИЯ · Приключения</string>
+    <string name="guest_memory_title">Наш первый урок гончарного дела</string>
+    <string name="guest_memory_description">Немного глины. Много радости.</string>
+    <string name="guest_memory_label">ПРИМЕР ВОСПОМИНАНИЯ · Исполнено</string>
+    <string name="guest_log_in">Войти</string>
+    <string name="guest_wishes_hint">Добавляйте идеи, выбирайте даты\nи находите больше времени друг для друга.</string>
+    <string name="guest_memories_hint">Исполните желание, добавьте фотографии\nи сохраните историю ваших общих моментов.</string>
+    <string name="guest_invite_hint">Есть приглашение? Присоединитесь к партнёру\nпосле создания аккаунта или входа.</string>
+</resources>

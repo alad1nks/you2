@@ -27,6 +27,20 @@ The current Add/Edit wish image picker reuses these illustrations for covers and
 Personal photo selection remains to be implemented. `WishImage` currently stores a category key
 rather than a file or remote URL.
 
+## Guest illustrations
+
+The three original PNG image fills were downloaded from the mobile Guest experience section of the
+same Figma file on October 31, 2026. They are bundled locally with no runtime Figma requests.
+
+| Resource | Figma image layer | Display slot |
+| --- | --- | --- |
+| `guest_wishes.png` | `58:983` | Wishes preview, 364 × 160 dp at the reference width, 20 dp corners |
+| `guest_memories.png` | `58:998` | Memories preview, 364 × 160 dp at the reference width, 20 dp corners |
+| `guest_us.png` | `54:1028` | Us welcome, 364 × 160 dp at the reference width, 24 dp corners |
+
+`GuestIllustration` uses a responsive width and crops the image to a 160 dp height. Guest UI icons reuse
+the shared Material vectors, including `KeyboardArrowDown`, `PersonAdd`, and `FormatListBulleted`.
+
 ## UI icons
 
 Use `AppIcons` in `core/designsystem` for interface icons. It wraps Material Outlined vectors from

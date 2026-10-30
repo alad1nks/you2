@@ -1,0 +1,21 @@
+<resources>
+    <string name="guest_wishes_title">Dream it.\nPlan it together.</string>
+    <string name="guest_wishes_body">From little surprises to big adventures,\nkeep everything you want to do in one place.</string>
+    <string name="guest_memories_title">Turn wishes\ninto memories.</string>
+    <string name="guest_memories_body">Save the photos and little details\nthat make your moments worth remembering.</string>
+    <string name="guest_us_title">Little wishes.\nMore us.</string>
+    <string name="guest_us_body">A shared place for the things you want to do,\ngive, watch, and enjoy together.</string>
+    <string name="guest_account_each">One account for each of you</string>
+    <string name="guest_shared_list">A wish list you build together</string>
+    <string name="guest_shared_memories">Memories to look back on</string>
+    <string name="guest_wish_title">A weekend by the sea</string>
+    <string name="guest_wish_description">Slow mornings, salty air, just us.</string>
+    <string name="guest_wish_label">EXAMPLE WISH · Adventures</string>
+    <string name="guest_memory_title">Our first pottery class</string>
+    <string name="guest_memory_description">A little messy. A lot of fun.</string>
+    <string name="guest_memory_label">EXAMPLE MEMORY · Completed</string>
+    <string name="guest_log_in">Log in</string>
+    <string name="guest_wishes_hint">Add ideas, set dates, and make room\nfor more time together.</string>
+    <string name="guest_memories_hint">Complete a wish, add your photos,\nand keep the story of your time together.</string>
+    <string name="guest_invite_hint">Have an invite? You can join your partner\nafter creating an account or logging in.</string>
+</resources>

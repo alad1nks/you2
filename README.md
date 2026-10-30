@@ -255,7 +255,13 @@ Keep its ignored client configuration at `androidApp/google-services.json` and e
 Firebase Console → Authentication → Sign-in method. Firebase Auth SDK versions are managed by the
 Firebase BoM in `gradle/libs.versions.toml`. No admin credentials are needed in the app.
 
-Android starts at sign-in, supports account creation with password confirmation and password-reset
+Signed-out Android users start with the mobile guest previews for Wishes, Memories, and Us. Each tab
+has its own illustration and introductory content, a persistent language selector, and Create account
+and Log in actions. Returning from authentication restores the selected guest tab; signing out returns
+to the Wishes preview. Preview cards are examples and do not modify the shared wish repository.
+The guest content scrolls on small screens and with enlarged text while the bottom tabs remain accessible.
+
+Android supports account creation with password confirmation and password-reset
 emails, restores the Firebase session on restart, and provides sign-out from the Us tab.
 Passwords stay in memory only and are cleared when changing forms or leaving the authentication screen.
 Authentication screens and state live in shared/commonMain and use the common English, Russian, and Kazakh resources.
