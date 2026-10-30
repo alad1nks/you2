@@ -329,7 +329,8 @@ Data layout:
 - `couples/{coupleId}`: immutable membership after two users join, current invitation ID, creation timestamp.
 - `couples/{coupleId}/wishes/{wishId}`: one wish per document, including optional completion/memory fields.
 - `invites/{code}`: random UUID v4 code (without hyphens), owner, pair, expiry, and one-time consumer.
-  Invitation collections cannot be listed. An authenticated user who possesses the code can read that invitation.
+  Invitation collections cannot be listed. An authenticated user who possesses the code can read it only
+  while it is current, unused, unexpired, and the pair has one member. The owner can read their historical codes.
 
 One partner creates an invitation from any unpaired tab; the second registers/signs in and pastes
 the code in **I have an invite code**. Names can be edited in **Us > Your profile**; unnamed accounts
@@ -358,6 +359,35 @@ not implemented. Only one of the two partners should create an invitation.
 
 ### Firestore validation
 
+Calendar dates in wishes must be real dates in years 0001 through 9999, including Gregorian leap-year
+checks. Invalid month/day combinations are rejected in creation dates, deadlines, ranges, and completions.
+
+### Storage security and deployment
+
+The app currently uses bundled illustrations and does not upload media. `storage.rules` denies all client
+reads and writes, including uploads by pair members and requests for new download URLs. The former
+5 MiB per-file limit did not cap total storage, and client-supplied MIME types did not validate image bytes.
+Do not reopen client uploads until a trusted service enforces per-account storage/count quotas and
+decodes or re-encodes image contents before serving them. App Check can supplement these controls,
+but is not a quota or content-validation mechanism.
+
+Deploy both rule files to apply this hardening (merging this PR does not deploy rules):
+
+```powershell
+firebase deploy --only "firestore:rules,storage" --project you2-ae09a
+```
+
+If the previous Storage rules were ever deployed, review the bucket's existing objects. Previously
+issued Firebase download-token URLs remain usable even after rules deny reads or a wish is deleted.
+Revoke those tokens in Firebase Console or through a trusted administrative process; delete unwanted
+objects after review. Rules cannot revoke existing tokens. Also verify that bucket IAM does not grant
+public access. This repository change does not modify production objects, tokens, or IAM.
+
+Before deploying, audit existing wish dates and repair invalid historical values through a trusted
+administrative process. New validation prevents further malformed writes but does not rewrite old data.
+
+### Rules tests
+
 Rules tests use a **demo project and local emulator only**, without production credentials. Install Node 22
 and Java 21, then run:
 
@@ -367,8 +397,9 @@ npm ci
 npm test
 ```
 
-The configured Firestore emulator port is `8185`. The suite covers access isolation, atomic pairing,
-concurrent acceptance, expiry, invitation renewal, write validation, and the complete wish/memory lifecycle.
+The configured Firestore emulator port is `8185`; Storage uses `9199`. The suite covers access isolation,
+atomic pairing, concurrent acceptance, invitation read revocation, calendar validation, the complete
+wish/memory lifecycle, and denial of all client Storage access (including existing files).
 The same suite runs in PR CI. Shared tests cover document mapping and hiding data from a previous account.
 
 Before release, on two Android devices/accounts verify invitation creation/join, realtime edits,

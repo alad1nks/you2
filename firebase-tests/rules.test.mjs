@@ -100,6 +100,69 @@ test('expired invitations cannot be used', async () => {
   await assertFails(join());
 });
 
+test('only the owner can read expired, superseded, or consumed invitations', async () => {
+  await createPair(); await profile('bob');
+  const owner = doc(db('alice'), 'invites', code);
+  const outsider = doc(db('eve'), 'invites', code);
+  await assertSucceeds(getDoc(outsider));
+  await env.withSecurityRulesDisabled(context => updateDoc(doc(context.firestore(), 'invites', code), {
+    expiresAt: Timestamp.fromMillis(Date.now() - 1000),
+  }));
+  await assertFails(getDoc(outsider));
+  await assertSucceeds(getDoc(owner));
+  await env.withSecurityRulesDisabled(context => updateDoc(doc(context.firestore(), 'invites', code), {
+    expiresAt: Timestamp.fromMillis(Date.now() + 86400000),
+  }));
+  const client = db('alice');
+  const batch = writeBatch(client);
+  batch.update(doc(client, 'couples/pair'), { inviteId: nextCode });
+  batch.set(doc(client, 'invites', nextCode), invitation('alice', 'pair'));
+  await batch.commit();
+  await assertFails(getDoc(outsider));
+  await assertSucceeds(getDoc(owner));
+  await assertSucceeds(getDoc(doc(db('bob'), 'invites', nextCode)));
+  await join('bob', nextCode);
+  await assertFails(getDoc(doc(db('eve'), 'invites', nextCode)));
+  await assertFails(getDoc(doc(db('bob'), 'invites', nextCode)));
+  await assertSucceeds(getDoc(doc(client, 'invites', nextCode)));
+});
+
+test('all date fields reject impossible calendar dates, including non-leap centuries', async () => {
+  await paired();
+  const ref = doc(db('alice'), 'couples/pair/wishes/wish');
+  await setDoc(ref, wish());
+  for (const date of ['2026-99-99', '2026-00-01', '2026-01-00', '2026-04-31',
+    '2026-02-29', '1900-02-29', '2100-02-29', '2026-02-30', '0000-01-01',
+    '2026-1-01', 'not-a-date', null, 20261031]) {
+    await assertFails(setDoc(doc(db('alice'), 'couples/pair/wishes/invalid'), { ...wish(), createdOn: date }));
+    for (const dates of [
+      { type: 'deadline', end: date },
+      { type: 'range', start: date, end: '9999-12-31' },
+      { type: 'range', start: '0001-01-01', end: date },
+    ]) {
+      await assertFails(updateDoc(ref, { 'content.dates': dates, updatedAt: serverTimestamp() }));
+    }
+    await assertFails(updateDoc(ref, {
+      completion: { date, authorId: 'alice', memory: '' }, updatedAt: serverTimestamp(),
+    }));
+  }
+});
+
+test('valid calendar boundaries and leap years are accepted in all date fields', async () => {
+  await paired();
+  for (const date of ['0001-01-01', '9999-12-31', '2026-04-30', '2026-01-31',
+    '2026-02-28', '2024-02-29', '2000-02-29', '2400-02-29']) {
+    const ref = doc(db('alice'), 'couples/pair/wishes', date);
+    await assertSucceeds(setDoc(ref, { ...wish(), createdOn: date }));
+    for (const dates of [{ type: 'deadline', end: date }, { type: 'range', start: date, end: date }]) {
+      await assertSucceeds(updateDoc(ref, { 'content.dates': dates, updatedAt: serverTimestamp() }));
+    }
+    await assertSucceeds(updateDoc(ref, {
+      completion: { date, authorId: 'alice', memory: '' }, updatedAt: serverTimestamp(),
+    }));
+  }
+});
+
 test('renewal invalidates the previous invitation', async () => {
   await createPair(); await profile('bob');
   const client = db('alice');
