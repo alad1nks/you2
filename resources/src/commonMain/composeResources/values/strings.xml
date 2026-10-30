@@ -167,7 +167,7 @@
     <string name="cloud_pair_hint">Enter your name, then invite your partner or enter their invitation code.</string>
     <string name="cloud_retry">Retry</string>
     <string name="cloud_saving">Saving changes…</string>
-    <string name="cloud_saving_hint">Waiting for server confirmation. If you are offline, changes will sync when the connection returns. Signing out does not cancel a queued change.</string>
+    <string name="cloud_saving_hint">Waiting for server confirmation. If you are offline, changes will sync when the connection returns.</string>
     <string name="cloud_error">Could not finish the operation. Retry or cancel.</string>
     <string name="cloud_access_error">Access denied. Check that the database rules are deployed and that the invitation is still valid.</string>
     <string name="cloud_network_error">No connection to the server. Check your internet connection and retry.</string>

@@ -125,7 +125,7 @@ internal fun CloudSpaceGate(
             onDismissRequest = {},
             title = { Text(stringResource(Res.string.cloud_saving)) },
             text = { Text(stringResource(Res.string.cloud_saving_hint)) },
-            confirmButton = { TextButton(onSignOut) { Text(stringResource(Res.string.sign_out)) } },
+            confirmButton = {},
         )
     } else if (state.userId == userId && state.failure != null && state.phase != CloudPhase.ERROR) {
         AlertDialog(
