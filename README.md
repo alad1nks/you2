@@ -375,3 +375,40 @@ Before release, on two Android devices/accounts verify invitation creation/join,
 completion/restoration, profile renaming, restart, offline writes, sign-out and account switching.
 Verify that the third account cannot read or write the pair's data. Do not loosen rules to public access
 to work around a denied request.
+
+## Storage rules for wish images
+
+[storage.rules](storage.rules) prepares private image storage for Android. It does not implement the
+photo picker, uploads, or image references in Firestore; those remain a separate application change.
+
+Allowed paths are `couples/{coupleId}/wishes/{wishId}/{imageId}.jpg` (or `.png` / `.webp`). Use a new
+random ID per upload, containing 1–128 letters, digits, underscores, or hyphens before the extension.
+Both members listed in the Firestore couple document can read, upload, and delete images. Reads and
+uploads require an existing wish document. Deletes remain allowed after wish deletion so orphaned
+files can be cleaned up. Listing, overwrites, metadata updates, and all other paths are denied.
+
+Uploads must be nonempty, at most **5 MiB (5,242,880 bytes)**, and have a matching `image/jpeg`,
+`image/png`, or `image/webp` content type. Rules validate metadata, not the actual image bytes. The
+upload implementation must decode/re-encode images. These rules do not enforce a per-wish file count;
+the existing 12-attachment limit applies to the wish model, not the number of uploaded Storage objects.
+
+Save the wish document before uploading. Image replacement uses a new object path, followed by a
+Firestore reference update and deletion of the old object. Use authenticated SDK downloads for private
+images; do not distribute persistent download-token URLs. Cleanup retries and reference persistence
+must be implemented with the upload flow. Existing Firestore rules still accept only bundled images.
+
+To publish, paste the complete `storage.rules` file into Firebase Console → Storage → Rules → Publish,
+or run from the repository root with Firebase CLI access:
+
+```powershell
+firebase deploy --only storage --project you2-ae09a
+```
+
+When prompted, enable the Storage Rules permission to read Firestore; the membership checks use the
+`(default)` database in the same project. No bucket name or credentials are embedded in the rules.
+Preparing or committing these files does not deploy them.
+
+`npm test` in `firebase-tests` runs both Firestore and Storage rules suites sequentially against local
+emulators (Firestore `8185`, Storage `9199`) using the `demo-you2` project. Storage tests cover both
+partners, outsiders, removed membership, missing/deleted wishes, format/size boundaries, and denied
+listing/overwrite operations. No production Firebase data is used.
