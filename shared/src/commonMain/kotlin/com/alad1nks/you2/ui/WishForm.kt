@@ -2,6 +2,7 @@ package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,11 +11,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -36,6 +40,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -48,6 +59,7 @@ import com.alad1nks.you2.core.model.WishDraft
 import com.alad1nks.you2.core.model.WishImage
 import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.AppTextField
+import com.alad1nks.you2.feature.designsystem.components.BackTextButton
 import com.alad1nks.you2.feature.designsystem.components.CategoryChip
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
@@ -72,8 +84,11 @@ import com.alad1nks.you2.resources.generated.deadline_hint
 import com.alad1nks.you2.resources.generated.deadline_mode
 import com.alad1nks.you2.resources.generated.description_hint
 import com.alad1nks.you2.resources.generated.description_images
+import com.alad1nks.you2.resources.generated.description_placeholder
 import com.alad1nks.you2.resources.generated.edit_wish
 import com.alad1nks.you2.resources.generated.end_date
+import com.alad1nks.you2.resources.generated.field_optional
+import com.alad1nks.you2.resources.generated.field_required
 import com.alad1nks.you2.resources.generated.form_description
 import com.alad1nks.you2.resources.generated.form_shared_hint
 import com.alad1nks.you2.resources.generated.form_shared_title
@@ -93,6 +108,7 @@ import com.alad1nks.you2.resources.generated.save_changes
 import com.alad1nks.you2.resources.generated.select_date
 import com.alad1nks.you2.resources.generated.start_date
 import com.alad1nks.you2.resources.generated.title_hint
+import com.alad1nks.you2.resources.generated.title_placeholder
 import com.alad1nks.you2.resources.generated.use_images
 import com.alad1nks.you2.resources.generated.when_label
 import kotlinx.datetime.LocalDate
@@ -111,6 +127,7 @@ internal fun WishForm(
     val state = rememberSaveable(wishId, saver = WishFormState.Saver) { WishFormState(initial) }
     var pickingImage by rememberSaveable { mutableStateOf<String?>(null) }
     var pickingDate by rememberSaveable { mutableStateOf<String?>(null) }
+    val scrollState = rememberLazyListState()
     Scaffold(
         topBar = {
             Row(
@@ -120,10 +137,7 @@ internal fun WishForm(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onCancel) {
-                    Icon(AppIcons.ArrowBack, null, Modifier.size(20.dp))
-                    Text(stringResource(Res.string.cancel))
-                }
+                BackTextButton(stringResource(Res.string.cancel), onCancel)
                 Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
                     Row(
                         Modifier.padding(AppSpacing.medium),
@@ -147,16 +161,26 @@ internal fun WishForm(
             }
         },
         bottomBar = {
-            PrimaryButton(
-                stringResource(if (wishId == null) Res.string.add_to_wishes else Res.string.save_changes),
-                { state.draftOrNull()?.let(onSave) },
-                Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small).testTag("save-wish"),
-                enabled = state.draftOrNull() != null,
-            )
+            Box {
+                PrimaryButton(
+                    stringResource(if (wishId == null) Res.string.add_to_wishes else Res.string.save_changes),
+                    { state.draftOrNull()?.let(onSave) },
+                    Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.listGap).testTag("save-wish"),
+                    enabled = state.draftOrNull() != null,
+                )
+                if (scrollState.canScrollForward) {
+                    val background = MaterialTheme.colorScheme.background
+                    Box(
+                        Modifier.fillMaxWidth().height(AppSpacing.section).offset(y = -AppSpacing.section)
+                            .background(Brush.verticalGradient(listOf(background.copy(alpha = 0f), background))),
+                    )
+                }
+            }
         },
     ) { padding ->
         LazyColumn(
             Modifier.fillMaxSize().padding(padding).testTag("wish-form"),
+            state = scrollState,
             contentPadding = PaddingValues(horizontal = AppSpacing.page, vertical = AppSpacing.large),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.page),
         ) {
@@ -165,37 +189,51 @@ internal fun WishForm(
                     stringResource(if (wishId == null) Res.string.add_wish else Res.string.edit_wish),
                     style = MaterialTheme.typography.headlineLarge,
                 )
-                FormHint(stringResource(Res.string.form_subtitle))
+                Text(
+                    stringResource(Res.string.form_subtitle),
+                    Modifier.padding(top = AppSpacing.xs),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
             }
             item {
                 AppTextField(
                     state.title,
-                    {
-                        state.title = it
-                        state.titleTouched = true
-                    },
+                    { state.title = it },
                     stringResource(Res.string.form_title),
                     Modifier.testTag("wish-title"),
-                    isError = state.titleTouched && state.title.isBlank(),
+                    showLengthError = false,
+                    placeholder = stringResource(Res.string.title_placeholder),
+                    labelTrailingText = stringResource(Res.string.field_required),
                     labelAbove = true,
                     helperText = stringResource(Res.string.title_hint),
                 )
             }
             item {
                 FormLabel(stringResource(Res.string.choose_category))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                FlowRow(
+                    Modifier.padding(top = AppSpacing.small),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    maxItemsInEachRow = 3,
+                ) {
                     WishCategory.entries.forEach { category ->
                         CategoryChip(
                             stringResource(category.label),
                             state.category == category,
                             { state.category = category },
+                            Modifier.height(32.dp),
                         )
                     }
                 }
             }
             item {
-                FormLabel(stringResource(Res.string.when_label))
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                FormLabel(stringResource(Res.string.when_label), optional = true)
+                FlowRow(
+                    Modifier.padding(top = AppSpacing.small),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                ) {
                     WishDateMode.entries.forEach { mode ->
                         CategoryChip(
                             stringResource(
@@ -207,6 +245,7 @@ internal fun WishForm(
                             ),
                             state.mode == mode,
                             { state.selectMode(mode) },
+                            Modifier.height(32.dp),
                         )
                     }
                 }
@@ -232,21 +271,23 @@ internal fun WishForm(
                         }
                     }
                 }
-                FormHint(
-                    stringResource(
-                        when {
-                            state.datesInvalid -> Res.string.dates_error
-                            state.mode == WishDateMode.NONE -> Res.string.no_date_hint
-                            state.mode == WishDateMode.DEADLINE -> Res.string.deadline_hint
-                            else -> Res.string.range_hint
-                        },
-                    ),
-                    error = state.datesInvalid,
-                )
+                Box(Modifier.padding(top = AppSpacing.small)) {
+                    FormHint(
+                        stringResource(
+                            when {
+                                state.datesInvalid -> Res.string.dates_error
+                                state.mode == WishDateMode.NONE -> Res.string.no_date_hint
+                                state.mode == WishDateMode.DEADLINE -> Res.string.deadline_hint
+                                else -> Res.string.range_hint
+                            },
+                        ),
+                        error = state.datesInvalid,
+                    )
+                }
             }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                    FormLabel(stringResource(Res.string.main_image))
+                    FormLabel(stringResource(Res.string.main_image), optional = true)
                     val cover = state.cover
                     if (cover == null) {
                         ImageAction(
@@ -281,17 +322,19 @@ internal fun WishForm(
                     state.description,
                     { state.description = it },
                     stringResource(Res.string.form_description),
-                    Modifier.testTag("wish-description"),
+                    Modifier.heightIn(min = 128.dp).testTag("wish-description"),
                     maxLength = 500,
                     singleLine = false,
                     minLines = 4,
+                    placeholder = stringResource(Res.string.description_placeholder),
+                    labelTrailingText = stringResource(Res.string.field_optional),
                     labelAbove = true,
                     helperText = stringResource(Res.string.description_hint),
                 )
             }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                    FormLabel(stringResource(Res.string.description_images))
+                    FormLabel(stringResource(Res.string.description_images), optional = true)
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
@@ -331,6 +374,7 @@ internal fun WishForm(
                     ImageAction(
                         stringResource(Res.string.add_images),
                         AppIcons.Add,
+                        attachments = true,
                     ) { pickingImage = "attachments" }
                     FormHint(stringResource(Res.string.attachments_hint))
                 }
@@ -345,10 +389,11 @@ internal fun WishForm(
                         Icon(
                             AppIcons.FavoriteBorder,
                             null,
-                            Modifier.size(AppDimensions.icon),
+                            Modifier.clip(AppShapes.pill).background(MaterialTheme.colorScheme.background)
+                                .padding(AppSpacing.small).size(AppDimensions.icon),
                             tint = MaterialTheme.colorScheme.primary,
                         )
-                        Column {
+                        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
                             FormLabel(stringResource(Res.string.form_shared_title))
                             FormHint(stringResource(Res.string.form_shared_hint, couple.partner.name))
                         }
@@ -377,7 +422,12 @@ internal fun WishForm(
 }
 
 @Composable
-private fun FormLabel(text: String) = Text(text, style = MaterialTheme.typography.labelLarge)
+private fun FormLabel(text: String, optional: Boolean = false) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge)
+        if (optional) FormHint(stringResource(Res.string.field_optional))
+    }
+}
 
 @Composable
 private fun FormHint(text: String, error: Boolean = false) =
@@ -388,28 +438,55 @@ private fun FormHint(text: String, error: Boolean = false) =
     )
 
 @Composable
-private fun ImageAction(label: String, icon: ImageVector, onClick: () -> Unit) {
+private fun ImageAction(label: String, icon: ImageVector, attachments: Boolean = false, onClick: () -> Unit) {
+    val outline = MaterialTheme.colorScheme.outlineVariant
     Surface(
         onClick = onClick,
         shape = AppShapes.field,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
-        modifier = Modifier.fillMaxWidth(),
+        modifier =
+            Modifier.fillMaxWidth().drawWithContent {
+                drawContent()
+                val strokeWidth = 1.dp.toPx()
+                drawRoundRect(
+                    color = outline,
+                    topLeft = Offset(strokeWidth / 2, strokeWidth / 2),
+                    size = Size(size.width - strokeWidth, size.height - strokeWidth),
+                    cornerRadius = CornerRadius(16.dp.toPx()),
+                    style =
+                        Stroke(
+                            strokeWidth,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx())),
+                        ),
+                )
+            },
     ) {
-        Row(
-            Modifier.heightIn(min = 72.dp).padding(AppSpacing.large),
-            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                icon,
-                null,
-                Modifier.size(AppDimensions.icon),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Column {
+        if (attachments) {
+            Column(
+                Modifier.heightIn(min = 96.dp).padding(AppSpacing.large),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+            ) {
+                Icon(icon, null, Modifier.size(AppDimensions.icon), tint = MaterialTheme.colorScheme.primary)
                 Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                FormHint(stringResource(Res.string.local_images_hint))
+            }
+        } else {
+            Row(
+                Modifier.heightIn(min = 72.dp).padding(AppSpacing.large),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    icon,
+                    null,
+                    Modifier.clip(AppShapes.symbol).background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(AppSpacing.small).size(AppDimensions.icon),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+                    Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                    FormHint(stringResource(Res.string.local_images_hint))
+                }
             }
         }
     }

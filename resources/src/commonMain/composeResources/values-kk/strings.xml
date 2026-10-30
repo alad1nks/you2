@@ -89,7 +89,11 @@
     <string name="save_changes">Өзгерістерді сақтау</string>
     <string name="form_subtitle">Үлкен шытырман оқиғалар. Күнделікті шағын қуаныштар.</string>
     <string name="form_title">Не істегіңіз келеді?</string>
-    <string name="title_hint">Міндетті. Тілекке атау беріңіз.</string>
+    <string name="title_hint">Тілекке атау беріңіз.</string>
+    <string name="title_placeholder">Бірге не істегіңіз келеді?</string>
+    <string name="description_placeholder">Екеуіңізді сол жерде елестетіңіз. Бұл сәтті не ерекше етеді?</string>
+    <string name="field_required">Міндетті</string>
+    <string name="field_optional">Міндетті емес</string>
     <string name="choose_category">Санатты таңдаңыз</string>
     <string name="when_label">Қашан?</string>
     <string name="deadline_mode">Мерзім</string>
@@ -108,7 +112,7 @@
     <string name="cover_hint">Міндетті емес. Әйтпесе санат суретін қолданамыз.</string>
     <string name="cover_selected_hint">Суретіңіз санат суретін алмастырады.</string>
     <string name="form_description">Тағы біраз мәлімет</string>
-    <string name="description_hint">Міндетті емес. Бұл сәтті не ерекше етеді?</string>
+    <string name="description_hint">Бұл сәтті не ерекше етеді?</string>
     <string name="description_images">Сипаттама суреттері</string>
     <string name="remove_attachment">%1$d тіркемесін жою</string>
     <string name="add_images">Суреттер қосу</string>

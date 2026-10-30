@@ -15,7 +15,7 @@ internal enum class WishDateMode { NONE, DEADLINE, RANGE }
 /** An isolated, saveable edit session. Repository changes happen only on Save. */
 internal class WishFormState(initial: WishDraft? = null) {
     var title by mutableStateOf(initial?.title.orEmpty())
-    var category by mutableStateOf(initial?.category ?: WishCategory.ADVENTURES)
+    var category by mutableStateOf(initial?.category ?: WishCategory.OTHER)
     var description by mutableStateOf(initial?.description.orEmpty())
     var cover by mutableStateOf(initial?.cover)
     var attachments by mutableStateOf(initial?.attachments.orEmpty().toList())
@@ -35,7 +35,6 @@ internal class WishFormState(initial: WishDraft? = null) {
         },
     )
     var end by mutableStateOf((initial?.dates as? WishDates.Range)?.end)
-    var titleTouched by mutableStateOf(false)
 
     fun selectMode(value: WishDateMode) {
         mode = value
@@ -77,7 +76,6 @@ internal class WishFormState(initial: WishDraft? = null) {
                         it.mode.name,
                         it.start?.toString().orEmpty(),
                         it.end?.toString().orEmpty(),
-                        it.titleTouched.toString(),
                     ) + it.attachments.map { image -> image.category.name }
                 },
                 restore = {
@@ -89,8 +87,7 @@ internal class WishFormState(initial: WishDraft? = null) {
                         mode = WishDateMode.valueOf(it[4])
                         start = it[5].takeIf(String::isNotEmpty)?.let(LocalDate::parse)
                         end = it[6].takeIf(String::isNotEmpty)?.let(LocalDate::parse)
-                        titleTouched = it[7].toBoolean()
-                        attachments = it.drop(8).map { key -> WishImage(WishCategory.valueOf(key)) }
+                        attachments = it.drop(7).map { key -> WishImage(WishCategory.valueOf(key)) }
                     }
                 },
             )

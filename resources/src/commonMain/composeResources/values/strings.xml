@@ -80,7 +80,11 @@
     <string name="save_changes">Save changes</string>
     <string name="form_subtitle">Big adventures. Little everyday joys.</string>
     <string name="form_title">What would you love to do?</string>
-    <string name="title_hint">Required. Give your wish a little name.</string>
+    <string name="title_hint">Give your wish a little name.</string>
+    <string name="title_placeholder">What would you love to share together?</string>
+    <string name="description_placeholder">Imagine the two of you there. What would make it special?</string>
+    <string name="field_required">Required</string>
+    <string name="field_optional">Optional</string>
     <string name="choose_category">Choose a category</string>
     <string name="when_label">When?</string>
     <string name="deadline_mode">Deadline</string>
@@ -99,7 +103,7 @@
     <string name="cover_hint">Optional. We’ll use a category image if skipped.</string>
     <string name="cover_selected_hint">Your image replaces the category illustration.</string>
     <string name="form_description">A few more details</string>
-    <string name="description_hint">Optional. What would make it special?</string>
+    <string name="description_hint">What would make it special?</string>
     <string name="description_images">Images for the description</string>
     <string name="remove_attachment">Remove attachment %1$d</string>
     <string name="add_images">Add images</string>

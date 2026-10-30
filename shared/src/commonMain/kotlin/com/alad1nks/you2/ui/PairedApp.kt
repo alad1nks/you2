@@ -34,8 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.alad1nks.you2.core.model.DateStatus
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.core.model.PairedSpace
@@ -179,65 +177,67 @@ internal fun AppContent(
                 )
             }
             navigation.overlay?.let { route ->
-                Dialog(
-                    onDismissRequest = navigation::back,
-                    properties = DialogProperties(usePlatformDefaultWidth = false),
+                OverlayDialog(
+                    darkTheme = darkTheme,
+                    onDismiss = navigation::back,
                 ) {
                     Surface(
                         Modifier.widthIn(
                             max = AppDimensions.contentWidth,
-                        ).fillMaxSize().safeDrawingPadding().imePadding(),
+                        ).fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        when (route) {
-                            is OverlayRoute.Details -> {
-                                val wish = space.wishes.find { it.id == route.wishId }
-                                if (wish != null) {
-                                    WishDetails(
-                                        wish,
-                                        space.couple,
-                                        today,
-                                        onBack = {
-                                            if (wish.completion != null) {
-                                                navigation.select(
-                                                    MainTab.MEMORIES,
-                                                )
-                                            } else {
+                        Box(Modifier.safeDrawingPadding().imePadding()) {
+                            when (route) {
+                                is OverlayRoute.Details -> {
+                                    val wish = space.wishes.find { it.id == route.wishId }
+                                    if (wish != null) {
+                                        WishDetails(
+                                            wish,
+                                            space.couple,
+                                            today,
+                                            onBack = {
+                                                if (wish.completion != null) {
+                                                    navigation.select(
+                                                        MainTab.MEMORIES,
+                                                    )
+                                                } else {
+                                                    navigation.back()
+                                                }
+                                            },
+                                            onEdit = { navigation.open(OverlayRoute.Form(wish.id)) },
+                                            onDelete = {
+                                                onDeleteWish(wish.id)
                                                 navigation.back()
-                                            }
-                                        },
-                                        onEdit = { navigation.open(OverlayRoute.Form(wish.id)) },
-                                        onDelete = {
-                                            onDeleteWish(wish.id)
-                                            navigation.back()
-                                        },
-                                        onRestore = {
-                                            onRestoreWish(wish.id)
-                                            navigation.back()
-                                        },
-                                        onEditMemory = { onEditMemory(wish.id, it) },
-                                        onComplete = {
-                                            onCompleteWish(wish.id)
+                                            },
+                                            onRestore = {
+                                                onRestoreWish(wish.id)
+                                                navigation.back()
+                                            },
+                                            onEditMemory = { onEditMemory(wish.id, it) },
+                                            onComplete = {
+                                                onCompleteWish(wish.id)
+                                                navigation.back()
+                                            },
+                                        )
+                                    } else {
+                                        TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
+                                    }
+                                }
+
+                                is OverlayRoute.Form -> {
+                                    WishForm(
+                                        wishId = route.wishId,
+                                        initial = space.wishes.find { it.id == route.wishId }?.content,
+                                        couple = space.couple,
+                                        today = today,
+                                        onCancel = navigation::back,
+                                        onSave = { draft ->
+                                            onSaveWish(route.wishId, draft)
                                             navigation.back()
                                         },
                                     )
-                                } else {
-                                    TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
                                 }
-                            }
-
-                            is OverlayRoute.Form -> {
-                                WishForm(
-                                    wishId = route.wishId,
-                                    initial = space.wishes.find { it.id == route.wishId }?.content,
-                                    couple = space.couple,
-                                    today = today,
-                                    onCancel = navigation::back,
-                                    onSave = { draft ->
-                                        onSaveWish(route.wishId, draft)
-                                        navigation.back()
-                                    },
-                                )
                             }
                         }
                     }

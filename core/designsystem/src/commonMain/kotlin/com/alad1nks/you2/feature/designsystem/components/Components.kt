@@ -272,20 +272,47 @@ fun AppTextField(
     minLines: Int = 1,
     labelAbove: Boolean = false,
     helperText: String? = null,
+    placeholder: String? = null,
+    labelTrailingText: String? = null,
+    showLengthError: Boolean = true,
 ) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-        if (labelAbove) Text(label, style = MaterialTheme.typography.labelLarge)
+        if (labelAbove) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                Text(label, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge)
+                labelTrailingText?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                }
+            }
+        }
+        val supportingContent: @Composable () -> Unit = {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                Text(
+                    if (isError) stringResource(Res.string.field_error) else helperText.orEmpty(),
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
+                )
+                Text(
+                    stringResource(Res.string.character_count, value.length, maxLength),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+            }
+        }
         OutlinedTextField(
             value,
             onValueChange,
             modifier.fillMaxWidth().semantics { if (labelAbove) contentDescription = label },
             label = if (labelAbove) null else ({ Text(label) }),
+            placeholder = placeholder?.let { { Text(it, color = MaterialTheme.colorScheme.secondary) } },
             singleLine = singleLine,
             minLines = minLines,
             shape = AppShapes.field,
             colors =
                 if (labelAbove) {
                     OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                         focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                         errorContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -293,17 +320,23 @@ fun AppTextField(
                 } else {
                     OutlinedTextFieldDefaults.colors()
                 },
-            isError = isError || value.length > maxLength,
-            supportingText = {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                    Text(
-                        if (isError) stringResource(Res.string.field_error) else helperText.orEmpty(),
-                        Modifier.weight(1f),
-                    )
-                    Text(stringResource(Res.string.character_count, value.length, maxLength))
-                }
-            },
+            isError = isError || (showLengthError && value.length > maxLength),
+            supportingText =
+                if (labelAbove) {
+                    null
+                } else {
+                    {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                            Text(
+                                if (isError) stringResource(Res.string.field_error) else helperText.orEmpty(),
+                                Modifier.weight(1f),
+                            )
+                            Text(stringResource(Res.string.character_count, value.length, maxLength))
+                        }
+                    }
+                },
         )
+        if (labelAbove) supportingContent()
     }
 }
 

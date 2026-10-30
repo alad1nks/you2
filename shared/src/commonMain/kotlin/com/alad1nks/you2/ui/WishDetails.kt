@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +32,7 @@ import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
 import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.Avatar
+import com.alad1nks.you2.feature.designsystem.components.BackTextButton
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.DeleteWishDialog
 import com.alad1nks.you2.feature.designsystem.components.MenuAction
@@ -99,10 +99,10 @@ internal fun WishDetails(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onBack) {
-                    Icon(AppIcons.ArrowBack, null, Modifier.size(20.dp))
-                    Text(stringResource(if (completion == null) Res.string.back else Res.string.memories))
-                }
+                BackTextButton(
+                    stringResource(if (completion == null) Res.string.back else Res.string.memories),
+                    onBack,
+                )
                 WishMenu(
                     menuOpen,
                     { menuOpen = it },
