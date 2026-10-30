@@ -4,29 +4,29 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,10 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.core.model.DateStatus
 import com.alad1nks.you2.core.model.Language
@@ -53,7 +50,6 @@ import com.alad1nks.you2.feature.designsystem.components.DateBadge
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.components.StatusTone
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
-import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.add_wish
@@ -112,6 +108,11 @@ internal fun AppContent(
     val usScroll = rememberLazyListState()
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(contentAlignment = Alignment.TopCenter) {
+            Box(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
+            )
             Scaffold(
                 modifier = Modifier.widthIn(max = AppDimensions.contentWidth).fillMaxSize().safeDrawingPadding(),
                 topBar = { CoupleHeader(space.couple.you.name, space.couple.partner.name) },
@@ -256,12 +257,7 @@ internal fun AppContent(
 
 @Composable
 private fun BottomNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
-    Row(
-        modifier =
-            Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer)
-                .selectableGroup().padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 0.dp) {
         MainTab.entries.forEach { tab ->
             val label =
                 stringResource(
@@ -271,31 +267,19 @@ private fun BottomNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
                         MainTab.US -> Res.string.us
                     },
                 )
-            val isSelected = selected == tab
-            val contentColor =
-                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-            Column(
-                modifier =
-                    Modifier.weight(1f, fill = false).width(104.dp)
-                        .heightIn(min = AppDimensions.navigationHeight - AppSpacing.small * 2)
-                        .selectable(
-                            selected = isSelected,
-                            role = Role.Tab,
-                            interactionSource = null,
-                            indication = ripple(color = contentColor),
-                            onClick = { onSelect(tab) },
-                        ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
-            ) {
-                Box(
-                    modifier =
-                        Modifier.size(width = 64.dp, height = AppSpacing.section).background(
-                            if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                            AppShapes.pill,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
+            NavigationBarItem(
+                selected = selected == tab,
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                    ),
+                onClick = {
+                    onSelect(tab)
+                },
+                label = { Text(label, style = MaterialTheme.typography.bodySmall) },
+                icon = {
                     Icon(
                         when (tab) {
                             MainTab.WISHES -> AppIcons.FavoriteBorder
@@ -304,16 +288,9 @@ private fun BottomNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
                         },
                         null,
                         Modifier.size(AppDimensions.icon),
-                        tint = contentColor,
                     )
-                }
-                Text(
-                    label,
-                    color = contentColor,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                )
-            }
+                },
+            )
         }
     }
 }

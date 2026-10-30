@@ -3,6 +3,7 @@
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.alad1nks.you2.core.model.Language
@@ -14,10 +15,11 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.koinConfiguration
 
 @Composable
-fun App() {
+fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
     KoinApplication(configuration = koinConfiguration { modules(CommonModules + PlatformModules) }) {
         val viewModel = koinViewModel<MainViewModel>()
         val darkTheme by viewModel.darkTheme.collectAsState(isSystemInDarkTheme())
+        SideEffect { onDarkThemeChanged(darkTheme) }
         val language by viewModel.language.collectAsState(Language.SYSTEM)
         val space by viewModel.space.collectAsState()
         AppTheme(darkTheme = darkTheme) {
