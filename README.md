@@ -329,7 +329,8 @@ Data layout:
 - `couples/{coupleId}`: immutable membership after two users join, current invitation ID, creation timestamp.
 - `couples/{coupleId}/wishes/{wishId}`: one wish per document, including optional completion/memory fields.
 - `invites/{code}`: random UUID v4 code (without hyphens), owner, pair, expiry, and one-time consumer.
-  Invitation collections cannot be listed. An authenticated user who possesses the code can read that invitation.
+  Invitation collections cannot be listed. An authenticated user who possesses the code can read it only
+  while it is current, unused, unexpired, and the pair has one member. The owner can read their historical codes.
 
 One partner creates an invitation from any unpaired tab; the second registers/signs in and pastes
 the code in **I have an invite code**. Names can be edited in **Us > Your profile**; unnamed accounts
@@ -358,6 +359,39 @@ not implemented. Only one of the two partners should create an invitation.
 
 ### Firestore validation
 
+Calendar dates in wishes must be real dates in years 0001 through 9999, including Gregorian leap-year
+checks. Invalid month/day combinations are rejected in creation dates, deadlines, ranges, and completions.
+
+### Storage security and deployment
+
+Storage remains available to couple members: upload and read images for existing wishes, and delete
+images even after a wish is removed. The rules preserve the existing paths, image formats, and 5 MiB
+per-file limit. They reject application custom metadata, compressed content encodings, and arbitrary
+content-disposition overrides. Listing, overwrites, and metadata updates remain forbidden.
+
+These are access and metadata checks, not image-byte validation or aggregate quotas. Storage Rules
+cannot count all objects or atomically reserve total storage across uploads. A trusted backend must
+enforce account storage/count quotas and validate or re-encode actual image contents if those guarantees
+are required. Client-side checks and App Check do not replace those controls. This PR does not implement
+that backend or claim that unlimited aggregate uploads and spoofed image bytes are prevented.
+
+Deploy both rule files to apply this hardening (merging this PR does not deploy rules):
+
+```powershell
+firebase deploy --only "firestore:rules,storage" --project you2-ae09a
+```
+
+If the previous Storage rules were ever deployed, review the bucket's existing objects. Previously
+issued Firebase download-token URLs remain usable even after rules deny reads or a wish is deleted.
+Revoke those tokens in Firebase Console or through a trusted administrative process; delete unwanted
+objects after review. Rules cannot revoke existing tokens. Also verify that bucket IAM does not grant
+public access. This repository change does not modify production objects, tokens, or IAM.
+
+Before deploying, audit existing wish dates and repair invalid historical values through a trusted
+administrative process. New validation prevents further malformed writes but does not rewrite old data.
+
+### Rules tests
+
 Rules tests use a **demo project and local emulator only**, without production credentials. Install Node 22
 and Java 21, then run:
 
@@ -367,8 +401,9 @@ npm ci
 npm test
 ```
 
-The configured Firestore emulator port is `8185`. The suite covers access isolation, atomic pairing,
-concurrent acceptance, expiry, invitation renewal, write validation, and the complete wish/memory lifecycle.
+The configured Firestore emulator port is `8185`; Storage uses `9199`. The suite covers access isolation,
+atomic pairing, concurrent acceptance, invitation read revocation, calendar validation, the complete
+wish/memory lifecycle, member Storage access, outsider denial, and upload metadata validation.
 The same suite runs in PR CI. Shared tests cover document mapping and hiding data from a previous account.
 
 Before release, on two Android devices/accounts verify invitation creation/join, realtime edits,
@@ -391,6 +426,11 @@ Uploads must be nonempty, at most **5 MiB (5,242,880 bytes)**, and have a matchi
 `image/png`, or `image/webp` content type. Rules validate metadata, not the actual image bytes. The
 upload implementation must decode/re-encode images. These rules do not enforce a per-wish file count;
 the existing 12-attachment limit applies to the wish model, not the number of uploaded Storage objects.
+
+Omit application `customMetadata` (or send an empty map). Omit `contentEncoding` or set it to `identity`;
+compressed encodings such as `gzip` are rejected. Omit `contentDisposition` or use exactly `inline` or
+`attachment`; custom filenames and other disposition directives are rejected. These restrictions do
+not prevent Firebase from issuing download tokens, and must not be treated as token revocation.
 
 Save the wish document before uploading. Image replacement uses a new object path, followed by a
 Firestore reference update and deletion of the old object. Use authenticated SDK downloads for private

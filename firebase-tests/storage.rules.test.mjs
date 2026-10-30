@@ -2,7 +2,7 @@ import { after, before, beforeEach, test } from 'node:test';
 import { readFile } from 'node:fs/promises';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getMetadata, deleteObject, listAll, updateMetadata } from 'firebase/storage';
+import { ref, uploadBytes, getMetadata, getBytes, getDownloadURL, deleteObject, listAll, updateMetadata } from 'firebase/storage';
 
 let env;
 const path = 'couples/pair/wishes/wish/photo.jpg';
@@ -44,6 +44,7 @@ after(async () => { await env.cleanup(); });
 test('both partners can upload, read, and delete shared images', async () => {
   await assertSucceeds(upload('alice'));
   await assertSucceeds(getMetadata(image('bob')));
+  await assertSucceeds(getBytes(image('bob')));
   await assertSucceeds(deleteObject(image('bob')));
   await assertSucceeds(upload('bob'));
   await assertSucceeds(getMetadata(image('alice')));
@@ -54,6 +55,8 @@ test('guests and other couples cannot access known image paths', async () => {
   await upload('alice');
   for (const uid of [null, 'eve']) {
     await assertFails(getMetadata(image(uid)));
+    await assertFails(getBytes(image(uid)));
+    await assertFails(getDownloadURL(image(uid)));
     await assertFails(deleteObject(image(uid)));
     await assertFails(upload(uid, 'couples/pair/wishes/wish/new.jpg'));
   }
@@ -105,6 +108,32 @@ test('overwrites and metadata changes are forbidden', async () => {
   await assertFails(upload('bob'));
   await assertFails(updateMetadata(image('alice'), { contentType: 'image/png' }));
   await assertFails(updateMetadata(image('bob'), { customMetadata: { anything: 'changed' } }));
+});
+
+test('uploads reject validation claims and arbitrary application metadata', async () => {
+  for (const customMetadata of [
+    { validated: 'true' },
+    { ownerId: 'bob' },
+    { anything: 'unexpected' },
+  ]) {
+    await assertFails(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', customMetadata }));
+  }
+  await assertSucceeds(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', customMetadata: {} }));
+});
+
+test('uploads reject encoded bodies and arbitrary disposition overrides', async () => {
+  for (const contentEncoding of ['gzip', 'br', 'identity, gzip']) {
+    await assertFails(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', contentEncoding }));
+  }
+  for (const contentDisposition of ['form-data', 'inline; filename="script.html"', 'attachment; filename="script.html"']) {
+    await assertFails(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', contentDisposition }));
+  }
+  await assertSucceeds(uploadBytes(image('alice'), bytes, {
+    contentType: 'image/jpeg', contentEncoding: 'identity', contentDisposition: 'inline',
+  }));
+  await assertSucceeds(uploadBytes(image('alice', 'couples/pair/wishes/wish/attachment.jpg'), bytes, {
+    contentType: 'image/jpeg', contentDisposition: 'attachment',
+  }));
 });
 
 test('listing, unexpected paths, nested paths, and unsupported filenames are denied', async () => {
