@@ -156,4 +156,22 @@
     <string name="profile_hint">Your name in this shared space. Changes last until the demo restarts.</string>
     <string name="sign_out">Sign out</string>
     <string name="shared_space_note">Your wishes and memories belong to both of you.</string>
+    <string name="cloud_connected_note">Changes sync with your shared space.</string>
+    <string name="cloud_cache">Showing cached data. Waiting for a connection.</string>
+    <string name="cloud_create_invite">Create a new invitation</string>
+    <string name="cloud_invite_code">Invitation code</string>
+    <string name="cloud_invite_hint">Send this code to your partner. It works once, for 24 hours. A new invitation replaces the previous one. This screen will update when your partner joins.</string>
+    <string name="cloud_join">Join your partner</string>
+    <string name="cloud_loading">Loading your space…</string>
+    <string name="cloud_pair_title">Your shared space</string>
+    <string name="cloud_pair_hint">Enter your name, then invite your partner or enter their invitation code.</string>
+    <string name="cloud_retry">Retry</string>
+    <string name="cloud_saving">Saving changes…</string>
+    <string name="cloud_saving_hint">Waiting for server confirmation. If you are offline, changes will sync when the connection returns. Signing out does not cancel a queued change.</string>
+    <string name="cloud_error">Could not finish the operation. Retry or cancel.</string>
+    <string name="cloud_access_error">Access denied. Check that the database rules are deployed and that the invitation is still valid.</string>
+    <string name="cloud_network_error">No connection to the server. Check your internet connection and retry.</string>
+    <string name="cloud_invite_error">This invitation cannot be used. Check the code or ask your partner for a new one.</string>
+    <string name="cloud_data_error">Could not read the saved data. Retry or contact support.</string>
+    <string name="cloud_attachment_limit">Keep up to 12 attachments. Remove extra images to save.</string>
 </resources>

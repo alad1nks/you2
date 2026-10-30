@@ -182,6 +182,7 @@ internal fun AppContent(
                     onRenameUser = onRenameUser,
                     onSetDarkTheme = onSetDarkTheme,
                     onSetLanguage = onSetLanguage,
+                    syncedProfile = onSignOut != null,
                 )
             }
             navigation.overlay?.let { route ->

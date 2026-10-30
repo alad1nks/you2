@@ -174,4 +174,22 @@
     <string name="profile_hint">Ортақ кеңістіктегі атыңыз. Өзгерістер демо қайта іске қосылғанша сақталады.</string>
     <string name="sign_out">Шығу</string>
     <string name="shared_space_note">Тілектер мен естеліктер екеуіңізге ортақ.</string>
+    <string name="cloud_connected_note">Өзгерістер ортақ кеңістігіңізбен синхрондалады.</string>
+    <string name="cloud_cache">Сақталған деректер көрсетілуде. Байланыс күтілуде.</string>
+    <string name="cloud_create_invite">Жаңа шақыру жасау</string>
+    <string name="cloud_invite_code">Шақыру коды</string>
+    <string name="cloud_invite_hint">Кодты серігіңізге жіберіңіз. Ол 24 сағат ішінде бір рет жарамды. Жаңа шақыру алдыңғысын ауыстырады. Серігіңіз қосылғанда экран жаңарады.</string>
+    <string name="cloud_join">Серігіңізге қосылу</string>
+    <string name="cloud_loading">Кеңістігіңіз жүктелуде…</string>
+    <string name="cloud_pair_title">Ортақ кеңістігіңіз</string>
+    <string name="cloud_pair_hint">Атыңызды енгізіп, серігіңізді шақырыңыз немесе оның шақыру кодын енгізіңіз.</string>
+    <string name="cloud_retry">Қайталау</string>
+    <string name="cloud_saving">Өзгерістер сақталуда…</string>
+    <string name="cloud_saving_hint">Сервердің растауы күтілуде. Интернет болмаса, өзгерістер байланыс қалпына келгенде синхрондалады. Аккаунттан шығу жіберілген өзгерісті тоқтатпайды.</string>
+    <string name="cloud_error">Әрекет орындалмады. Қайталап көріңіз немесе бас тартыңыз.</string>
+    <string name="cloud_access_error">Рұқсат жоқ. Дерекқор ережелерінің жарияланғанын және шақырудың жарамдылығын тексеріңіз.</string>
+    <string name="cloud_network_error">Сервермен байланыс жоқ. Интернетті тексеріп, қайталап көріңіз.</string>
+    <string name="cloud_invite_error">Шақыруды пайдалану мүмкін емес. Кодты тексеріңіз немесе серігіңізден жаңасын сұраңыз.</string>
+    <string name="cloud_data_error">Сақталған деректерді оқу мүмкін болмады. Қайталап көріңіз немесе қолдау қызметіне хабарласыңыз.</string>
+    <string name="cloud_attachment_limit">12 тіркемеге дейін сақтауға болады. Артық суреттерді өшіріңіз.</string>
 </resources>

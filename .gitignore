@@ -20,3 +20,5 @@ node_modules/
 
 # Local Firebase client configuration
 google-services.json
+.firebase/
+*-debug.log

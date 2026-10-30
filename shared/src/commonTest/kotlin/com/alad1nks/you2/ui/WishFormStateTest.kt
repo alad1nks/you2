@@ -15,6 +15,16 @@ import kotlin.test.assertNull
 
 class WishFormStateTest {
     @Test
+    fun excessiveAttachmentsCannotReachTheRepository() {
+        val form = WishFormState()
+        form.title = "A wish"
+        form.attachments = List(13) { WishImage(WishCategory.OTHER) }
+        assertNull(form.draftOrNull())
+        form.attachments = form.attachments.dropLast(1)
+        assertNotNull(form.draftOrNull())
+    }
+
+    @Test
     fun requiredTitleAndLengthBoundaries() {
         val form = WishFormState()
         assertNull(form.draftOrNull())

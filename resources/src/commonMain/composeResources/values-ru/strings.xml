@@ -174,4 +174,22 @@
     <string name="profile_hint">Ваше имя в общем пространстве. Изменения действуют до перезапуска демо.</string>
     <string name="sign_out">Выйти</string>
     <string name="shared_space_note">Желания и воспоминания принадлежат вам обоим.</string>
+    <string name="cloud_connected_note">Изменения синхронизируются с вашим общим пространством.</string>
+    <string name="cloud_cache">Показаны сохранённые данные. Ожидаем подключение.</string>
+    <string name="cloud_create_invite">Создать новое приглашение</string>
+    <string name="cloud_invite_code">Код приглашения</string>
+    <string name="cloud_invite_hint">Отправьте код партнёру. Он действует один раз в течение 24 часов. Новое приглашение заменяет предыдущее. Экран обновится, когда партнёр присоединится.</string>
+    <string name="cloud_join">Присоединиться к партнёру</string>
+    <string name="cloud_loading">Загружаем ваше пространство…</string>
+    <string name="cloud_pair_title">Ваше общее пространство</string>
+    <string name="cloud_pair_hint">Укажите имя, затем пригласите партнёра или введите его код приглашения.</string>
+    <string name="cloud_retry">Повторить</string>
+    <string name="cloud_saving">Сохраняем изменения…</string>
+    <string name="cloud_saving_hint">Ожидаем подтверждение сервера. Без интернета изменения синхронизируются после подключения. Выход из аккаунта не отменяет отправленное изменение.</string>
+    <string name="cloud_error">Не удалось выполнить действие. Повторите попытку или отмените.</string>
+    <string name="cloud_access_error">Доступ запрещён. Проверьте, опубликованы ли правила базы и действительно ли приглашение.</string>
+    <string name="cloud_network_error">Нет соединения с сервером. Проверьте интернет и повторите попытку.</string>
+    <string name="cloud_invite_error">Приглашение недоступно. Проверьте код или попросите партнёра создать новый.</string>
+    <string name="cloud_data_error">Не удалось прочитать сохранённые данные. Повторите попытку или обратитесь в поддержку.</string>
+    <string name="cloud_attachment_limit">Можно сохранить до 12 вложений. Удалите лишние изображения.</string>
 </resources>
