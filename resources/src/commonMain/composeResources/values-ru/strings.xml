@@ -89,7 +89,11 @@
     <string name="save_changes">Сохранить изменения</string>
     <string name="form_subtitle">Большие приключения. Маленькие радости.</string>
     <string name="form_title">Чем бы вы хотели заняться?</string>
-    <string name="title_hint">Обязательно. Дайте желанию имя.</string>
+    <string name="title_hint">Дайте желанию имя.</string>
+    <string name="title_placeholder">Что бы вы хотели сделать вместе?</string>
+    <string name="description_placeholder">Представьте вас двоих там. Что сделает этот момент особенным?</string>
+    <string name="field_required">Обязательно</string>
+    <string name="field_optional">Необязательно</string>
     <string name="choose_category">Выберите категорию</string>
     <string name="when_label">Когда?</string>
     <string name="deadline_mode">Срок</string>
@@ -108,7 +112,7 @@
     <string name="cover_hint">Необязательно. Иначе используем иллюстрацию категории.</string>
     <string name="cover_selected_hint">Ваше изображение заменяет иллюстрацию категории.</string>
     <string name="form_description">Ещё немного деталей</string>
-    <string name="description_hint">Необязательно. Что сделает этот момент особенным?</string>
+    <string name="description_hint">Что сделает этот момент особенным?</string>
     <string name="description_images">Изображения к описанию</string>
     <string name="remove_attachment">Удалить вложение %1$d</string>
     <string name="add_images">Добавить изображения</string>

@@ -12,13 +12,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class WishFormStateTest {
     @Test
     fun requiredTitleAndLengthBoundaries() {
         val form = WishFormState()
         assertNull(form.draftOrNull())
+        assertEquals(WishCategory.OTHER, form.category)
+        assertEquals(WishDateMode.NONE, form.mode)
         form.title = "   "
         assertNull(form.draftOrNull())
         form.title = "a".repeat(80)
@@ -69,7 +70,6 @@ class WishFormStateTest {
         form.attachments = form.attachments.drop(1)
         form.selectMode(WishDateMode.RANGE)
         form.start = DemoDateSource.today()
-        form.titleTouched = true
         val saved = with(WishFormState.Saver) { SaverScope { true }.save(form) }
         val restored = WishFormState.Saver.restore(requireNotNull(saved))!!
         assertEquals("Edited", restored.title)
@@ -77,7 +77,6 @@ class WishFormStateTest {
         assertNull(restored.cover)
         assertEquals(form.start, restored.start)
         assertNull(restored.end)
-        assertTrue(restored.titleTouched)
         assertNull(restored.draftOrNull())
         assertEquals(2, original.attachments.size)
         assertNotNull(original.cover)

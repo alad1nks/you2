@@ -4,10 +4,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
@@ -126,10 +130,18 @@ class WishFormTest {
                 }
             }
             onNodeWithTag("save-wish").assertIsNotEnabled()
+            onNodeWithText("Other").assertIsSelected()
+            onNodeWithText("No date").assertIsSelected()
+            onNodeWithText("What would you love to share together?").assertIsDisplayed()
             onRoot().captureRoboImage("src/jvmTest/screenshots/form_empty_412.png")
+            onNodeWithTag("wish-title").performTextReplacement("An idea")
+            onNodeWithTag("wish-title").performTextReplacement("")
+            onNodeWithTag("wish-title").assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Error))
+            onNodeWithTag("save-wish").assertIsNotEnabled()
             onNodeWithTag("wish-title").performTextReplacement("x".repeat(81))
             onNodeWithTag("save-wish").assertIsNotEnabled()
             onNodeWithText("81 / 80").assertExists()
+            onNodeWithTag("wish-title").assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Error))
             onNodeWithTag("wish-title").performTextReplacement("A new idea")
             onNodeWithTag("save-wish").assertIsEnabled()
         }
