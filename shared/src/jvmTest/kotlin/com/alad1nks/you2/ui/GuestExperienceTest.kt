@@ -3,7 +3,9 @@ package com.alad1nks.you2.ui
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
@@ -11,6 +13,8 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -25,14 +29,81 @@ import com.alad1nks.you2.auth.AuthError
 import com.alad1nks.you2.auth.AuthMode
 import com.alad1nks.you2.auth.AuthUser
 import com.alad1nks.you2.auth.AuthViewModel
+import com.alad1nks.you2.core.data.repository.CloudPhase
+import com.alad1nks.you2.core.data.repository.CloudState
+import com.alad1nks.you2.core.data.repository.CloudWishesRepository
+import com.alad1nks.you2.core.data.repository.DemoDateSource
+import com.alad1nks.you2.core.data.repository.InMemoryWishesRepository
+import com.alad1nks.you2.core.data.repository.WishesRepository
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.feature.designsystem.theme.AppTheme
 import io.github.takahirom.roborazzi.captureRoboImage
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class GuestExperienceTest {
+    @Test
+    fun authenticationPreservesEachTabForUnpairedUsers() = authenticationPreservesTabs(CloudPhase.UNPAIRED)
+
+    @Test
+    fun authenticationPreservesEachTabForPairedUsers() = authenticationPreservesTabs(CloudPhase.READY)
+
+    private fun authenticationPreservesTabs(phase: CloudPhase) =
+        runDesktopComposeUiTest(width = 412, height = 853) {
+            val model = AuthViewModel(GuestAuthClient())
+            val repository =
+                object :
+                    CloudWishesRepository,
+                    WishesRepository by InMemoryWishesRepository(DemoDateSource) {
+                    override val cloudState = MutableStateFlow(CloudState("user", "Alex", phase))
+
+                    override fun createInvitation(name: String) = Unit
+
+                    override fun joinInvitation(name: String, code: String) = Unit
+
+                    override fun retry() = Unit
+
+                    override fun dismissFailure() = Unit
+
+                    override fun close() = Unit
+                }
+            var signedIn by mutableStateOf(false)
+            setContent {
+                val tabState = rememberSaveable { mutableStateOf(MainTab.WISHES) }
+                val auth by model.state.collectAsState()
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
+                    AppTheme(false) {
+                        key(signedIn) {
+                            if (!signedIn) {
+                                GuestExperience(auth, model, Language.ENGLISH, {}, tabState)
+                            } else {
+                                CloudSpaceGate(repository, "user", {}, tabState = tabState) {
+                                    AppContent(
+                                        repository.space.value,
+                                        DemoDateSource.today(),
+                                        initialTab = tabState.value,
+                                        onTabChanged = { tabState.value = it },
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (tab in listOf("Wishes", "Memories", "Us")) {
+                onNode(hasText(tab) and isSelectable()).performClick()
+                onNodeWithText("Log in").performScrollTo().performClick()
+                onNodeWithTag("auth-email").assertExists()
+                runOnIdle { signedIn = true }
+                onNode(hasText(tab) and isSelectable()).assertIsSelected()
+                onNodeWithTag("auth-email").assertDoesNotExist()
+                runOnIdle { signedIn = false }
+                onNode(hasText(tab) and isSelectable()).assertIsSelected()
+            }
+        }
+
     @Test
     fun mobilePreviews() = capturePreviews(412, 853, 1f, false)
 

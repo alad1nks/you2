@@ -1,0 +1,31 @@
+<resources>
+    <string name="pair_space">Сіздің кеңістігіңіз</string>
+    <string name="pair_beginning">Екеуіңіз үшін шағын бастама.</string>
+    <string name="pair_unpaired">Жұбыңыз әлі қосылмаған</string>
+    <string name="pair_you">Сіз</string>
+    <string name="pair_title">Жақсылық екеуден басталады</string>
+    <string name="pair_body">Тілектермен бөлісіп, шағын идеяларды естелікке айналдыру үшін жұбыңызбен қосылыңыз.</string>
+    <string name="pair_wishes_hint">Ортақ тізім екеуіңізден басталады.</string>
+    <string name="pair_memories_hint">Ортақ сәттеріңіз осында сақталады.</string>
+    <string name="pair_wishes_body">Тілектер қосып, бірге өткізетін сәттерді жоспарлау үшін жұбыңызбен қосылыңыз.</string>
+    <string name="pair_memories_body">Орындалған тілектерді естелікке айналдыру үшін жұбыңызбен қосылыңыз.</string>
+    <string name="pair_invite">Жұбыңызды шақыру</string>
+    <string name="pair_have_code">Менде шақыру коды бар</string>
+    <string name="pair_invite_body">Кодты жұбыңызға жіберіңіз. Ол ортақ кеңістікке қосылу үшін оны you2 қолданбасына енгізе алады.</string>
+    <string name="pair_your_code">Сіздің шақыру кодыңыз</string>
+    <string name="pair_expiry">24 сағат жарамды · Бір рет қолдануға болады</string>
+    <string name="pair_copy">Кодты көшіру</string>
+    <string name="pair_copy_again">Қайта көшіру</string>
+    <string name="pair_copied">✓ Код көшірілді · Жұбыңызды күтеміз</string>
+    <string name="pair_waiting">Жұбыңыз кодты қолданған кезде қосыласыз.</string>
+    <string name="pair_close">Жабу</string>
+    <string name="pair_join_title">Жұбыңызға қосылу</string>
+    <string name="pair_join_body">Жұбыңыз жіберген шақыру кодын қойыңыз.</string>
+    <string name="pair_code">Шақыру коды</string>
+    <string name="pair_placeholder">Шақыру кодын қойыңыз</string>
+    <string name="pair_join">Қосылу</string>
+    <string name="pair_invalid">Код қате, мерзімі өткен немесе қолданылған. Жұбыңыздан жаңа код сұраңыз.</string>
+    <string name="pair_connected">Сіз қосылдыңыз</string>
+    <string name="pair_connected_body">Ортақ кеңістігіңіз дайын. Бірінші ортақ тілектен бастаңыз.</string>
+    <string name="pair_view_wishes">Тілектерімізді көру</string>
+</resources>

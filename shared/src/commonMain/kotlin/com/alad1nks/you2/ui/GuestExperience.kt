@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -102,8 +103,9 @@ internal fun GuestExperience(
     authViewModel: AuthViewModel,
     language: Language,
     onSetLanguage: (Language) -> Unit,
+    tabState: MutableState<MainTab> = rememberSaveable { mutableStateOf(MainTab.WISHES) },
 ) {
-    var tab by rememberSaveable { mutableStateOf(MainTab.WISHES) }
+    var tab by tabState
     var authenticating by rememberSaveable { mutableStateOf(false) }
     if (authenticating) {
         AuthForm(auth, authViewModel, language, onSetLanguage, onBackToGuest = {
@@ -385,7 +387,7 @@ private fun GuestActions(tab: MainTab, onAuthenticate: (AuthMode) -> Unit) {
 }
 
 @Composable
-private fun GuestNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
+internal fun GuestNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
     Row(
         Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer).selectableGroup()
             .padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),

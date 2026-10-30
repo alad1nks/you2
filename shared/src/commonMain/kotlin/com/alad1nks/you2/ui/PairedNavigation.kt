@@ -73,4 +73,5 @@ class PairedNavigation {
 }
 
 @Composable
-internal fun rememberPairedNavigation() = rememberSaveable(saver = PairedNavigation.Saver) { PairedNavigation() }
+internal fun rememberPairedNavigation(initialTab: MainTab = MainTab.WISHES) =
+    rememberSaveable(saver = PairedNavigation.Saver) { PairedNavigation().apply { select(initialTab) } }

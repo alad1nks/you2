@@ -9,6 +9,8 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.alad1nks.you2.auth.AuthViewModel
 import com.alad1nks.you2.core.model.Language
@@ -25,6 +27,8 @@ fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
         val viewModel = koinViewModel<MainViewModel>()
         val authViewModel = koinViewModel<AuthViewModel>()
         val auth by authViewModel.state.collectAsState()
+        // Keep the destination across auth changes; private screen state stays keyed by account.
+        val tabState = rememberSaveable { mutableStateOf(MainTab.WISHES) }
         val darkTheme by viewModel.darkTheme.collectAsState(isSystemInDarkTheme())
         SideEffect { onDarkThemeChanged(darkTheme) }
         val language by viewModel.language.collectAsState(Language.SYSTEM)
@@ -34,9 +38,18 @@ fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
                 Surface(Modifier.fillMaxSize()) {
                     key(auth.user?.id) {
                         if (authViewModel.isAvailable && auth.user == null) {
-                            GuestExperience(auth, authViewModel, language, viewModel::changeLanguage)
+                            GuestExperience(auth, authViewModel, language, viewModel::changeLanguage, tabState)
                         } else {
-                            CloudSpaceGate(viewModel.cloud, auth.user?.id, authViewModel::signOut) {
+                            CloudSpaceGate(
+                                viewModel.cloud,
+                                auth.user?.id,
+                                authViewModel::signOut,
+                                darkTheme,
+                                language,
+                                viewModel::changeDarkTheme,
+                                viewModel::changeLanguage,
+                                tabState,
+                            ) {
                                 AppContent(
                                     space,
                                     viewModel.today,
@@ -51,6 +64,8 @@ fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
                                     viewModel::changeDarkTheme,
                                     viewModel::changeLanguage,
                                     onSignOut = if (authViewModel.isAvailable) authViewModel::signOut else null,
+                                    initialTab = tabState.value,
+                                    onTabChanged = { tabState.value = it },
                                 )
                             }
                         }
