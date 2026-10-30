@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -100,9 +101,12 @@ internal fun AppContent(
     onSetDarkTheme: (Boolean) -> Unit = {},
     onSetLanguage: (Language) -> Unit = {},
     onSignOut: (() -> Unit)? = null,
+    initialTab: MainTab = MainTab.WISHES,
+    onTabChanged: (MainTab) -> Unit = {},
 ) {
     var usDialog by rememberSaveable { mutableStateOf<UsDialog?>(null) }
-    val navigation = rememberPairedNavigation()
+    val navigation = rememberPairedNavigation(initialTab)
+    SideEffect { onTabChanged(navigation.tab) }
     val wishesScroll = rememberLazyListState()
     val memoriesScroll = rememberLazyListState()
     val usScroll = rememberLazyListState()

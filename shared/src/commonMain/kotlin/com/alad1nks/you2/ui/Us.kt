@@ -235,7 +235,7 @@ private fun Statistic(count: Int, label: String, modifier: Modifier) {
 }
 
 @Composable
-private fun SettingsRow(label: StringResource, value: String, onClick: () -> Unit) {
+internal fun SettingsRow(label: StringResource, value: String, onClick: () -> Unit) {
     Surface(onClick, color = MaterialTheme.colorScheme.surfaceContainerLowest) {
         Row(
             Modifier.fillMaxWidth().heightIn(
@@ -358,7 +358,7 @@ private fun PreferenceOption(label: String, selected: Boolean, onClick: () -> Un
     }
 }
 
-private val Language.label: StringResource
+internal val Language.label: StringResource
     get() =
         when (this) {
             Language.SYSTEM -> Res.string.system_language

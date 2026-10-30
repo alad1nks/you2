@@ -1,0 +1,32 @@
+<resources>
+    <string name="pair_space">Your space</string>
+    <string name="pair_beginning">A little beginning for the two of you.</string>
+    <string name="pair_unpaired">Not paired yet</string>
+    <string name="pair_you">You</string>
+    <string name="pair_title">Good things start with two</string>
+    <string name="pair_body">Connect with your partner to share wishes\nand turn little ideas into memories.</string>
+    <string name="pair_wishes_hint">A shared list starts with the two of you.</string>
+    <string name="pair_memories_hint">Your shared moments will live here.</string>
+    <string name="pair_wishes_body">Pair with your partner to add wishes and plan your next moments together.</string>
+    <string name="pair_memories_body">Pair with your partner to turn completed wishes into memories.</string>
+    <string name="pair_invite">Invite your partner</string>
+    <string name="pair_have_code">I have an invite code</string>
+    <string name="pair_invite_body">Send this code to your partner. They can enter it in you2 to join your shared space.</string>
+    <string name="pair_your_code">Your invite code</string>
+    <string name="pair_expiry">Expires in 24 hours · Can be used once</string>
+    <string name="pair_copy">Copy code</string>
+    <string name="pair_copy_again">Copy again</string>
+    <string name="pair_copied">✓ Code copied · Waiting for your partner</string>
+    <string name="pair_waiting">You’ll be connected when your partner uses the code.</string>
+    <string name="pair_close">Close</string>
+    <string name="pair_join_title">Join your partner</string>
+    <string name="pair_join_body">Paste the invitation code your partner sent you.</string>
+    <string name="pair_code">Invite code</string>
+    <string name="pair_placeholder">Paste your invite code</string>
+    <string name="pair_join">Join partner</string>
+    <string name="pair_invalid">This code is invalid, expired, or already used. Ask your partner for a new one.</string>
+    <string name="pair_connected">You’re connected</string>
+    <string name="pair_connected_body">Your shared space is ready. Start with your first wish together.</string>
+    <string name="pair_view_wishes">View our wishes</string>
+    <string name="pair_existing_invitation">You’ve already created an invitation. Share your code with your partner to connect.</string>
+</resources>

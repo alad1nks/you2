@@ -32,7 +32,11 @@ limited to 500 characters.
 
 Android email/password registration, Google sign-in, password reset, session restoration, and sign-out use Firebase Authentication.
 Android uses Cloud Firestore for profiles, partner invitations, shared wishes, and memories. After sign-in,
-one partner creates an invitation and the other enters its code; the main tabs open once the pair is linked.
+users return to the tab they were viewing before authentication. For unpaired users, Us shows
+**Your space**, with profile, appearance, and language settings.
+All three tabs remain available; Wishes and Memories explain how to connect. **Invite your partner**
+opens a copyable-code dialog, and **I have an invite code** opens the join dialog. After pairing,
+**View our wishes** opens the shared list.
 Other platforms still use the demo flow with sign-out disabled. Personal photo selection/upload remains to be implemented.
 
 For non-Android development and UI validation, the demo screens use seeded data for Alex and Mia:
@@ -327,8 +331,11 @@ Data layout:
 - `invites/{code}`: random UUID v4 code (without hyphens), owner, pair, expiry, and one-time consumer.
   Invitation collections cannot be listed. An authenticated user who possesses the code can read that invitation.
 
-One partner enters a name and creates an invitation; the second registers/signs in and enters their name
-and the code. Invitations expire after 24 hours; generating a new one invalidates the old one. Creation
+One partner creates an invitation from any unpaired tab; the second registers/signs in and pastes
+the code in **I have an invite code**. Names can be edited in **Us > Your profile**; unnamed accounts
+use the localized **You** label until edited. Reopening the invitation preserves the current code and
+offers **Create a new invitation** when a replacement is needed. Invitations expire after 24 hours;
+generating a new one invalidates the old one. Creation
 and acceptance use Firestore transactions, with Security Rules validating all related documents through
 `getAfter`. Two concurrent join attempts cannot add a third member. No client can directly assign a partner.
 Initial profile creation, pairing, and wish completion require internet access. Invitation creation

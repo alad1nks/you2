@@ -1,0 +1,32 @@
+<resources>
+    <string name="pair_space">Ваше пространство</string>
+    <string name="pair_beginning">Маленькое начало для вас двоих.</string>
+    <string name="pair_unpaired">Партнёр ещё не подключён</string>
+    <string name="pair_you">Вы</string>
+    <string name="pair_title">Хорошее начинается с двоих</string>
+    <string name="pair_body">Подключитесь к партнёру, чтобы делиться желаниями и превращать идеи в воспоминания.</string>
+    <string name="pair_wishes_hint">Общий список начинается с вас двоих.</string>
+    <string name="pair_memories_hint">Здесь будут ваши общие моменты.</string>
+    <string name="pair_wishes_body">Подключитесь к партнёру, чтобы добавлять желания и планировать совместные моменты.</string>
+    <string name="pair_memories_body">Подключитесь к партнёру, чтобы превращать исполненные желания в воспоминания.</string>
+    <string name="pair_invite">Пригласить партнёра</string>
+    <string name="pair_have_code">У меня есть код приглашения</string>
+    <string name="pair_invite_body">Отправьте код партнёру. Он сможет ввести его в you2, чтобы присоединиться к вашему пространству.</string>
+    <string name="pair_your_code">Ваш код приглашения</string>
+    <string name="pair_expiry">Действует 24 часа · Можно использовать один раз</string>
+    <string name="pair_copy">Скопировать код</string>
+    <string name="pair_copy_again">Скопировать ещё раз</string>
+    <string name="pair_copied">✓ Код скопирован · Ждём партнёра</string>
+    <string name="pair_waiting">Вы подключитесь, когда партнёр использует код.</string>
+    <string name="pair_close">Закрыть</string>
+    <string name="pair_join_title">Присоединиться к партнёру</string>
+    <string name="pair_join_body">Вставьте код приглашения, который прислал партнёр.</string>
+    <string name="pair_code">Код приглашения</string>
+    <string name="pair_placeholder">Вставьте код приглашения</string>
+    <string name="pair_join">Присоединиться</string>
+    <string name="pair_invalid">Код неверный, просрочен или уже использован. Попросите партнёра прислать новый.</string>
+    <string name="pair_connected">Вы подключены</string>
+    <string name="pair_connected_body">Ваше общее пространство готово. Начните с первого совместного желания.</string>
+    <string name="pair_view_wishes">К нашим желаниям</string>
+    <string name="pair_existing_invitation">Вы уже создали приглашение. Поделитесь кодом с партнёром, чтобы подключиться.</string>
+</resources>
