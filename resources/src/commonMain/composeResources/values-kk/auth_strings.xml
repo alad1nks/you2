@@ -21,4 +21,14 @@
     <string name="auth_error_rate">Әрекет саны тым көп. Кейінірек қайталап көріңіз.</string>
     <string name="auth_error_unknown">Қате пайда болды. Қайталап көріңіз.</string>
     <string name="auth_demo_note">Үлгі деректер. Мұндағы өзгерістер аккаунтыңызға сақталмайды.</string>
+    <string name="auth_welcome">Қайта оралуыңызбен</string>
+    <string name="auth_create_title">Бірге көбірек</string>
+    <string name="auth_welcome_body">Кішкентай тілектеріңіз сізді күтуде.\nЖалғастыру үшін кіріңіз.</string>
+    <string name="auth_create_body">Бірге өткізетін сәттер көбейсін.\nАккаунт жасаңыз.</string>
+    <string name="auth_reset_body">Электрондық поштаңызды енгізіңіз. Құпиясөзді қалпына келтіру сілтемесін жібереміз.</string>
+    <string name="auth_email_placeholder">you@example.com</string>
+    <string name="auth_create_password">Құпиясөз жасаңыз</string>
+    <string name="auth_enter_password">Құпиясөзді енгізіңіз</string>
+    <string name="auth_new_here">you2-ге алғаш келдіңіз бе?</string>
+    <string name="auth_existing_account">Аккаунтыңыз бар ма?</string>
 </resources>

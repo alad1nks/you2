@@ -21,4 +21,14 @@
     <string name="auth_error_rate">Too many attempts. Please try again later.</string>
     <string name="auth_error_unknown">Something went wrong. Please try again.</string>
     <string name="auth_demo_note">Sample data. Changes here are not saved to your account.</string>
+    <string name="auth_welcome">Welcome back</string>
+    <string name="auth_create_title">A little more us</string>
+    <string name="auth_welcome_body">Your little wishes are waiting for you.\nLog in to pick up where you left off.</string>
+    <string name="auth_create_body">Create your account and make room\nfor more little moments together.</string>
+    <string name="auth_reset_body">Enter your email and we will send you a link to reset your password.</string>
+    <string name="auth_email_placeholder">you@example.com</string>
+    <string name="auth_create_password">Create a password</string>
+    <string name="auth_enter_password">Enter your password</string>
+    <string name="auth_new_here">New to you2?</string>
+    <string name="auth_existing_account">Already have an account?</string>
 </resources>

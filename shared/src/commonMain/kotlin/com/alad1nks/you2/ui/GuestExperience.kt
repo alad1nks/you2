@@ -106,7 +106,7 @@ internal fun GuestExperience(
     var tab by rememberSaveable { mutableStateOf(MainTab.WISHES) }
     var authenticating by rememberSaveable { mutableStateOf(false) }
     if (authenticating) {
-        AuthForm(auth, authViewModel, onBackToGuest = {
+        AuthForm(auth, authViewModel, language, onSetLanguage, onBackToGuest = {
             authViewModel.changeMode(AuthMode.SIGN_IN)
             authenticating = false
         })
@@ -166,17 +166,6 @@ internal fun GuestScreen(
 
 @Composable
 private fun GuestHeader(language: Language, onSetLanguage: (Language) -> Unit) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
-    val effectiveLanguage =
-        if (language == Language.SYSTEM) {
-            when (LocalAppLocale.current.substringBefore('-').substringBefore('_')) {
-                "ru" -> Language.RUSSIAN
-                "kk" -> Language.KAZAKH
-                else -> Language.ENGLISH
-            }
-        } else {
-            language
-        }
     Row(
         Modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight).padding(horizontal = AppSpacing.page),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -190,26 +179,42 @@ private fun GuestHeader(language: Language, onSetLanguage: (Language) -> Unit) {
                 color = MaterialTheme.colorScheme.primary,
             )
         }
-        Box {
-            TextButton({ expanded = true }, Modifier.testTag("guest-language")) {
-                Text(stringResource(effectiveLanguage.guestLabel), color = MaterialTheme.colorScheme.secondary)
-                Icon(
-                    AppIcons.KeyboardArrowDown,
-                    null,
-                    Modifier.padding(start = 6.dp).size(16.dp),
-                    tint = MaterialTheme.colorScheme.secondary,
-                )
+        GuestLanguageSelector(language, onSetLanguage)
+    }
+}
+
+@Composable
+internal fun GuestLanguageSelector(language: Language, onSetLanguage: (Language) -> Unit) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val effectiveLanguage =
+        if (language == Language.SYSTEM) {
+            when (LocalAppLocale.current.substringBefore('-').substringBefore('_')) {
+                "ru" -> Language.RUSSIAN
+                "kk" -> Language.KAZAKH
+                else -> Language.ENGLISH
             }
-            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-                Language.entries.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(option.guestLabel)) },
-                        onClick = {
-                            expanded = false
-                            onSetLanguage(option)
-                        },
-                    )
-                }
+        } else {
+            language
+        }
+    Box {
+        TextButton({ expanded = true }, Modifier.testTag("guest-language")) {
+            Text(stringResource(effectiveLanguage.guestLabel), color = MaterialTheme.colorScheme.secondary)
+            Icon(
+                AppIcons.KeyboardArrowDown,
+                null,
+                Modifier.padding(start = 6.dp).size(16.dp),
+                tint = MaterialTheme.colorScheme.secondary,
+            )
+        }
+        DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
+            Language.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(option.guestLabel)) },
+                    onClick = {
+                        expanded = false
+                        onSetLanguage(option)
+                    },
+                )
             }
         }
     }
