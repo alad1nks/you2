@@ -28,4 +28,5 @@
     <string name="pair_connected">Вы подключены</string>
     <string name="pair_connected_body">Ваше общее пространство готово. Начните с первого совместного желания.</string>
     <string name="pair_view_wishes">К нашим желаниям</string>
+    <string name="pair_existing_invitation">Вы уже создали приглашение. Поделитесь кодом с партнёром, чтобы подключиться.</string>
 </resources>

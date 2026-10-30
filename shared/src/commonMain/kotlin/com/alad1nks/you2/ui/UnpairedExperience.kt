@@ -83,6 +83,7 @@ import com.alad1nks.you2.resources.generated.pair_connected_body
 import com.alad1nks.you2.resources.generated.pair_copied
 import com.alad1nks.you2.resources.generated.pair_copy
 import com.alad1nks.you2.resources.generated.pair_copy_again
+import com.alad1nks.you2.resources.generated.pair_existing_invitation
 import com.alad1nks.you2.resources.generated.pair_expiry
 import com.alad1nks.you2.resources.generated.pair_have_code
 import com.alad1nks.you2.resources.generated.pair_invalid
@@ -131,7 +132,7 @@ internal fun UnpairedExperience(
         dialog = PairDialog.INVITE
         if (state.inviteCode == null) repository.createInvitation(name)
     }
-    val join = { dialog = PairDialog.JOIN }
+    val join = { if (state.inviteCode == null && !pending) dialog = PairDialog.JOIN }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(contentAlignment = Alignment.TopCenter) {
             Box(
@@ -222,7 +223,7 @@ internal fun UnpairedExperience(
                                         }
                                     }
                                 }
-                                ConnectionCard(tab, pending, invite, join)
+                                ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
                                 Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
                                     Text(
                                         stringResource(Res.string.make_it_yours),
@@ -277,7 +278,7 @@ internal fun UnpairedExperience(
                                             )
                                         }
                                     }
-                                    ConnectionCard(tab, pending, invite, join)
+                                    ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
                                 }
                             }
                         }
@@ -319,7 +320,13 @@ internal fun UnpairedExperience(
 }
 
 @Composable
-private fun ConnectionCard(tab: MainTab, pending: Boolean, invite: () -> Unit, join: () -> Unit) {
+private fun ConnectionCard(
+    tab: MainTab,
+    pending: Boolean,
+    hasInvitation: Boolean,
+    invite: () -> Unit,
+    join: () -> Unit,
+) {
     Surface(
         Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -344,11 +351,18 @@ private fun ConnectionCard(tab: MainTab, pending: Boolean, invite: () -> Unit, j
             OutlinedButton(
                 join,
                 Modifier.fillMaxWidth().heightIn(min = 40.dp),
-                enabled = !pending,
+                enabled = !pending && !hasInvitation,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             ) {
                 Text(stringResource(Res.string.pair_have_code))
+            }
+            if (hasInvitation) {
+                Text(
+                    stringResource(Res.string.pair_existing_invitation),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
             }
         }
     }
@@ -494,7 +508,7 @@ private fun PairingDialog(
                                 }
 
                                 joining -> {
-                                    repository.joinInvitation(name, code.trim())
+                                    if (state.inviteCode == null) repository.joinInvitation(name, code.trim())
                                 }
 
                                 else -> {
@@ -507,7 +521,14 @@ private fun PairingDialog(
                         },
                         Modifier.weight(1f).heightIn(min = 48.dp),
                         enabled =
-                            connected || (!pending && if (joining) code.isNotBlank() else state.inviteCode != null),
+                            connected || (
+                                !pending &&
+                                    if (joining) {
+                                        code.isNotBlank() && state.inviteCode == null
+                                    } else {
+                                        state.inviteCode != null
+                                    }
+                            ),
                         colors =
                             ButtonDefaults.buttonColors(
                                 disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),

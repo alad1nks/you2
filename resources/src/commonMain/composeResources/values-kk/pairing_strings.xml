@@ -28,4 +28,5 @@
     <string name="pair_connected">Сіз қосылдыңыз</string>
     <string name="pair_connected_body">Ортақ кеңістігіңіз дайын. Бірінші ортақ тілектен бастаңыз.</string>
     <string name="pair_view_wishes">Тілектерімізді көру</string>
+    <string name="pair_existing_invitation">Сіз шақыру жасап қойдыңыз. Қосылу үшін кодты жұбыңызға жіберіңіз.</string>
 </resources>

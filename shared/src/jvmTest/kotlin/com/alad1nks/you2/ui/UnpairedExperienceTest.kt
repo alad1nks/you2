@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
@@ -36,6 +37,46 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalTestApi::class)
 class UnpairedExperienceTest {
+    @Test
+    fun creatingInvitationDisablesJoiningOnEveryTab() = invitationOwnerCannotJoin(restored = false)
+
+    @Test
+    fun restoredInvitationDisablesJoiningOnEveryTab() = invitationOwnerCannotJoin(restored = true)
+
+    private fun invitationOwnerCannotJoin(restored: Boolean) =
+        runDesktopComposeUiTest(width = 412, height = 853) {
+            val repository = PairingCloud()
+            if (restored) repository.cloudState.value = repository.cloudState.value.copy(inviteCode = CODE)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
+                    AppTheme(false) { CloudSpaceGate(repository, "user", {}) { Text("Private wishes") } }
+                }
+            }
+            if (!restored) {
+                onNodeWithText("I have an invite code").assertIsEnabled()
+                onNodeWithText("Invite your partner").performClick()
+                runOnIdle { repository.cloudState.value = repository.cloudState.value.copy(inviteCode = CODE) }
+                onNodeWithText("Close").performClick()
+            }
+            for (tab in listOf("Wishes", "Memories", "Us")) {
+                onNode(hasText(tab) and isSelectable()).performClick()
+                onNodeWithText("I have an invite code").performScrollTo().assertIsNotEnabled().performClick()
+                onNodeWithText("You’ve already created an invitation. Share your code with your partner to connect.")
+                    .performScrollTo().assertIsDisplayed()
+                onNodeWithTag("pair-code").assertDoesNotExist()
+                assertEquals(null, repository.joined)
+                if (restored && tab == "Wishes") {
+                    onRoot().performMouseInput { moveTo(Offset.Zero) }
+                    mainClock.advanceTimeBy(500)
+                    onRoot().captureRoboImage("src/jvmTest/screenshots/unpaired_invitation_owner.png")
+                }
+                onNodeWithText("Invite your partner").performScrollTo().performClick()
+                onNodeWithText(CODE).assertIsDisplayed()
+                onNodeWithText("Create a new invitation").assertIsEnabled()
+                onNodeWithText("Close").performClick()
+            }
+        }
+
     @Test
     fun usShowsPersonalSpaceAndAllTabsWithoutCreatingAnInvitation() =
         runDesktopComposeUiTest(width = 412, height = 853) {
