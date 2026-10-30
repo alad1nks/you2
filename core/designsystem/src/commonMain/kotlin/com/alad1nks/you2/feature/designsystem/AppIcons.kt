@@ -2,6 +2,7 @@ package com.alad1nks.you2.feature.designsystem
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.Add
@@ -12,14 +13,19 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 
 /** Shared Material icons for navigation, actions and paired-space status. */
 object AppIcons {
+    val KeyboardArrowDown: ImageVector get() = Icons.Outlined.KeyboardArrowDown
+    val PersonAdd: ImageVector get() = Icons.Outlined.PersonAdd
+    val FormatListBulleted: ImageVector get() = Icons.AutoMirrored.Outlined.FormatListBulleted
     val Add: ImageVector get() = Icons.Outlined.Add
     val AddPhotoAlternate: ImageVector get() = Icons.Outlined.AddPhotoAlternate
     val ArrowBack: ImageVector get() = Icons.AutoMirrored.Outlined.ArrowBack

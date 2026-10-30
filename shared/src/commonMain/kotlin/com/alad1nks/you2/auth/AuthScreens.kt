@@ -56,12 +56,13 @@ import com.alad1nks.you2.resources.generated.auth_reset_sent
 import com.alad1nks.you2.resources.generated.auth_send_reset
 import com.alad1nks.you2.resources.generated.auth_show
 import com.alad1nks.you2.resources.generated.auth_sign_in
+import com.alad1nks.you2.resources.generated.back
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun AuthForm(state: AuthState, viewModel: AuthViewModel) {
+internal fun AuthForm(state: AuthState, viewModel: AuthViewModel, onBackToGuest: (() -> Unit)? = null) {
     var email by rememberSaveable { mutableStateOf("") }
     // Passwords deliberately never enter saved instance state, preferences, or logs.
     var password by remember(state.mode) { mutableStateOf("") }
@@ -73,10 +74,24 @@ internal fun AuthForm(state: AuthState, viewModel: AuthViewModel) {
             AuthMode.REGISTER -> Res.string.auth_register
             AuthMode.RESET -> Res.string.auth_reset
         }
-    BackHandler(state.mode != AuthMode.SIGN_IN) {
-        if (!state.busy) viewModel.changeMode(AuthMode.SIGN_IN)
+    val goBack: () -> Unit = {
+        if (!state.busy) {
+            if (state.mode == AuthMode.RESET || onBackToGuest == null) {
+                viewModel.changeMode(AuthMode.SIGN_IN)
+            } else {
+                onBackToGuest()
+            }
+        }
+    }
+    BackHandler(onBackToGuest != null || state.mode != AuthMode.SIGN_IN) {
+        goBack()
     }
     AuthPage {
+        if (onBackToGuest != null) {
+            TextButton(onClick = goBack, enabled = !state.busy) {
+                Text(stringResource(Res.string.back))
+            }
+        }
         Text("you2", style = MaterialTheme.typography.displaySmall, color = MaterialTheme.colorScheme.primary)
         Text(stringResource(title), style = MaterialTheme.typography.headlineMedium)
         OutlinedTextField(

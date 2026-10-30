@@ -1,0 +1,21 @@
+<resources>
+    <string name="guest_wishes_title">Армандаңыз.\nБірге жоспарлаңыз.</string>
+    <string name="guest_wishes_body">Кішкентай тосынсыйлардан үлкен шытырманға дейін —\nбарлық тілектеріңіз бір жерде.</string>
+    <string name="guest_memories_title">Тілектерді\nестелікке айналдырыңыз.</string>
+    <string name="guest_memories_body">Сәттеріңізді ерекше ететін\nсуреттер мен ұсақ-түйектерді сақтаңыз.</string>
+    <string name="guest_us_title">Кішкентай тілектер.\nБірге көбірек.</string>
+    <string name="guest_us_body">Бірге істеуге, сыйлауға, көруге\nжәне қуанышқа бөленуге арналған ортақ орын.</string>
+    <string name="guest_account_each">Әрқайсыңызға жеке аккаунт</string>
+    <string name="guest_shared_list">Бірге жасайтын тілектер тізімі</string>
+    <string name="guest_shared_memories">Қайта еске алатын сәттер</string>
+    <string name="guest_wish_title">Теңіз жағасындағы демалыс</string>
+    <string name="guest_wish_description">Асықпай атқан таң, теңіз самалы, тек екеуміз.</string>
+    <string name="guest_wish_label">ТІЛЕК ҮЛГІСІ · Шытырман</string>
+    <string name="guest_memory_title">Біздің алғашқы қыш жасау сабағымыз</string>
+    <string name="guest_memory_description">Сәл шашыраңқы. Өте көңілді.</string>
+    <string name="guest_memory_label">ЕСТЕЛІК ҮЛГІСІ · Орындалды</string>
+    <string name="guest_log_in">Кіру</string>
+    <string name="guest_wishes_hint">Идея қосып, күнін белгілеңіз\nжәне бірге көбірек уақыт өткізіңіз.</string>
+    <string name="guest_memories_hint">Тілекті орындап, суреттер қосыңыз\nжәне бірге өткізген сәттерді сақтаңыз.</string>
+    <string name="guest_invite_hint">Шақыруыңыз бар ма? Аккаунт ашқаннан\nнемесе кіргеннен кейін жұбыңызға қосыла аласыз.</string>
+</resources>
