@@ -1,0 +1,24 @@
+<resources>
+    <string name="auth_sign_in">Войти</string>
+    <string name="auth_register">Создать аккаунт</string>
+    <string name="auth_reset">Восстановление пароля</string>
+    <string name="auth_email">Электронная почта</string>
+    <string name="auth_password">Пароль</string>
+    <string name="auth_confirm">Повторите пароль</string>
+    <string name="auth_show">Показать</string>
+    <string name="auth_hide">Скрыть</string>
+    <string name="auth_forgot">Забыли пароль?</string>
+    <string name="auth_back">Вернуться ко входу</string>
+    <string name="auth_send_reset">Отправить письмо</string>
+    <string name="auth_reset_sent">Если аккаунт с этой почтой существует, вы получите ссылку для сброса пароля. Проверьте входящие и спам.</string>
+    <string name="auth_error_email">Введите корректный адрес почты.</string>
+    <string name="auth_error_password">Введите пароль.</string>
+    <string name="auth_error_mismatch">Пароли не совпадают.</string>
+    <string name="auth_error_credentials">Не удалось войти. Проверьте почту и пароль.</string>
+    <string name="auth_error_weak">Используйте не менее 6 символов и соблюдайте требования к сложности пароля.</string>
+    <string name="auth_error_in_use">Не удалось создать аккаунт. Попробуйте войти или восстановить пароль.</string>
+    <string name="auth_error_network">Проверьте интернет и повторите попытку.</string>
+    <string name="auth_error_rate">Слишком много попыток. Повторите позже.</string>
+    <string name="auth_error_unknown">Произошла ошибка. Попробуйте ещё раз.</string>
+    <string name="auth_demo_note">Данные примера. Изменения здесь не сохраняются в вашем аккаунте.</string>
+</resources>

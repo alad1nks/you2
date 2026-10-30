@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -24,7 +23,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.alad1nks.you2.feature.designsystem.components.AppTextField
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
-import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
@@ -41,7 +39,7 @@ internal fun MemoryEditor(wishId: String, initial: String, onDismiss: () -> Unit
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             Modifier.safeDrawingPadding().imePadding().padding(AppSpacing.page)
-                .widthIn(max = AppDimensions.contentWidth).fillMaxWidth(),
+                .fillMaxWidth(),
             shape = AppShapes.card,
             color = MaterialTheme.colorScheme.background,
         ) {

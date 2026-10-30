@@ -30,11 +30,11 @@ date validation, completion and restoration, memory editing, profile-name editin
 controls. Wish titles are required and limited to 80 characters; descriptions and memory text are
 limited to 500 characters.
 
-Account registration, authentication, partner invitations and linking, synchronization between devices,
-durable wish storage, and personal photo selection remain to be implemented. Sign out is currently
-disabled. These are outstanding parts of the application’s development.
+Android email/password registration, sign-in, password reset, session restoration, and sign-out use Firebase Authentication.
+Partner invitations and linking, synchronization between devices, durable wish storage, and personal photo
+selection remain to be implemented. Android opens the main tabs immediately after sign-in and provides sign-out in Us. Other platforms still use the demo flow with sign-out disabled.
 
-For development and UI validation, the current build starts with seeded data for Alex and Mia:
+For development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
 profile changes reset on restart or browser reload. `DemoDateSource` currently supplies the fixed date
 **October 28, 2026**. The image picker currently uses bundled illustrations. Theme and language
@@ -247,3 +247,33 @@ Signing and the resulting artifact filename must be aligned before relying on re
 
 The publishing workflows reference `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `KEYSTORE_PASSWORD`,
 and `ACCESS_TOKEN`. These are not required for local debug builds or the PR checks.
+
+## Android Firebase authentication
+
+The Android app uses Firebase project `you2-ae09a` and package `com.alad1nks.you2`.
+Keep its ignored client configuration at `androidApp/google-services.json` and enable Email/Password in
+Firebase Console → Authentication → Sign-in method. Firebase Auth SDK versions are managed by the
+Firebase BoM in `gradle/libs.versions.toml`. No admin credentials are needed in the app.
+
+Android starts at sign-in, supports account creation with password confirmation and password-reset
+emails, restores the Firebase session on restart, and provides sign-out from the Us tab.
+Passwords stay in memory only and are cleared when changing forms or leaving the authentication screen.
+Authentication screens and state live in shared/commonMain and use the common English, Russian, and Kazakh resources.
+All platforms enter through the single shared App, which owns Koin, the theme, locale, and screen routing.
+Android DI supplies FirebaseAuthClient from shared/androidMain; other platforms keep the demo flow until an auth client is registered.
+
+The main tabs still display seeded Alex/Mia sample data; authentication does not yet connect wishes to an account or link a partner. The Us tab labels this data as sample content.
+iOS, Web, and Desktop authentication, email verification UI, and shared account data are not implemented.
+
+Validation:
+
+```powershell
+.\gradlew.bat :shared:jvmTest :androidApp:assembleDebug :shared:ktlintCheck :androidApp:ktlintCheck
+```
+
+On a device, register with an email address you control, restart to check session restoration,
+sign out and sign back in, then request a password-reset email. Also check offline and invalid-password
+errors. Unit tests use a fake auth client and do not create production Firebase users or send emails.
+
+Android CI restores this file from the repository Actions secret `GOOGLE_SERVICES_JSON`. Set its value
+to the complete downloaded JSON. This secret is required for Android CI (and is unavailable to fork PRs).

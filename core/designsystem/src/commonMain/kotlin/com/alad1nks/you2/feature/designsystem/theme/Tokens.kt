@@ -27,7 +27,6 @@ object AppSpacing {
 }
 
 object AppDimensions {
-    val contentWidth = 412.dp
     val buttonHeight = 56.dp
     val icon = 24.dp
     val avatar = 44.dp

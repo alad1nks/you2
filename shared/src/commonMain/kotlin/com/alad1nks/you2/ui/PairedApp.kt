@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -100,6 +99,7 @@ internal fun AppContent(
     onRenameUser: (String) -> Unit = {},
     onSetDarkTheme: (Boolean) -> Unit = {},
     onSetLanguage: (Language) -> Unit = {},
+    onSignOut: (() -> Unit)? = null,
 ) {
     var usDialog by rememberSaveable { mutableStateOf<UsDialog?>(null) }
     val navigation = rememberPairedNavigation()
@@ -114,7 +114,7 @@ internal fun AppContent(
                     .background(MaterialTheme.colorScheme.surfaceContainer),
             )
             Scaffold(
-                modifier = Modifier.widthIn(max = AppDimensions.contentWidth).fillMaxSize().safeDrawingPadding(),
+                modifier = Modifier.fillMaxSize().safeDrawingPadding(),
                 topBar = { CoupleHeader(space.couple.you.name, space.couple.partner.name) },
                 bottomBar = {
                     Box {
@@ -168,7 +168,7 @@ internal fun AppContent(
                     } else if (navigation.tab == MainTab.MEMORIES) {
                         memoriesContent(space) { navigation.open(OverlayRoute.Details(it)) }
                     } else {
-                        usContent(space, darkTheme, language) { usDialog = it }
+                        usContent(space, darkTheme, language, onSignOut) { usDialog = it }
                     }
                 }
             }
@@ -190,9 +190,7 @@ internal fun AppContent(
                     onDismiss = navigation::back,
                 ) {
                     Surface(
-                        Modifier.widthIn(
-                            max = AppDimensions.contentWidth,
-                        ).fillMaxSize(),
+                        Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
                         Box(Modifier.safeDrawingPadding().imePadding()) {
