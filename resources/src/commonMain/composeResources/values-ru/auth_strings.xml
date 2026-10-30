@@ -21,4 +21,14 @@
     <string name="auth_error_rate">Слишком много попыток. Повторите позже.</string>
     <string name="auth_error_unknown">Произошла ошибка. Попробуйте ещё раз.</string>
     <string name="auth_demo_note">Данные примера. Изменения здесь не сохраняются в вашем аккаунте.</string>
+    <string name="auth_welcome">С возвращением</string>
+    <string name="auth_create_title">Чуть больше нас</string>
+    <string name="auth_welcome_body">Ваши маленькие желания ждут вас.\nВойдите, чтобы продолжить.</string>
+    <string name="auth_create_body">Создайте аккаунт, чтобы стало больше\nмаленьких моментов вместе.</string>
+    <string name="auth_reset_body">Введите почту, и мы отправим ссылку для сброса пароля.</string>
+    <string name="auth_email_placeholder">you@example.com</string>
+    <string name="auth_create_password">Придумайте пароль</string>
+    <string name="auth_enter_password">Введите пароль</string>
+    <string name="auth_new_here">Впервые в you2?</string>
+    <string name="auth_existing_account">Уже есть аккаунт?</string>
 </resources>
