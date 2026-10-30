@@ -30,7 +30,7 @@ date validation, completion and restoration, memory editing, profile-name editin
 controls. Wish titles are required and limited to 80 characters; descriptions and memory text are
 limited to 500 characters.
 
-Android email/password registration, sign-in, password reset, session restoration, and sign-out use Firebase Authentication.
+Android email/password registration, Google sign-in, password reset, session restoration, and sign-out use Firebase Authentication.
 Android uses Cloud Firestore for profiles, partner invitations, shared wishes, and memories. After sign-in,
 one partner creates an invitation and the other enters its code; the main tabs open once the pair is linked.
 Other platforms still use the demo flow with sign-out disabled. Personal photo selection/upload remains to be implemented.
@@ -256,6 +256,21 @@ The Android app uses Firebase project `you2-ae09a` and package `com.alad1nks.you
 Keep its ignored client configuration at `androidApp/google-services.json` and enable Email/Password in
 Firebase Console → Authentication → Sign-in method. Firebase Auth SDK versions are managed by the
 Firebase BoM in `gradle/libs.versions.toml`. No admin credentials are needed in the app.
+
+For Google sign-in, enable the Google provider in the same Firebase project, set its support email,
+and register the SHA-1 and SHA-256 fingerprints of each Android signing certificate (debug, release,
+and Play App Signing where applicable). Download the updated `google-services.json` into `androidApp`;
+it must include the Web OAuth client so the Google Services plugin generates `default_web_client_id`.
+The app reads that generated resource rather than hardcoding an OAuth client ID.
+See [Firebase's Google sign-in setup](https://firebase.google.com/docs/auth/android/google-signin).
+
+The login and registration screens offer Continue with Google above the email fields, matching
+Figma node `100:1094`. Android Credential Manager opens the Google account picker and Firebase
+exchanges its ID token for the same session used by email sign-in. Cancelling returns to the form
+without an error; failures allow retry or email sign-in. Sign-out clears Firebase and requests
+credential-provider session cleanup. Google tokens are never saved in application preferences or logs.
+Google sign-in requires a device or emulator with Google Play services and a configured Google account;
+the JVM tests cover UI and state transitions, not a live OAuth exchange.
 
 Signed-out Android users start with the mobile guest previews for Wishes, Memories, and Us. Each tab
 has its own illustration and introductory content, a persistent language selector, and Create account

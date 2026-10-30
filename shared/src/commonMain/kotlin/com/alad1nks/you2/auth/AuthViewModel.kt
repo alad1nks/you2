@@ -76,6 +76,35 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
         mutableState.value = AuthState()
     }
 
+    fun signInWithGoogle(launch: GoogleSignInLauncher) {
+        val client = client ?: return
+        if (cleared || state.value.busy || state.value.user != null || state.value.mode == AuthMode.RESET) return
+        mutableState.update { it.copy(busy = true, error = null, resetSent = false) }
+        var received = false
+        launch { result ->
+            if (!cleared && !received) {
+                received = true
+                when (result) {
+                    is GoogleSignInResult.Token -> {
+                        client.signInWithGoogle(result.value) { error ->
+                            if (!cleared) {
+                                mutableState.update { it.copy(user = client.currentUser, busy = false, error = error) }
+                            }
+                        }
+                    }
+
+                    GoogleSignInResult.Cancelled -> {
+                        mutableState.update { it.copy(busy = false) }
+                    }
+
+                    GoogleSignInResult.Failed -> {
+                        mutableState.update { it.copy(busy = false, error = AuthError.GOOGLE) }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCleared() {
         cleared = true
         unsubscribe?.invoke()

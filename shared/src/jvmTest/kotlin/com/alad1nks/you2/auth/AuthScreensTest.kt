@@ -3,12 +3,19 @@ package com.alad1nks.you2.auth
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import com.alad1nks.you2.core.model.Language
@@ -41,13 +48,18 @@ class AuthScreensTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f, fontScale), LocalAppLocale provides locale) {
                     AppTheme(darkTheme = dark) {
-                        AuthForm(state.value, model, Language.SYSTEM, {}, {})
+                        AuthForm(state.value, model, Language.SYSTEM, {}, {}, googleSignIn = {})
                     }
                 }
             }
             AuthMode.entries.forEach { mode ->
                 runOnIdle { state.value = AuthState(mode = mode) }
                 onNodeWithTag("auth-email").performScrollTo().assertIsDisplayed()
+                if (mode != AuthMode.RESET) {
+                    onNodeWithTag("auth-google").performScrollTo().assertIsDisplayed().assertIsEnabled()
+                } else {
+                    onNodeWithTag("auth-google").assertDoesNotExist()
+                }
                 if (width > 320) {
                     onRoot().captureRoboImage("src/jvmTest/screenshots/auth_${width}_${dark}_${mode.name}.png")
                 }
@@ -55,8 +67,33 @@ class AuthScreensTest {
                 if (mode == AuthMode.REGISTER) {
                     onNodeWithTag("auth-confirmation").performScrollTo().assertIsDisplayed()
                 }
+                if (mode != AuthMode.RESET) {
+                    val masked =
+                        SemanticsMatcher("Password is visually masked") {
+                            it.config[SemanticsProperties.EditableText].text == "•".repeat(15)
+                        }
+                    onNodeWithTag("auth-password").performScrollTo().performTextInput("sample-password")
+                    onNodeWithTag("auth-password").assert(masked)
+                    val toggle = onNodeWithTag("auth-password-visibility").performScrollTo()
+                    if (locale == "en") toggle.assertContentDescriptionEquals("Show password")
+                    toggle.performClick()
+                    onNodeWithTag("auth-password").assert(masked.not())
+                    if (locale == "en") toggle.assertContentDescriptionEquals("Hide password")
+                    if (mode == AuthMode.REGISTER) {
+                        onNodeWithTag("auth-confirmation").performTextInput("sample-password")
+                        onNodeWithTag("auth-confirmation").assert(masked.not())
+                    }
+                    if (width == 412 && mode == AuthMode.SIGN_IN) {
+                        onRoot().captureRoboImage("src/jvmTest/screenshots/auth_${width}_${dark}_PASSWORD_VISIBLE.png")
+                    }
+                    toggle.performClick()
+                    onNodeWithTag("auth-password").assert(masked)
+                }
             }
             runOnIdle { state.value = AuthState(mode = AuthMode.RESET, resetSent = true) }
             onNodeWithTag("auth-submit").performScrollTo().assertIsDisplayed()
+            runOnIdle { state.value = AuthState(busy = true) }
+            onNodeWithTag("auth-google").performScrollTo().assertIsNotEnabled()
+            onNodeWithTag("auth-password-visibility").performScrollTo().assertIsNotEnabled()
         }
 }

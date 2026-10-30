@@ -4,6 +4,19 @@ Runtime resources live in `src/commonMain/composeResources` within this module a
 package `com.alad1nks.you2.resources.generated`. Shared UI components and resource mappings live in
 `core/designsystem` and `shared`.
 
+## Password visibility
+
+The password visibility control reuses the installed Material outlined `Visibility` and
+`VisibilityOff` vectors through `AppIcons`, matching Figma components `132:2993` and `132:2997`.
+The icons render at 24 dp inside a 44 dp button with localized Show/Hide password action labels.
+
+## Google sign-in
+
+`drawable/google.png` is the unmodified 20 × 20 PNG export of Figma layer `100:1096`,
+downloaded October 31, 2026. Its SVG source is preserved in `design/icons/google.svg`.
+The authentication button displays it at 20 × 20 dp without tint, on login and registration.
+It retains Figma's white provider-button background in both app themes.
+
 ## Category illustrations
 
 The six bundled lossless WebP images are in `src/commonMain/composeResources/drawable`.

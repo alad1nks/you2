@@ -1,12 +1,15 @@
 <resources>
+    <string name="auth_google">Continue with Google</string>
+    <string name="auth_email_separator">or with email</string>
+    <string name="auth_error_google">Unable to sign in with Google. Please try again or use email.</string>
     <string name="auth_sign_in">Sign in</string>
     <string name="auth_register">Create account</string>
     <string name="auth_reset">Reset password</string>
     <string name="auth_email">Email</string>
     <string name="auth_password">Password</string>
     <string name="auth_confirm">Confirm password</string>
-    <string name="auth_show">Show</string>
-    <string name="auth_hide">Hide</string>
+    <string name="auth_show">Show password</string>
+    <string name="auth_hide">Hide password</string>
     <string name="auth_forgot">Forgot password?</string>
     <string name="auth_back">Back to sign in</string>
     <string name="auth_send_reset">Send reset email</string>

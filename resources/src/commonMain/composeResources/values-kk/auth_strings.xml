@@ -1,12 +1,15 @@
 <resources>
+    <string name="auth_google">Google арқылы жалғастыру</string>
+    <string name="auth_email_separator">немесе email арқылы</string>
+    <string name="auth_error_google">Google арқылы кіру мүмкін болмады. Қайталап көріңіз немесе email қолданыңыз.</string>
     <string name="auth_sign_in">Кіру</string>
     <string name="auth_register">Аккаунт жасау</string>
     <string name="auth_reset">Құпиясөзді қалпына келтіру</string>
     <string name="auth_email">Электрондық пошта</string>
     <string name="auth_password">Құпиясөз</string>
     <string name="auth_confirm">Құпиясөзді қайталаңыз</string>
-    <string name="auth_show">Көрсету</string>
-    <string name="auth_hide">Жасыру</string>
+    <string name="auth_show">Құпиясөзді көрсету</string>
+    <string name="auth_hide">Құпиясөзді жасыру</string>
     <string name="auth_forgot">Құпиясөзді ұмыттыңыз ба?</string>
     <string name="auth_back">Кіруге оралу</string>
     <string name="auth_send_reset">Хат жіберу</string>

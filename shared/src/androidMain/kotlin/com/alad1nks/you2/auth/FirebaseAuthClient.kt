@@ -1,5 +1,10 @@
 package com.alad1nks.you2.auth
 
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.CredentialManagerCallback
+import androidx.credentials.exceptions.ClearCredentialException
+import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuth
@@ -7,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.GoogleAuthProvider
 
 internal class FirebaseAuthClient(private val auth: FirebaseAuth = FirebaseAuth.getInstance()) : AuthClient {
     override val currentUser: AuthUser?
@@ -38,7 +44,37 @@ internal class FirebaseAuthClient(private val auth: FirebaseAuth = FirebaseAuth.
         }
     }
 
-    override fun signOut() = auth.signOut()
+    override fun signInWithGoogle(idToken: String, complete: (AuthError?) -> Unit) {
+        auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null)).addOnCompleteListener {
+            val error = it.exception.toAuthError()
+            complete(
+                if (it.isSuccessful) {
+                    null
+                } else {
+                    when (error) {
+                        AuthError.NETWORK, AuthError.TOO_MANY_REQUESTS, AuthError.EMAIL_IN_USE -> error
+                        else -> AuthError.GOOGLE
+                    }
+                },
+            )
+        }
+    }
+
+    override fun signOut() {
+        auth.signOut()
+        val context = FirebaseApp.getInstance().applicationContext
+        CredentialManager.create(context).clearCredentialStateAsync(
+            ClearCredentialStateRequest(),
+            null,
+            context.mainExecutor,
+            object : CredentialManagerCallback<Void?, ClearCredentialException> {
+                override fun onResult(result: Void?) = Unit
+
+                // Firebase is already signed out; provider cleanup must not restore the session.
+                override fun onError(e: ClearCredentialException) = Unit
+            },
+        )
+    }
 }
 
 private fun Exception?.toAuthError(): AuthError =
