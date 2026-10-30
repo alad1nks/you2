@@ -21,6 +21,7 @@ sealed interface OverlayRoute {
 class PairedNavigation {
     var tab by mutableStateOf(MainTab.WISHES)
         private set
+    var sort by mutableStateOf(WishSort.NEWEST)
     var category by mutableStateOf<WishCategory?>(null)
     var overlay by mutableStateOf<OverlayRoute?>(null)
         private set
@@ -56,11 +57,13 @@ class PairedNavigation {
                             is OverlayRoute.Form -> route.wishId.orEmpty()
                             null -> ""
                         },
+                        it.sort.name,
                     )
                 },
                 restore = { values ->
                     PairedNavigation().apply {
                         select(MainTab.valueOf(values[0]))
+                        sort = values.getOrNull(4)?.let(WishSort::valueOf) ?: WishSort.NEWEST
                         category = values[1].takeIf { it.isNotEmpty() }?.let(WishCategory::valueOf)
                         when (values[2]) {
                             "details" -> open(OverlayRoute.Details(values[3]))

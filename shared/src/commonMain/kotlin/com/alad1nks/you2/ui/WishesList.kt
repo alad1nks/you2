@@ -1,17 +1,21 @@
 package com.alad1nks.you2.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -27,6 +31,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.core.model.PairedSpace
 import com.alad1nks.you2.core.model.WishCategory
@@ -42,8 +48,10 @@ import com.alad1nks.you2.resources.generated.empty_wishes
 import com.alad1nks.you2.resources.generated.empty_wishes_hint
 import com.alad1nks.you2.resources.generated.newest_first
 import com.alad1nks.you2.resources.generated.no_filter_results
+import com.alad1nks.you2.resources.generated.oldest_first
 import com.alad1nks.you2.resources.generated.our_wishes
 import com.alad1nks.you2.resources.generated.show_all_wishes
+import com.alad1nks.you2.resources.generated.soonest_date
 import com.alad1nks.you2.resources.generated.subtitle
 import com.alad1nks.you2.resources.generated.summary_counts
 import com.alad1nks.you2.resources.generated.summary_title
@@ -53,16 +61,14 @@ import com.alad1nks.you2.resources.generated.wish_attribution_you
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
-/** Stable sorting preserves the repository's newest-first insertion order within a day. */
-internal fun PairedSpace.visibleWishes(category: WishCategory?) =
-    active.filter { category == null || it.content.category == category }.sortedByDescending { it.createdOn }
-
 internal fun LazyListScope.wishesContent(
     space: PairedSpace,
     today: LocalDate,
     category: WishCategory?,
     onCategory: (WishCategory?) -> Unit,
     onOpen: (String) -> Unit,
+    sort: WishSort,
+    onSort: (WishSort) -> Unit,
 ) {
     item(key = "heading") {
         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
@@ -108,8 +114,8 @@ internal fun LazyListScope.wishesContent(
             }
         }
     }
-    item(key = "sort") { WishesSortControl() }
-    val wishes = space.visibleWishes(category)
+    item(key = "sort") { WishesSortControl(sort, onSort) }
+    val wishes = space.visibleWishes(category, sort)
     if (wishes.isEmpty()) {
         item(key = "empty") {
             ContentCard {
@@ -145,7 +151,7 @@ internal fun LazyListScope.wishesContent(
 }
 
 @Composable
-private fun WishesSortControl() {
+internal fun WishesSortControl(sort: WishSort, onSort: (WishSort) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     FlowRow(
         Modifier.fillMaxWidth(),
@@ -159,15 +165,62 @@ private fun WishesSortControl() {
         )
         Box {
             TextButton({ expanded = true }, Modifier.testTag("wish-sort")) {
-                Text(stringResource(Res.string.newest_first), style = MaterialTheme.typography.bodySmall)
-            }
-            DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.newest_first)) },
-                    leadingIcon = { Text("✓") },
-                    onClick = { expanded = false },
+                Text(
+                    stringResource(sort.label) + if (expanded) " ↑" else " ↓",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
                 )
+            }
+            DropdownMenu(
+                expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.width(220.dp).testTag("wish-sort-menu"),
+                shape = RoundedCornerShape(16.dp),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ) {
+                WishSort.entries.forEach { option ->
+                    val isSelected = sort == option
+                    val color =
+                        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(option.label),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = color,
+                            )
+                        },
+                        trailingIcon = if (isSelected) ({ Text("✓", color = color) }) else null,
+                        modifier =
+                            Modifier.padding(horizontal = AppSpacing.small)
+                                .semantics { selected = isSelected }
+                                .testTag("wish-sort-${option.name}")
+                                .then(
+                                    if (isSelected) {
+                                        Modifier.background(
+                                            MaterialTheme.colorScheme.primaryContainer,
+                                            RoundedCornerShape(8.dp),
+                                        )
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
+                        contentPadding = PaddingValues(horizontal = AppSpacing.medium),
+                        onClick = {
+                            onSort(option)
+                            expanded = false
+                        },
+                    )
+                }
             }
         }
     }
 }
+
+private val WishSort.label
+    get() =
+        when (this) {
+            WishSort.NEWEST -> Res.string.newest_first
+            WishSort.OLDEST -> Res.string.oldest_first
+            WishSort.SOONEST -> Res.string.soonest_date
+        }

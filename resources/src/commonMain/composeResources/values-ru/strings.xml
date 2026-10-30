@@ -52,7 +52,9 @@
     <string name="edit_memory">Изменить воспоминание</string>
     <string name="restore">Вернуть в желания</string>
     <string name="waiting_to_happen">Ещё впереди</string>
-    <string name="newest_first">Сначала новые ↓</string>
+    <string name="newest_first">Сначала новые</string>
+    <string name="oldest_first">Сначала старые</string>
+    <string name="soonest_date">Ближайшая дата</string>
     <string name="wish_attribution">%1$s · Добавлено: %2$s</string>
     <string name="wish_attribution_you">%1$s · Добавлено вами</string>
     <string name="empty_wishes">Ваш общий список ждёт первого желания.</string>

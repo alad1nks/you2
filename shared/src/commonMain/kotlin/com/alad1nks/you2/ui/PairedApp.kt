@@ -167,6 +167,8 @@ internal fun AppContent(
                             today,
                             navigation.category,
                             onCategory = { navigation.category = it },
+                            sort = navigation.sort,
+                            onSort = { navigation.sort = it },
                             onOpen = { navigation.open(OverlayRoute.Details(it)) },
                         )
                     } else if (navigation.tab == MainTab.MEMORIES) {
