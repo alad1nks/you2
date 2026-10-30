@@ -31,12 +31,13 @@ controls. Wish titles are required and limited to 80 characters; descriptions an
 limited to 500 characters.
 
 Android email/password registration, sign-in, password reset, session restoration, and sign-out use Firebase Authentication.
-Partner invitations and linking, synchronization between devices, durable wish storage, and personal photo
-selection remain to be implemented. Android opens the main tabs immediately after sign-in and provides sign-out in Us. Other platforms still use the demo flow with sign-out disabled.
+Android uses Cloud Firestore for profiles, partner invitations, shared wishes, and memories. After sign-in,
+one partner creates an invitation and the other enters its code; the main tabs open once the pair is linked.
+Other platforms still use the demo flow with sign-out disabled. Personal photo selection/upload remains to be implemented.
 
-For development and UI validation, the demo screens use seeded data for Alex and Mia:
+For non-Android development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
-profile changes reset on restart or browser reload. `DemoDateSource` currently supplies the fixed date
+profile changes reset on restart or browser reload. Android supplies the current local date; `DemoDateSource` supplies the fixed date
 **October 28, 2026**. The image picker currently uses bundled illustrations. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
@@ -148,7 +149,8 @@ Build and archive the full iOS application in Xcode.
 | [resources](resources) | Shared localized strings, fonts, and category images |
 | [design/icons](design/icons) | Original SVG design references |
 
-`App()` creates Koin with `CommonModules + PlatformModules`. `MainViewModel` observes the singleton
+`App()` creates Koin with `CommonModules + PlatformModules`. Android overrides the demo repository with
+`FirestoreWishesRepository` from `core/data/androidMain` and a real clock. `MainViewModel` observes the singleton
 `WishesRepository.space` StateFlow and sends wish, memory, and profile mutations directly to that
 repository. Screens share the same `PairedSpace`, so lists and counters update together.
 `PairedNavigation` holds tab, filter, and overlay state.
@@ -268,8 +270,9 @@ Authentication screens and state live in shared/commonMain and use the common En
 All platforms enter through the single shared App, which owns Koin, the theme, locale, and screen routing.
 Android DI supplies FirebaseAuthClient from shared/androidMain; other platforms keep the demo flow until an auth client is registered.
 
-The main tabs still display seeded Alex/Mia sample data; authentication does not yet connect wishes to an account or link a partner. The Us tab labels this data as sample content.
-iOS, Web, and Desktop authentication, email verification UI, and shared account data are not implemented.
+Android main tabs display the signed-in user's shared Firestore data. Loading, unpaired, and failed states
+never fall back to Alex/Mia sample content. iOS, Web, and Desktop authentication and cloud data,
+and email verification UI, are not implemented.
 
 Validation:
 
@@ -283,3 +286,70 @@ errors. Unit tests use a fake auth client and do not create production Firebase 
 
 Android CI restores this file from the repository Actions secret `GOOGLE_SERVICES_JSON`. Set its value
 to the complete downloaded JSON. This secret is required for Android CI (and is unavailable to fork PRs).
+
+## Android Firestore setup
+
+Use the **default `(default)` Cloud Firestore database**, Standard edition, in the same Firebase project
+as `androidApp/google-services.json`. The client discovers its location automatically; no region string
+or administrator credential belongs in the app. A database created in Production mode rejects requests
+until the application rules are published.
+
+Publish the complete contents of [firestore.rules](firestore.rules) in Firebase Console → Firestore
+Database → Rules → Publish. Alternatively, with Firebase CLI access to the project, run from the repo root:
+
+```powershell
+firebase deploy --only firestore:rules --project you2-ae09a
+```
+
+This is a separate deployment step: a code merge does not deploy the rules. No collections need to be
+created manually. This implementation needs no Cloud Functions or Storage setup.
+
+Data layout:
+
+- `users/{uid}`: display name and `coupleId`; only the user can change their profile, and their partner can read it.
+- `couples/{coupleId}`: immutable membership after two users join, current invitation ID, creation timestamp.
+- `couples/{coupleId}/wishes/{wishId}`: one wish per document, including optional completion/memory fields.
+- `invites/{code}`: random UUID v4 code (without hyphens), owner, pair, expiry, and one-time consumer.
+  Invitation collections cannot be listed. An authenticated user who possesses the code can read that invitation.
+
+One partner enters a name and creates an invitation; the second registers/signs in and enters their name
+and the code. Invitations expire after 24 hours; generating a new one invalidates the old one. Creation
+and acceptance use Firestore transactions, with Security Rules validating all related documents through
+`getAfter`. Two concurrent join attempts cannot add a third member. No client can directly assign a partner.
+Initial profile creation, pairing, and wish completion require internet access. Invitation creation
+requires a reasonably accurate device clock. Completion uses a transaction so concurrent completion
+cannot replace an existing memory or its author.
+
+The repository listens for profile, pair, and wish changes. Firestore caches data locally; previously
+loaded data can be shown offline, and queued writes display a waiting-for-server dialog. The UI allows
+one pending operation at a time. Signing out clears displayed state, cancels listeners, and ignores late
+callbacks, but does not cancel an SDK write already queued or erase Firestore's disk cache. Failed writes
+can be explicitly retried with the same document ID and payload. Cancelling the error discards that retry.
+Edits update only the relevant fields; content edits use last-write-wins behavior. A stale memory edit
+cannot recreate a restored memory. Server timestamps track writes; wish deadlines remain local calendar dates.
+
+Current limits: each wish allows up to 12 attachments; photos still use bundled category illustrations,
+wish lists are loaded in full (pagination
+is needed for larger histories), and pair unlinking/account deletion are not implemented. An account that
+has created its own invitation must receive its partner into that space; switching to another space is
+not implemented. Only one of the two partners should create an invitation.
+
+### Firestore validation
+
+Rules tests use a **demo project and local emulator only**, without production credentials. Install Node 22
+and Java 21, then run:
+
+```powershell
+cd firebase-tests
+npm ci
+npm test
+```
+
+The configured Firestore emulator port is `8185`. The suite covers access isolation, atomic pairing,
+concurrent acceptance, expiry, invitation renewal, write validation, and the complete wish/memory lifecycle.
+The same suite runs in PR CI. Shared tests cover document mapping and hiding data from a previous account.
+
+Before release, on two Android devices/accounts verify invitation creation/join, realtime edits,
+completion/restoration, profile renaming, restart, offline writes, sign-out and account switching.
+Verify that the third account cannot read or write the pair's data. Do not loosen rules to public access
+to work around a denied request.

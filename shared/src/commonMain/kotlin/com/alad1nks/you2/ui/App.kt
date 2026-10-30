@@ -36,21 +36,23 @@ fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
                         if (authViewModel.isAvailable && auth.user == null) {
                             GuestExperience(auth, authViewModel, language, viewModel::changeLanguage)
                         } else {
-                            AppContent(
-                                space,
-                                viewModel.today,
-                                viewModel::deleteWish,
-                                viewModel::completeWish,
-                                viewModel::saveWish,
-                                viewModel::restoreWish,
-                                viewModel::editMemory,
-                                darkTheme,
-                                language,
-                                viewModel::renameUser,
-                                viewModel::changeDarkTheme,
-                                viewModel::changeLanguage,
-                                onSignOut = if (authViewModel.isAvailable) authViewModel::signOut else null,
-                            )
+                            CloudSpaceGate(viewModel.cloud, auth.user?.id, authViewModel::signOut) {
+                                AppContent(
+                                    space,
+                                    viewModel.today,
+                                    viewModel::deleteWish,
+                                    viewModel::completeWish,
+                                    viewModel::saveWish,
+                                    viewModel::restoreWish,
+                                    viewModel::editMemory,
+                                    darkTheme,
+                                    language,
+                                    viewModel::renameUser,
+                                    viewModel::changeDarkTheme,
+                                    viewModel::changeLanguage,
+                                    onSignOut = if (authViewModel.isAvailable) authViewModel::signOut else null,
+                                )
+                            }
                         }
                     }
                 }

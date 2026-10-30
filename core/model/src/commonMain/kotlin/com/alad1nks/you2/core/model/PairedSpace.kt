@@ -62,7 +62,8 @@ data class WishDraft(
     val cover: WishImage? = null,
     val attachments: List<WishImage> = emptyList(),
 ) {
-    val isValid: Boolean get() = title.isNotBlank() && title.length <= 80 && description.length <= 500
+    val isValid: Boolean
+        get() = title.isNotBlank() && title.length <= 80 && description.length <= 500 && attachments.size <= 12
 }
 
 data class Wish(

@@ -75,6 +75,7 @@ import com.alad1nks.you2.resources.generated.cancel
 import com.alad1nks.you2.resources.generated.choose_category
 import com.alad1nks.you2.resources.generated.choose_date
 import com.alad1nks.you2.resources.generated.choose_images
+import com.alad1nks.you2.resources.generated.cloud_attachment_limit
 import com.alad1nks.you2.resources.generated.complete_by
 import com.alad1nks.you2.resources.generated.couple_label
 import com.alad1nks.you2.resources.generated.cover_hint
@@ -377,6 +378,9 @@ internal fun WishForm(
                         attachments = true,
                     ) { pickingImage = "attachments" }
                     FormHint(stringResource(Res.string.attachments_hint))
+                    if (state.attachments.size > 12) {
+                        Text(stringResource(Res.string.cloud_attachment_limit), color = MaterialTheme.colorScheme.error)
+                    }
                 }
             }
             item {

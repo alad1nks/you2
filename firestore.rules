@@ -1,0 +1,113 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function userPath(id) { return /databases/$(database)/documents/users/$(id); }
+    function couplePath(id) { return /databases/$(database)/documents/couples/$(id); }
+    function invitePath(id) { return /databases/$(database)/documents/invites/$(id); }
+    function member(id) { return signedIn() && uid() in get(couplePath(id)).data.memberIds; }
+    function nameValid(name) { return name is string && name.size() <= 80 && name.matches('.*[^\\s].*'); }
+    function codeValid(code) { return code is string && code.matches('[a-f0-9]{32}'); }
+    function categoryValid(value) {
+      return value in ['ADVENTURES', 'PRESENTS', 'PLANS', 'MOVIES', 'TV_SERIES', 'OTHER'];
+    }
+    function dateValid(value) { return value is string && value.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'); }
+    function datesValid(d) {
+      return d is map && (
+        (d.keys().hasOnly(['type']) && d.type == 'none') ||
+        (d.keys().hasOnly(['type', 'end']) && d.type == 'deadline' && dateValid(d.end)) ||
+        (d.keys().hasOnly(['type', 'start', 'end']) && d.type == 'range' && dateValid(d.start) && dateValid(d.end) && d.start <= d.end)
+      );
+    }
+    function contentValid(c) {
+      return c is map && c.keys().hasAll(['title', 'description', 'category', 'dates', 'cover', 'attachments']) &&
+        c.keys().hasOnly(['title', 'description', 'category', 'dates', 'cover', 'attachments']) &&
+        nameValid(c.title) && c.description is string && c.description.size() <= 500 &&
+        categoryValid(c.category) && datesValid(c.dates) && (c.cover == null || categoryValid(c.cover)) &&
+        c.attachments is list && c.attachments.size() <= 12 &&
+        c.attachments.hasOnly(['ADVENTURES', 'PRESENTS', 'PLANS', 'MOVIES', 'TV_SERIES', 'OTHER']);
+    }
+    function completionValid(c, coupleId) {
+      return c == null || (c is map && c.keys().hasAll(['date', 'authorId', 'memory']) &&
+        c.keys().hasOnly(['date', 'authorId', 'memory']) && dateValid(c.date) &&
+        c.authorId in get(couplePath(coupleId)).data.memberIds && c.memory is string && c.memory.size() <= 500);
+    }
+    function wishValid(w, coupleId) {
+      return w.keys().hasAll(['authorId', 'createdOn', 'createdAt', 'updatedAt', 'content', 'completion']) &&
+        w.keys().hasOnly(['authorId', 'createdOn', 'createdAt', 'updatedAt', 'content', 'completion']) &&
+        w.authorId in get(couplePath(coupleId)).data.memberIds && dateValid(w.createdOn) &&
+        w.createdAt is timestamp && w.updatedAt == request.time && contentValid(w.content) && completionValid(w.completion, coupleId);
+    }
+    function validInviteForJoin(id, coupleId) {
+      let invite = get(invitePath(id)).data;
+      return invite.coupleId == coupleId && invite.usedBy == null && invite.ownerId != uid() &&
+        invite.expiresAt > request.time && getAfter(invitePath(id)).data.usedBy == uid();
+    }
+
+    match /users/{userId} {
+      allow get: if signedIn() && (uid() == userId ||
+        (resource.data.coupleId != null && get(userPath(uid())).data.coupleId == resource.data.coupleId && member(resource.data.coupleId)));
+      allow create: if signedIn() && uid() == userId && request.resource.data.keys().hasOnly(['name', 'coupleId']) &&
+        request.resource.data.name == '' && request.resource.data.coupleId == null;
+      allow update: if signedIn() && uid() == userId && request.resource.data.keys().hasOnly(['name', 'coupleId']) &&
+        nameValid(request.resource.data.name) &&
+        (request.resource.data.coupleId == resource.data.coupleId ||
+          (resource.data.coupleId == null && request.resource.data.coupleId is string &&
+            uid() in getAfter(couplePath(request.resource.data.coupleId)).data.memberIds));
+    }
+
+    match /couples/{coupleId} {
+      // An authenticated transaction may check a newly generated, absent document ID.
+      allow get: if signedIn() && (!exists(couplePath(coupleId)) || uid() in resource.data.memberIds);
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['memberIds', 'inviteId', 'createdAt']) &&
+        request.resource.data.memberIds == [uid()] && request.resource.data.createdAt == request.time &&
+        codeValid(request.resource.data.inviteId) && get(userPath(uid())).data.coupleId == null &&
+        getAfter(userPath(uid())).data.coupleId == coupleId &&
+        getAfter(invitePath(request.resource.data.inviteId)).data.coupleId == coupleId &&
+        getAfter(invitePath(request.resource.data.inviteId)).data.ownerId == uid();
+      allow update: if signedIn() && resource.data.memberIds.size() == 1 && (
+        (resource.data.memberIds == [uid()] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['inviteId']) &&
+          codeValid(request.resource.data.inviteId) &&
+          getAfter(invitePath(request.resource.data.inviteId)).data.ownerId == uid() &&
+          getAfter(invitePath(request.resource.data.inviteId)).data.coupleId == coupleId) ||
+        (!(uid() in resource.data.memberIds) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberIds']) &&
+          request.resource.data.memberIds == resource.data.memberIds.concat([uid()]) &&
+          get(userPath(uid())).data.coupleId == null && getAfter(userPath(uid())).data.coupleId == coupleId &&
+          validInviteForJoin(resource.data.inviteId, coupleId))
+      );
+
+      match /wishes/{wishId} {
+        allow read: if member(coupleId);
+        allow create: if member(coupleId) && wishValid(request.resource.data, coupleId) &&
+          request.resource.data.authorId == uid() && request.resource.data.createdAt == request.time && request.resource.data.completion == null;
+        allow update: if member(coupleId) && wishValid(request.resource.data, coupleId) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'completion', 'updatedAt']) && (
+            request.resource.data.completion == null ||
+            (resource.data.completion == null && request.resource.data.completion.authorId == uid()) ||
+            (resource.data.completion != null && request.resource.data.completion.diff(resource.data.completion).affectedKeys().hasOnly(['memory']))
+          );
+        allow delete: if member(coupleId);
+      }
+    }
+
+    match /invites/{code} {
+      // UUID v4 codes carry 122 random bits and are shared explicitly. Listing is forbidden.
+      allow get: if signedIn();
+      allow create: if signedIn() && codeValid(code) &&
+        request.resource.data.keys().hasOnly(['ownerId', 'coupleId', 'createdAt', 'expiresAt', 'usedBy']) &&
+        request.resource.data.ownerId == uid() && request.resource.data.usedBy == null &&
+        request.resource.data.createdAt == request.time && request.resource.data.expiresAt is timestamp &&
+        request.resource.data.expiresAt > request.time && request.resource.data.expiresAt < request.time + duration.value(25, 'h') &&
+        getAfter(couplePath(request.resource.data.coupleId)).data.memberIds == [uid()] &&
+        getAfter(couplePath(request.resource.data.coupleId)).data.inviteId == code;
+      allow update: if signedIn() && resource.data.ownerId != uid() && resource.data.usedBy == null &&
+        resource.data.expiresAt > request.time && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy']) &&
+        request.resource.data.usedBy == uid() && get(userPath(uid())).data.coupleId == null &&
+        getAfter(userPath(uid())).data.coupleId == resource.data.coupleId &&
+        get(couplePath(resource.data.coupleId)).data.inviteId == code &&
+        get(couplePath(resource.data.coupleId)).data.memberIds == [resource.data.ownerId] &&
+        getAfter(couplePath(resource.data.coupleId)).data.memberIds == [resource.data.ownerId, uid()];
+    }
+  }
+}

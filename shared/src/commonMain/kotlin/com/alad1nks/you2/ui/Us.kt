@@ -42,8 +42,8 @@ import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.appearance
-import com.alad1nks.you2.resources.generated.auth_demo_note
 import com.alad1nks.you2.resources.generated.cancel
+import com.alad1nks.you2.resources.generated.cloud_connected_note
 import com.alad1nks.you2.resources.generated.connected
 import com.alad1nks.you2.resources.generated.couple_label
 import com.alad1nks.you2.resources.generated.dark_theme
@@ -187,7 +187,7 @@ internal fun LazyListScope.usContent(
                 )
             }
             Text(
-                stringResource(if (onSignOut == null) Res.string.demo_signout else Res.string.auth_demo_note),
+                stringResource(if (onSignOut == null) Res.string.demo_signout else Res.string.cloud_connected_note),
                 Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
@@ -272,6 +272,7 @@ internal fun UsSettingsDialog(
     onRenameUser: (String) -> Unit,
     onSetDarkTheme: (Boolean) -> Unit,
     onSetLanguage: (Language) -> Unit,
+    syncedProfile: Boolean = false,
 ) {
     var draft by rememberSaveable { mutableStateOf(name) }
     val validName = draft.isNotBlank() && draft.length <= 80
@@ -299,7 +300,10 @@ internal fun UsSettingsDialog(
                             stringResource(Res.string.profile_name),
                             Modifier.testTag("profile-name"),
                             isError = !validName,
-                            helperText = stringResource(Res.string.profile_hint),
+                            helperText =
+                                stringResource(
+                                    if (syncedProfile) Res.string.cloud_connected_note else Res.string.profile_hint,
+                                ),
                         )
                     }
 

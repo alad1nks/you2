@@ -5,6 +5,28 @@ on:
     branches: [ main, master ]
 
 jobs:
+  firestore-rules:
+    name: Firestore security rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: firebase-tests/package-lock.json
+      - uses: actions/setup-java@v6.0.1
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+      - run: npm ci
+        working-directory: firebase-tests
+      - run: npm test
+        working-directory: firebase-tests
+
   screenshot-tests:
     name: Screenshot tests
     runs-on: windows-2025

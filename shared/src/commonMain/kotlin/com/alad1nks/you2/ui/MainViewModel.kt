@@ -2,6 +2,7 @@ package com.alad1nks.you2.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alad1nks.you2.core.data.repository.CloudWishesRepository
 import com.alad1nks.you2.core.data.repository.WishesRepository
 import com.alad1nks.you2.core.domain.GetDarkTheme
 import com.alad1nks.you2.core.domain.GetLanguage
@@ -23,6 +24,7 @@ internal class MainViewModel(
     val darkTheme = getDarkTheme()
     val language = getLanguage()
     val space = repository.space
+    val cloud = repository as? CloudWishesRepository
     val today = dateSource.today()
 
     fun renameUser(name: String) = repository.renameUser(name)
