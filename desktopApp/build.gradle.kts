@@ -23,6 +23,9 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.alad1nks.you2"
             packageVersion = "1.0.0"
+            windows { iconFile.set(project.file("icons/app-icon.ico")) }
+            macOS { iconFile.set(project.file("icons/app-icon.icns")) }
+            linux { iconFile.set(project.file("icons/app-icon.png")) }
         }
     }
 }
