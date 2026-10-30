@@ -1,0 +1,31 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function member(coupleId) {
+      return request.auth != null && request.auth.uid in
+        firestore.get(/databases/(default)/documents/couples/$(coupleId)).data.memberIds;
+    }
+
+    function wishExists(coupleId, wishId) {
+      return firestore.exists(/databases/(default)/documents/couples/$(coupleId)/wishes/$(wishId));
+    }
+
+    function validImage(fileName) {
+      return request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024 && (
+        (fileName.matches('[a-zA-Z0-9_-]{1,128}\\.jpg') && request.resource.contentType == 'image/jpeg') ||
+        (fileName.matches('[a-zA-Z0-9_-]{1,128}\\.png') && request.resource.contentType == 'image/png') ||
+        (fileName.matches('[a-zA-Z0-9_-]{1,128}\\.webp') && request.resource.contentType == 'image/webp')
+      );
+    }
+
+    match /couples/{coupleId}/wishes/{wishId}/{fileName} {
+      allow get: if member(coupleId) && wishExists(coupleId, wishId);
+      // Save the wish first, then upload under a new random image ID.
+      allow create: if resource == null && member(coupleId) && wishExists(coupleId, wishId) && validImage(fileName);
+      // Allow cleanup even after the wish document has been removed.
+      allow delete: if member(coupleId);
+      // No listing, overwriting, or client metadata updates. Replace images with new IDs.
+    }
+    // Every other path and operation is denied by default.
+  }
+}

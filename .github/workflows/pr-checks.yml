@@ -6,7 +6,7 @@ on:
 
 jobs:
   firestore-rules:
-    name: Firestore security rules
+    name: Firestore and Storage security rules
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
