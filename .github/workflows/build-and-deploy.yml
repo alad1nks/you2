@@ -24,7 +24,7 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > you2-release-key.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release-key.jks
 
       - name: Restore Firebase configuration
         env:
