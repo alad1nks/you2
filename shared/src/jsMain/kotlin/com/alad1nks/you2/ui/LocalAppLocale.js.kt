@@ -7,7 +7,7 @@ import androidx.compose.ui.text.intl.Locale
 
 @Suppress("ktlint:standard:class-naming")
 external object window {
-    var __customLocale: String?
+    fun setYou2Locale(value: String?)
 }
 
 actual object LocalAppLocale {
@@ -17,7 +17,7 @@ actual object LocalAppLocale {
 
     @Composable
     actual infix fun provides(value: String?): ProvidedValue<*> {
-        window.__customLocale = value?.replace('_', '-')
+        window.setYou2Locale(value?.replace('_', '-'))
         return LocalAppLocale.provides(Locale.current)
     }
 }

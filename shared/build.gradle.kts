@@ -42,6 +42,10 @@ kotlin {
     }
 
     sourceSets {
+        getByName("androidHostTest").dependencies {
+            implementation(libs.robolectric)
+            implementation(libs.compose.ui.test)
+        }
         androidMain.dependencies {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.auth)
