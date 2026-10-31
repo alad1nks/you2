@@ -29,6 +29,7 @@ import com.alad1nks.you2.resources.generated.image_selection_error
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -119,10 +120,11 @@ internal actual fun PlatformImagePicker(maxImages: Int, onDismiss: () -> Unit, o
 }
 
 @Composable
-internal actual fun wishImagePainter(image: WishImage): Painter {
+internal actual fun wishImageState(image: WishImage): WishImageState {
     val fallback = painterResource(image.category.image)
-    var loaded by remember(image.key) { mutableStateOf<Painter?>(null) }
-    LaunchedEffect(image.key) {
+    var loaded by remember(image) { mutableStateOf<Painter?>(null) }
+    var loading by remember(image) { mutableStateOf(image.source != null) }
+    LaunchedEffect(image) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         loaded =
             try {
@@ -148,11 +150,14 @@ internal actual fun wishImagePainter(image: WishImage): Painter {
                         requireNotNull(BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)).asImageBitmap(),
                     )
                 }.takeIf { FirebaseAuth.getInstance().currentUser?.uid == uid }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (_: Exception) {
                 null
             }
+        loading = false
     }
-    return loaded ?: fallback
+    return WishImageState(loaded ?: fallback, isLoading = loading)
 }
 
 internal actual val supportsPhotoSelection: Boolean = true

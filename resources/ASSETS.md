@@ -110,3 +110,23 @@ memories represent user-authored content and remain English when the UI language
 After changing visible assets, fonts, or copy, run the shared screenshot verification described in
 [the README](../README.md#screenshot-regression-tests). Record new references on Windows with JDK 21
 only for intentional changes, and visually review the PNG differences before committing.
+
+## Image loading indicators
+
+`image_loading_dots.png` and `image_loading_spinner.png` are transparent 4x rasterizations
+of the unmodified SVG exports in `design/icons/`. They come from the you2 Figma
+file `4NzqzLDkOMaaGQGKYhEeuT`, nodes `172:3149` and `171:3101`, respectively.
+The app displays them at 23 x 5 dp and 32 x 32 dp. Dots follow the secondary
+theme color; the viewer rotates the original light spinner on its dark stage.
+
+To regenerate with `resvg-py` installed:
+
+```python
+from pathlib import Path
+import resvg_py
+
+for name in ["image_loading_dots", "image_loading_spinner"]:
+    Path(f"resources/src/commonMain/composeResources/drawable/{name}.png").write_bytes(
+        resvg_py.svg_to_bytes(svg_path=f"design/icons/{name}.svg", zoom=4)
+    )
+```

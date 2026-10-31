@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -133,7 +132,8 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
                 Modifier.fillMaxSize().testTag("image-pages"),
                 userScrollEnabled = transform.scale == 1f,
             ) { index ->
-                val painter = wishImagePainter(images[index])
+                val imageState = wishImageState(images[index])
+                val painter = imageState.painter
                 val active = index == pager.currentPage
                 var viewport by remember { mutableStateOf(Size.Zero) }
                 val gestures =
@@ -172,18 +172,22 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
                             transform.change(1f)
                         }
                     }
-                    Image(
-                        painter,
+                    WishImageContent(
+                        imageState,
                         stringResource(Res.string.view_image, index + 1),
-                        Modifier.fillMaxSize().graphicsLayer {
-                            if (active) {
-                                scaleX = transform.scale
-                                scaleY = transform.scale
-                                translationX = transform.offset.x
-                                translationY = transform.offset.y
-                            }
-                        },
+                        Modifier.fillMaxSize(),
+                        imageModifier =
+                            Modifier.graphicsLayer {
+                                if (active) {
+                                    scaleX = transform.scale
+                                    scaleY = transform.scale
+                                    translationX = transform.offset.x
+                                    translationY = transform.offset.y
+                                }
+                            },
                         contentScale = ContentScale.Fit,
+                        showLoadingLabel = true,
+                        viewer = true,
                     )
                 }
             }
@@ -250,8 +254,8 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
                                 itemsIndexed(images) { index, image ->
                                     val selected = pager.currentPage == index
                                     val shape = RoundedCornerShape(8.dp)
-                                    Image(
-                                        wishImagePainter(image),
+                                    WishImageContent(
+                                        wishImageState(image),
                                         stringResource(Res.string.view_image, index + 1),
                                         Modifier.size(64.dp, 48.dp).clip(shape).alpha(if (selected) 1f else .6f)
                                             .then(
