@@ -97,6 +97,29 @@ The APK is written to `androidApp/build/outputs/apk/debug/androidApp-debug.apk`.
 Installation requires a connected device or emulator. You can also run the `androidApp` configuration
 from Android Studio. The application ID is `com.alad1nks.you2`.
 
+#### Release signing
+
+Place your release/upload keystore at `release-key.jks` in the repository root.
+Set these environment variables before running Gradle:
+
+```properties
+SIGNING_STORE_PASSWORD=your-store-password
+SIGNING_KEY_ALIAS=your-key-alias
+SIGNING_KEY_PASSWORD=your-key-password
+```
+
+Keep credentials in your local environment or CI secrets, never in tracked project files.
+Release builds require signing credentials; debug builds do not.
+
+```bash
+./gradlew :androidApp:assembleRelease :androidApp:bundleRelease
+```
+
+Signed outputs are under `androidApp/build/outputs/apk/release` and
+`androidApp/build/outputs/bundle/release`. Release builds shrink code and resources;
+archive `androidApp/build/outputs/mapping/release/mapping.txt` with each published version
+to retrace crash reports.
+
 ### Desktop
 
 ```bash
@@ -246,10 +269,9 @@ The PR JVM command is `jvmJar`, which does not build the Desktop application ent
 use `:desktopApp:jar` or run/package Desktop when changing that target. The iOS job builds the Kotlin
 framework, not the complete SwiftUI app.
 
-Release publication is configured but still has a signing gap: the workflows decode a keystore and
-pass `SIGNING_*` variables, while `androidApp/build.gradle.kts` has no release signing configuration
-and does not consume those variables. The APK workflow also expects `androidApp-release.apk`.
-Signing and the resulting artifact filename must be aligned before relying on release publication.
+Release publishing workflows decode the keystore to `release-key.jks` and pass the
+`SIGNING_*` environment variables consumed by the Android release signing configuration.
+The APK workflow publishes the signed `androidApp-release.apk`.
 
 The publishing workflows reference `KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `KEYSTORE_PASSWORD`,
 and `ACCESS_TOKEN`. These are not required for local debug builds or the PR checks.
