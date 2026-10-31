@@ -1,5 +1,6 @@
 package com.alad1nks.you2.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,12 +19,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.core.model.Couple
@@ -70,6 +73,7 @@ import com.alad1nks.you2.resources.generated.shared_plans
 import com.alad1nks.you2.resources.generated.shared_presents
 import com.alad1nks.you2.resources.generated.shared_tv_series
 import com.alad1nks.you2.resources.generated.shared_wish
+import com.alad1nks.you2.resources.generated.view_image
 import com.alad1nks.you2.resources.generated.waiting_to_happen
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
@@ -90,6 +94,8 @@ internal fun WishDetails(
     var editMemoryOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     var menuOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     var deleteOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
+    val images = listOf(wish.content.cover ?: WishImage(wish.content.category)) + wish.content.attachments
+    var viewerIndex by rememberSaveable(wish.id, images) { mutableStateOf<Int?>(null) }
     Scaffold(
         topBar = {
             Row(
@@ -181,6 +187,10 @@ internal fun WishDetails(
             item {
                 WishCover(
                     wish.content.cover ?: WishImage(wish.content.category),
+                    Modifier.testTag("wish-cover").clickable(
+                        role = Role.Button,
+                        onClickLabel = stringResource(Res.string.view_image, 1),
+                    ) { viewerIndex = 0 },
                     height = if (completion == null) 160.dp else 144.dp,
                 )
             }
@@ -237,7 +247,13 @@ internal fun WishDetails(
                 }
             }
             itemsIndexed(wish.content.attachments) { index, attachment ->
-                WishCover(attachment, Modifier.testTag("wish-attachment-$index"))
+                WishCover(
+                    attachment,
+                    Modifier.testTag("wish-attachment-$index").clickable(
+                        role = Role.Button,
+                        onClickLabel = stringResource(Res.string.view_image, index + 2),
+                    ) { viewerIndex = index + 1 },
+                )
             }
             if (completion != null) {
                 item {
@@ -290,6 +306,11 @@ internal fun WishDetails(
                     )
                 }
             }
+        }
+    }
+    viewerIndex?.let { index ->
+        key(wish.id, images) {
+            ImageViewer(images, index, wish.content.title) { viewerIndex = null }
         }
     }
     if (editMemoryOpen && completion != null) {

@@ -1,0 +1,4 @@
+<resources>
+    <string name="close_image_viewer">Суретті қарауды жабу</string>
+    <string name="view_image">%1$d-суретті көру</string>
+</resources>

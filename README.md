@@ -39,6 +39,17 @@ opens a copyable-code dialog, and **I have an invite code** opens the join dialo
 **View our wishes** opens the shared list.
 Other platforms still use the demo flow with sign-out disabled. Android supports private photo uploads for wish covers and attachments.
 
+Tap a cover or attachment in wish or memory details to open the full-screen image viewer.
+Images fit without cropping. Galleries support swiping, selectable thumbnails, and left/right arrow keys;
+Close, Escape, or system Back returns to the same details position. Single images hide the gallery
+counter, caption, and thumbnails, following the Figma viewer designs.
+Pinch to zoom up to 5×, or double-tap/double-click to animate between fitted size and 3×.
+Drag to pan while zoomed; return to fitted size to swipe between images. A single tap/click toggles
+the close button and gallery controls. Switching images resets the zoom.
+The close button has a transparent background, with a top shadow behind visible controls.
+On Android, hiding the controls also hides the status and navigation bars; showing the controls
+restores them. An edge swipe can temporarily reveal the system bars.
+
 For non-Android development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
 profile changes reset on restart or browser reload. Android supplies the current local date; `DemoDateSource` supplies the fixed date
