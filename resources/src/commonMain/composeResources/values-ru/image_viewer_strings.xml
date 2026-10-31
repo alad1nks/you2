@@ -1,4 +1,5 @@
 <resources>
     <string name="close_image_viewer">Закрыть просмотр изображений</string>
     <string name="view_image">Посмотреть изображение %1$d</string>
+    <string name="loading_image">Загрузка изображения…</string>
 </resources>

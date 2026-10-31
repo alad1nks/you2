@@ -1,7 +1,6 @@
 package com.alad1nks.you2.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.painter.Painter
 import com.alad1nks.you2.core.model.WishImage
 import org.jetbrains.compose.resources.painterResource
 
@@ -11,6 +10,7 @@ internal actual fun PlatformImagePicker(maxImages: Int, onDismiss: () -> Unit, o
 }
 
 @Composable
-internal actual fun wishImagePainter(image: WishImage): Painter = painterResource(image.category.image)
+internal actual fun wishImageState(image: WishImage): WishImageState =
+    WishImageState(painterResource(image.category.image))
 
 internal actual val supportsPhotoSelection: Boolean = false

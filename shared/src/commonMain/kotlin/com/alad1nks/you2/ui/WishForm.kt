@@ -297,11 +297,12 @@ internal fun WishForm(
                             AppIcons.AddPhotoAlternate,
                         ) { pickingImage = "cover" }
                     } else {
-                        Image(
-                            wishImagePainter(cover),
+                        WishImageContent(
+                            wishImageState(cover),
                             stringResource(Res.string.main_image),
                             Modifier.fillMaxWidth().heightIn(min = 116.dp, max = 116.dp).clip(AppShapes.field),
                             contentScale = ContentScale.Crop,
+                            showLoadingLabel = true,
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
                             OutlinedButton(
@@ -343,8 +344,8 @@ internal fun WishForm(
                     ) {
                         state.attachments.forEachIndexed { index, image ->
                             Box(Modifier.size(104.dp).testTag("form-attachment-$index")) {
-                                Image(
-                                    wishImagePainter(image),
+                                WishImageContent(
+                                    wishImageState(image),
                                     stringResource(image.category.label),
                                     Modifier.fillMaxSize().clip(AppShapes.field),
                                     contentScale = ContentScale.Crop,

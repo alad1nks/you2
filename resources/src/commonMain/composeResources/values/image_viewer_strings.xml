@@ -1,4 +1,5 @@
 <resources>
     <string name="close_image_viewer">Close image viewer</string>
     <string name="view_image">View image %1$d</string>
+    <string name="loading_image">Loading image…</string>
 </resources>

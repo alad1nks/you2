@@ -253,6 +253,7 @@ internal fun WishDetails(
                         role = Role.Button,
                         onClickLabel = stringResource(Res.string.view_image, index + 2),
                     ) { viewerIndex = index + 1 },
+                    showLoadingLabel = false,
                 )
             }
             if (completion != null) {
