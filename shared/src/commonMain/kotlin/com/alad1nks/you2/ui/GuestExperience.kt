@@ -17,12 +17,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
@@ -48,7 +45,6 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.auth.AuthForm
@@ -88,11 +84,8 @@ import com.alad1nks.you2.resources.generated.guest_wishes_body
 import com.alad1nks.you2.resources.generated.guest_wishes_hint
 import com.alad1nks.you2.resources.generated.guest_wishes_title
 import com.alad1nks.you2.resources.generated.kazakh_language
-import com.alad1nks.you2.resources.generated.memories
 import com.alad1nks.you2.resources.generated.russian_language
 import com.alad1nks.you2.resources.generated.system_language
-import com.alad1nks.you2.resources.generated.us
-import com.alad1nks.you2.resources.generated.wishes
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
@@ -160,7 +153,7 @@ internal fun GuestScreen(
                         }
                     }
                 }
-                GuestNavigation(tab, onSelectTab)
+                BottomNavigation(tab, onSelectTab)
             }
         }
     }
@@ -383,57 +376,6 @@ private fun GuestActions(tab: MainTab, onAuthenticate: (AuthMode) -> Unit) {
             color = MaterialTheme.colorScheme.secondary,
             textAlign = TextAlign.Center,
         )
-    }
-}
-
-@Composable
-internal fun GuestNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainer).selectableGroup()
-            .padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        MainTab.entries.forEach { tab ->
-            val active = selected == tab
-            val color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-            Column(
-                Modifier.weight(1f, fill = false).width(104.dp).heightIn(min = 60.dp)
-                    .selectable(active, onClick = { onSelect(tab) }, role = Role.Tab),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
-            ) {
-                Box(
-                    Modifier.width(64.dp).height(32.dp).clip(AppShapes.pill)
-                        .then(
-                            if (active) Modifier.background(MaterialTheme.colorScheme.primaryContainer) else Modifier,
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        when (tab) {
-                            MainTab.WISHES -> AppIcons.FavoriteBorder
-                            MainTab.MEMORIES -> AppIcons.PhotoLibrary
-                            MainTab.US -> AppIcons.People
-                        },
-                        null,
-                        Modifier.size(AppDimensions.icon),
-                        tint = color,
-                    )
-                }
-                Text(
-                    stringResource(
-                        when (tab) {
-                            MainTab.WISHES -> Res.string.wishes
-                            MainTab.MEMORIES -> Res.string.memories
-                            MainTab.US -> Res.string.us
-                        },
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = color,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
     }
 }
 

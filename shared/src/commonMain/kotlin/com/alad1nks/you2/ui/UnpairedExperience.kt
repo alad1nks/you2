@@ -284,7 +284,7 @@ internal fun UnpairedExperience(
                         }
                     }
                 }
-                GuestNavigation(tab) { tab = it }
+                BottomNavigation(tab) { tab = it }
             }
         }
     }

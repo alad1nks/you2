@@ -13,15 +13,10 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,12 +39,10 @@ import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
 import com.alad1nks.you2.core.model.WishDraft
 import com.alad1nks.you2.core.model.status
-import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.CoupleHeader
 import com.alad1nks.you2.feature.designsystem.components.DateBadge
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.components.StatusTone
-import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.add_wish
@@ -66,7 +59,6 @@ import com.alad1nks.you2.resources.generated.due_today
 import com.alad1nks.you2.resources.generated.ended
 import com.alad1nks.you2.resources.generated.formatted_date
 import com.alad1nks.you2.resources.generated.in_progress
-import com.alad1nks.you2.resources.generated.memories
 import com.alad1nks.you2.resources.generated.movies
 import com.alad1nks.you2.resources.generated.no_date
 import com.alad1nks.you2.resources.generated.other
@@ -78,8 +70,6 @@ import com.alad1nks.you2.resources.generated.short_months
 import com.alad1nks.you2.resources.generated.tv_series
 import com.alad1nks.you2.resources.generated.upcoming_deadline
 import com.alad1nks.you2.resources.generated.upcoming_range
-import com.alad1nks.you2.resources.generated.us
-import com.alad1nks.you2.resources.generated.wishes
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
@@ -256,46 +246,6 @@ internal fun AppContent(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun BottomNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
-    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer, tonalElevation = 0.dp) {
-        MainTab.entries.forEach { tab ->
-            val label =
-                stringResource(
-                    when (tab) {
-                        MainTab.WISHES -> Res.string.wishes
-                        MainTab.MEMORIES -> Res.string.memories
-                        MainTab.US -> Res.string.us
-                    },
-                )
-            NavigationBarItem(
-                selected = selected == tab,
-                colors =
-                    NavigationBarItemDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                    ),
-                onClick = {
-                    onSelect(tab)
-                },
-                label = { Text(label, style = MaterialTheme.typography.bodySmall) },
-                icon = {
-                    Icon(
-                        when (tab) {
-                            MainTab.WISHES -> AppIcons.FavoriteBorder
-                            MainTab.MEMORIES -> AppIcons.PhotoLibrary
-                            MainTab.US -> AppIcons.People
-                        },
-                        null,
-                        Modifier.size(AppDimensions.icon),
-                    )
-                },
-            )
         }
     }
 }
