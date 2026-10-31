@@ -8,8 +8,20 @@ data class Couple(val you: User, val partner: User)
 
 enum class WishCategory { ADVENTURES, PRESENTS, PLANS, MOVIES, TV_SERIES, OTHER }
 
-/** A local demo image key, resolved by the presentation layer. */
-data class WishImage(val category: WishCategory)
+/** Bundled artwork, a private Storage object, or a staged local selection. */
+data class WishImage(val category: WishCategory = WishCategory.OTHER, val source: String? = null) {
+    val key: String get() = source ?: category.name
+    val isLocal: Boolean get() = source?.startsWith("file:") == true
+
+    companion object {
+        fun fromKey(key: String): WishImage =
+            if (key.startsWith("couples/") || key.startsWith("file:")) {
+                WishImage(source = key)
+            } else {
+                WishImage(WishCategory.valueOf(key))
+            }
+    }
+}
 
 sealed interface WishDates {
     data object NoDate : WishDates

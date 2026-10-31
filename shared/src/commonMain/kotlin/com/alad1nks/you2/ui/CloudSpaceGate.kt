@@ -39,6 +39,7 @@ import com.alad1nks.you2.resources.generated.cloud_network_error
 import com.alad1nks.you2.resources.generated.cloud_retry
 import com.alad1nks.you2.resources.generated.cloud_saving
 import com.alad1nks.you2.resources.generated.cloud_saving_hint
+import com.alad1nks.you2.resources.generated.cloud_storage_access_error
 import com.alad1nks.you2.resources.generated.sign_out
 import org.jetbrains.compose.resources.stringResource
 
@@ -125,6 +126,7 @@ internal fun CloudSpaceGate(
 internal fun CloudFailure?.message() =
     when (this) {
         CloudFailure.ACCESS -> Res.string.cloud_access_error
+        CloudFailure.STORAGE_ACCESS -> Res.string.cloud_storage_access_error
         CloudFailure.NETWORK -> Res.string.cloud_network_error
         CloudFailure.INVITE -> Res.string.cloud_invite_error
         CloudFailure.DATA -> Res.string.cloud_data_error

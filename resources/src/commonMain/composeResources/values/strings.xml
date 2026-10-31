@@ -176,4 +176,7 @@
     <string name="cloud_invite_error">This invitation cannot be used. Check the code or ask your partner for a new one.</string>
     <string name="cloud_data_error">Could not read the saved data. Retry or contact support.</string>
     <string name="cloud_attachment_limit">Keep up to 12 attachments. Remove extra images to save.</string>
+    <string name="image_selection_error">Could not prepare this image. Please choose another photo.</string>
+    <string name="photo_images_hint">Choose a photo from your device</string>
+    <string name="cloud_storage_access_error">Image upload was denied by Firebase Storage. Contact support if this continues.</string>
 </resources>

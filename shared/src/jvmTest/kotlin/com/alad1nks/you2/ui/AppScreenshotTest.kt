@@ -161,8 +161,8 @@ class AppScreenshotTest {
             onRoot().captureRoboImage("src/jvmTest/screenshots/paired_${theme}_${width}_wishes_end.png", options)
             onNodeWithTag("paired-list").performScrollToIndex(0)
             onNodeWithTag("wish-sort").performClick()
-            // Dismiss through the menu item; only the specified newest-first mode is available.
-            onAllNodes(hasText("Newest first ↓"))[1].performClick()
+            // Dismiss through the newest-first menu item.
+            onNodeWithTag("wish-sort-NEWEST").performClick()
             onNodeWithTag("paired-list").performScrollToNode(hasText("All wishes"))
             onNodeWithText("Presents").performClick()
             onNodeWithText("A little gift, just because").performClick()

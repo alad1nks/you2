@@ -15,6 +15,20 @@ import kotlin.test.assertNull
 
 class WishFormStateTest {
     @Test
+    fun selectedAndUploadedImageReferencesSurviveFormRestoration() {
+        val draft =
+            WishDraft(
+                "Photos",
+                WishCategory.OTHER,
+                cover = WishImage(source = "file:///cache/selected.jpg"),
+                attachments = listOf(WishImage(source = "couples/pair/wishes/id/photo.jpg")),
+            )
+        val form = WishFormState(draft)
+        val saved = with(WishFormState.Saver) { SaverScope { true }.save(form) }
+        assertEquals(draft, WishFormState.Saver.restore(requireNotNull(saved))!!.draftOrNull())
+    }
+
+    @Test
     fun excessiveAttachmentsCannotReachTheRepository() {
         val form = WishFormState()
         form.title = "A wish"

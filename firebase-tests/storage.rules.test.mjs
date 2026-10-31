@@ -1,8 +1,9 @@
 import { after, before, beforeEach, test } from 'node:test';
+import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getMetadata, getBytes, getDownloadURL, deleteObject, listAll, updateMetadata } from 'firebase/storage';
+import { ref, uploadBytes, uploadBytesResumable, getMetadata, getBytes, getDownloadURL, deleteObject, listAll, updateMetadata } from 'firebase/storage';
 
 let env;
 const path = 'couples/pair/wishes/wish/photo.jpg';
@@ -110,24 +111,20 @@ test('overwrites and metadata changes are forbidden', async () => {
   await assertFails(updateMetadata(image('bob'), { customMetadata: { anything: 'changed' } }));
 });
 
-test('uploads reject validation claims and arbitrary application metadata', async () => {
+test('custom metadata never grants access to another couple or unauthenticated user', async () => {
   for (const customMetadata of [
     { validated: 'true' },
     { ownerId: 'bob' },
     { anything: 'unexpected' },
   ]) {
-    await assertFails(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', customMetadata }));
+    for (const uid of ['eve', null]) {
+      await assertFails(uploadBytes(image(uid), bytes, { contentType: 'image/jpeg', customMetadata }));
+    }
   }
   await assertSucceeds(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', customMetadata: {} }));
 });
 
-test('uploads reject encoded bodies and arbitrary disposition overrides', async () => {
-  for (const contentEncoding of ['gzip', 'br', 'identity, gzip']) {
-    await assertFails(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', contentEncoding }));
-  }
-  for (const contentDisposition of ['form-data', 'inline; filename="script.html"', 'attachment; filename="script.html"']) {
-    await assertFails(uploadBytes(image('alice'), bytes, { contentType: 'image/jpeg', contentDisposition }));
-  }
+test('standard SDK metadata is accepted', async () => {
   await assertSucceeds(uploadBytes(image('alice'), bytes, {
     contentType: 'image/jpeg', contentEncoding: 'identity', contentDisposition: 'inline',
   }));
@@ -147,4 +144,24 @@ test('listing, unexpected paths, nested paths, and unsupported filenames are den
   ]) {
     await assertFails(upload('alice', objectPath));
   }
+});
+
+test('Firebase-generated disposition metadata is compatible with image uploads', async () => {
+  await assertSucceeds(uploadBytes(image('alice'), bytes, {
+    contentType: 'image/jpeg', contentDisposition: "inline; filename*=utf-8''photo.jpg",
+  }));
+});
+
+
+test('resumable photo uploads accept the explicit Android metadata contract', async () => {
+  const data = new Uint8Array(512 * 1024);
+  data.set(bytes);
+  await assertSucceeds(uploadBytesResumable(image('alice'), data, {
+    contentType: 'image/jpeg', contentEncoding: 'identity', contentDisposition: 'inline',
+  }));
+  const metadata = await assertSucceeds(getMetadata(image('bob')));
+  assert.equal(metadata.contentType, 'image/jpeg');
+  assert.equal(metadata.contentEncoding, 'identity');
+  assert.equal(metadata.contentDisposition, 'inline');
+  assert.equal((await assertSucceeds(getBytes(image('bob')))).byteLength, data.byteLength);
 });

@@ -72,22 +72,22 @@ internal class WishFormState(initial: WishDraft? = null) {
                         it.title,
                         it.category.name,
                         it.description,
-                        it.cover?.category?.name.orEmpty(),
+                        it.cover?.key.orEmpty(),
                         it.mode.name,
                         it.start?.toString().orEmpty(),
                         it.end?.toString().orEmpty(),
-                    ) + it.attachments.map { image -> image.category.name }
+                    ) + it.attachments.map { image -> image.key }
                 },
                 restore = {
                     WishFormState().apply {
                         title = it[0]
                         category = WishCategory.valueOf(it[1])
                         description = it[2]
-                        cover = it[3].takeIf(String::isNotEmpty)?.let { key -> WishImage(WishCategory.valueOf(key)) }
+                        cover = it[3].takeIf(String::isNotEmpty)?.let { key -> WishImage.fromKey(key) }
                         mode = WishDateMode.valueOf(it[4])
                         start = it[5].takeIf(String::isNotEmpty)?.let(LocalDate::parse)
                         end = it[6].takeIf(String::isNotEmpty)?.let(LocalDate::parse)
-                        attachments = it.drop(7).map { key -> WishImage(WishCategory.valueOf(key)) }
+                        attachments = it.drop(7).map { key -> WishImage.fromKey(key) }
                     }
                 },
             )

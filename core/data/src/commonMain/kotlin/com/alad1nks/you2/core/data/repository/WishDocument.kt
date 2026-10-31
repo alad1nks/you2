@@ -12,6 +12,7 @@ import kotlinx.datetime.LocalDate
 object WishDocument {
     fun content(draft: WishDraft): Map<String, Any?> {
         require(draft.isValid && draft.attachments.size <= 12)
+        require(draft.cover?.isLocal != true && draft.attachments.none { it.isLocal })
         val dates = draft.dates
         return mapOf(
             "title" to draft.title,
@@ -35,8 +36,8 @@ object WishDocument {
                         )
                     }
                 },
-            "cover" to draft.cover?.category?.name,
-            "attachments" to draft.attachments.map { it.category.name },
+            "cover" to draft.cover?.key,
+            "attachments" to draft.attachments.map { it.key },
         )
     }
 
@@ -69,10 +70,11 @@ object WishDocument {
                             error("Unknown date type")
                         }
                     },
-                cover = (content["cover"] as String?)?.let { WishImage(WishCategory.valueOf(it)) },
-                attachments = (content["attachments"] as List<*>).map { WishImage(WishCategory.valueOf(it as String)) },
+                cover = (content["cover"] as String?)?.let { WishImage.fromKey(it) },
+                attachments = (content["attachments"] as List<*>).map { WishImage.fromKey(it as String) },
             )
         require(draft.isValid && draft.attachments.size <= 12)
+        require(draft.cover?.isLocal != true && draft.attachments.none { it.isLocal })
         val completion =
             (data["completion"] as Map<*, *>?)?.let {
                 Completion(LocalDate.parse(it["date"] as String), it["authorId"] as String, it["memory"] as String)

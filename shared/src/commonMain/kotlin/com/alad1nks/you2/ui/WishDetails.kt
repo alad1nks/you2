@@ -30,6 +30,7 @@ import com.alad1nks.you2.core.model.Couple
 import com.alad1nks.you2.core.model.Wish
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDates
+import com.alad1nks.you2.core.model.WishImage
 import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.Avatar
 import com.alad1nks.you2.feature.designsystem.components.BackTextButton
@@ -37,7 +38,6 @@ import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.DeleteWishDialog
 import com.alad1nks.you2.feature.designsystem.components.MenuAction
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
-import com.alad1nks.you2.feature.designsystem.components.WishCover
 import com.alad1nks.you2.feature.designsystem.components.WishMenu
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
@@ -180,7 +180,7 @@ internal fun WishDetails(
             }
             item {
                 WishCover(
-                    (wish.content.cover?.category ?: wish.content.category).image,
+                    wish.content.cover ?: WishImage(wish.content.category),
                     height = if (completion == null) 160.dp else 144.dp,
                 )
             }
@@ -237,7 +237,7 @@ internal fun WishDetails(
                 }
             }
             itemsIndexed(wish.content.attachments) { index, attachment ->
-                WishCover(attachment.category.image, Modifier.testTag("wish-attachment-$index"))
+                WishCover(attachment, Modifier.testTag("wish-attachment-$index"))
             }
             if (completion != null) {
                 item {

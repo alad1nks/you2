@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 enum class CloudPhase { LOADING, UNPAIRED, READY, ERROR }
 
-enum class CloudFailure { ACCESS, NETWORK, INVITE, DATA, UNKNOWN }
+enum class CloudFailure { ACCESS, STORAGE_ACCESS, NETWORK, INVITE, DATA, UNKNOWN }
 
 data class CloudState(
     val userId: String? = null,
