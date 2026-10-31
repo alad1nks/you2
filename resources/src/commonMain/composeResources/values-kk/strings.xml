@@ -194,4 +194,7 @@
     <string name="cloud_invite_error">Шақыруды пайдалану мүмкін емес. Кодты тексеріңіз немесе серігіңізден жаңасын сұраңыз.</string>
     <string name="cloud_data_error">Сақталған деректерді оқу мүмкін болмады. Қайталап көріңіз немесе қолдау қызметіне хабарласыңыз.</string>
     <string name="cloud_attachment_limit">12 тіркемеге дейін сақтауға болады. Артық суреттерді өшіріңіз.</string>
+    <string name="image_selection_error">Суретті өңдеу мүмкін болмады. Басқа фотосуретті таңдаңыз.</string>
+    <string name="photo_images_hint">Құрылғыдан фотосуретті таңдаңыз</string>
+    <string name="cloud_storage_access_error">Firebase Storage суретті жүктеуге рұқсат бермеді. Қате қайталанса, қолдау қызметіне хабарласыңыз.</string>
 </resources>

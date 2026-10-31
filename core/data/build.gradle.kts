@@ -36,6 +36,7 @@ kotlin {
         androidMain.dependencies {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.auth)
+            implementation(libs.firebase.storage)
             implementation(libs.firebase.firestore)
         }
         commonMain.dependencies {

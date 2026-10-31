@@ -100,6 +100,7 @@ import com.alad1nks.you2.resources.generated.main_image
 import com.alad1nks.you2.resources.generated.no_date
 import com.alad1nks.you2.resources.generated.no_date_hint
 import com.alad1nks.you2.resources.generated.pair_initials
+import com.alad1nks.you2.resources.generated.photo_images_hint
 import com.alad1nks.you2.resources.generated.range_hint
 import com.alad1nks.you2.resources.generated.range_mode
 import com.alad1nks.you2.resources.generated.remove_attachment
@@ -297,7 +298,7 @@ internal fun WishForm(
                         ) { pickingImage = "cover" }
                     } else {
                         Image(
-                            painterResource(cover.category.image),
+                            wishImagePainter(cover),
                             stringResource(Res.string.main_image),
                             Modifier.fillMaxWidth().heightIn(min = 116.dp, max = 116.dp).clip(AppShapes.field),
                             contentScale = ContentScale.Crop,
@@ -343,7 +344,7 @@ internal fun WishForm(
                         state.attachments.forEachIndexed { index, image ->
                             Box(Modifier.size(104.dp).testTag("form-attachment-$index")) {
                                 Image(
-                                    painterResource(image.category.image),
+                                    wishImagePainter(image),
                                     stringResource(image.category.label),
                                     Modifier.fillMaxSize().clip(AppShapes.field),
                                     contentScale = ContentScale.Crop,
@@ -376,9 +377,9 @@ internal fun WishForm(
                         stringResource(Res.string.add_images),
                         AppIcons.Add,
                         attachments = true,
-                    ) { pickingImage = "attachments" }
+                    ) { if (state.attachments.size < 12) pickingImage = "attachments" }
                     FormHint(stringResource(Res.string.attachments_hint))
-                    if (state.attachments.size > 12) {
+                    if (state.attachments.size >= 12) {
                         Text(stringResource(Res.string.cloud_attachment_limit), color = MaterialTheme.colorScheme.error)
                     }
                 }
@@ -407,7 +408,9 @@ internal fun WishForm(
         }
     }
     pickingImage?.let { target ->
-        DemoImagePicker(multiple = target == "attachments", onDismiss = { pickingImage = null }) { images ->
+        PlatformImagePicker(maxImages = if (target == "cover") 1 else 12 - state.attachments.size, onDismiss = {
+            pickingImage = null
+        }) { images ->
             if (target == "cover") state.cover = images.first() else state.attachments = state.attachments + images
             pickingImage = null
         }
@@ -489,7 +492,11 @@ private fun ImageAction(label: String, icon: ImageVector, attachments: Boolean =
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
                     Text(label, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-                    FormHint(stringResource(Res.string.local_images_hint))
+                    FormHint(
+                        stringResource(
+                            if (supportsPhotoSelection) Res.string.photo_images_hint else Res.string.local_images_hint,
+                        ),
+                    )
                 }
             }
         }
@@ -539,14 +546,20 @@ private fun WishDatePicker(
 }
 
 @Composable
-private fun DemoImagePicker(multiple: Boolean, onDismiss: () -> Unit, onSelect: (List<WishImage>) -> Unit) {
+internal fun DemoImagePicker(multiple: Boolean, onDismiss: () -> Unit, onSelect: (List<WishImage>) -> Unit) {
     var selected by rememberSaveable { mutableStateOf(emptyList<String>()) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(Res.string.choose_images)) },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                item { FormHint(stringResource(Res.string.local_images_hint)) }
+                item {
+                    FormHint(
+                        stringResource(
+                            if (supportsPhotoSelection) Res.string.photo_images_hint else Res.string.local_images_hint,
+                        ),
+                    )
+                }
                 WishCategory.entries.forEach { category ->
                     item {
                         Surface(

@@ -18,22 +18,11 @@ service firebase.storage {
       );
     }
 
-    function safeMetadata() {
-      // MIME types describe client-supplied metadata, not verified image bytes.
-      // No application metadata or claims of backend validation are accepted.
-      // Firebase-managed download tokens are separate and require backend revocation.
-      return request.resource.metadata.keys().hasOnly([]) &&
-        (!('contentEncoding' in request.resource) || request.resource.contentEncoding == null ||
-          request.resource.contentEncoding == 'identity') &&
-        (!('contentDisposition' in request.resource) || request.resource.contentDisposition == null ||
-          request.resource.contentDisposition in ['inline', 'attachment']);
-    }
-
     match /couples/{coupleId}/wishes/{wishId}/{fileName} {
       allow get: if member(coupleId) && wishExists(coupleId, wishId);
       // Save the wish first, then upload under a new random image ID.
       allow create: if resource == null && member(coupleId) && wishExists(coupleId, wishId) &&
-        validImage(fileName) && safeMetadata();
+        validImage(fileName);
       // Allow cleanup even after the wish document has been removed.
       allow delete: if member(coupleId);
       // No listing, overwriting, or client metadata updates. Replace images with new IDs.

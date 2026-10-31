@@ -11,6 +11,38 @@ import kotlin.test.assertFails
 
 class WishDocumentTest {
     @Test
+    fun privateImageReferencesRoundTripButLocalFilesCannotBePersisted() {
+        val draft =
+            WishDraft(
+                "Photos",
+                WishCategory.OTHER,
+                cover = WishImage(source = "couples/pair/wishes/id/cover.jpg"),
+                attachments =
+                    listOf(
+                        WishImage(WishCategory.PLANS),
+                        WishImage(source = "couples/pair/wishes/id/photo.png"),
+                    ),
+            )
+        val data =
+            mapOf(
+                "authorId" to "alice",
+                "createdOn" to "2026-10-31",
+                "content" to WishDocument.content(draft),
+                "completion" to null,
+            )
+        assertEquals(draft, WishDocument.decode("id", data).content)
+        val local = WishImage(source = "file:///cache/selected.jpg")
+        assertFails { WishDocument.content(draft.copy(cover = local)) }
+        assertFails { WishDocument.content(draft.copy(attachments = listOf(local))) }
+        assertFails {
+            WishDocument.decode(
+                "id",
+                data + ("content" to (WishDocument.content(draft) + ("cover" to local.key))),
+            )
+        }
+    }
+
+    @Test
     fun persistedWishesPreserveDatesImagesAndMemories() {
         DemoSpace.create().wishes.forEach { wish ->
             val document =

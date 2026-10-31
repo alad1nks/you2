@@ -26,6 +26,7 @@ androidx-credentials = { module = "androidx.credentials:credentials", version.re
 androidx-credentials-play-services = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "androidx-credentials" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }

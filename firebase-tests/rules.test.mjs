@@ -254,3 +254,32 @@ test('transactional completion preserves an existing memory when a stale client 
   assert.equal((await getDoc(ref)).data().completion.memory, 'Keep this memory');
   assert.equal((await getDoc(ref)).data().completion.authorId, 'alice');
 });
+
+
+test('wish image references accept private paths and reject foreign or malformed paths at every position', async () => {
+  await paired();
+  const ref = doc(db('alice'), 'couples/pair/wishes/photos');
+  const path = 'couples/pair/wishes/photos/image.jpg';
+  const data = wish();
+  data.content.cover = path;
+  data.content.attachments = Array(12).fill(path);
+  data.content.dates = { type: 'range', start: '2024-02-29', end: '2026-12-31' };
+  await assertSucceeds(setDoc(ref, data));
+  await assertSucceeds(updateDoc(ref, { completion: { date: '2024-02-29', authorId: 'alice', memory: 'Photos' }, updatedAt: serverTimestamp() }));
+  await assertSucceeds(getDoc(doc(db('bob'), 'couples/pair/wishes/photos')));
+  for (const invalid of [
+    'couples/other/wishes/photos/image.jpg', 'couples/pair/wishes/other/image.jpg',
+    'https://example.com/image.jpg', 'file:///cache/image.jpg',
+    'couples/pair/wishes/photos/image.gif', 'couples/pair/wishes/photos/nested/image.jpg',
+    'couples/pair/wishes/photos/imageXjpg', 'couples/pair/wishes/photos/../image.jpg',
+  ]) {
+    await assertFails(updateDoc(ref, { 'content.cover': invalid, updatedAt: serverTimestamp() }));
+    for (let index = 0; index < 12; index++) {
+      const attachments = Array(12).fill(path);
+      attachments[index] = invalid;
+      await assertFails(updateDoc(ref, { 'content.attachments': attachments, updatedAt: serverTimestamp() }));
+    }
+  }
+  await assertFails(updateDoc(ref, { 'content.attachments': Array(13).fill(path), updatedAt: serverTimestamp() }));
+  await assertSucceeds(updateDoc(ref, { 'content.cover': null, 'content.attachments': ['PLANS', path], updatedAt: serverTimestamp() }));
+});

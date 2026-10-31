@@ -5,7 +5,9 @@ import com.alad1nks.you2.core.model.DateSource
 import com.alad1nks.you2.core.model.PairedSpace
 import com.alad1nks.you2.core.model.User
 import com.alad1nks.you2.core.model.WishDraft
+import com.alad1nks.you2.core.model.WishImage
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -14,6 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.StorageException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -23,6 +26,7 @@ import java.util.UUID
 /** All SDK listeners and task completions are delivered on Android's main thread. */
 class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishesRepository {
     private val db = FirebaseFirestore.getInstance()
+    private val images = WishImageUploads()
     private val auth = FirebaseAuth.getInstance()
     private val empty = PairedSpace(Couple(User("", ""), User("", "")), emptyList())
     private val mutableSpace = MutableStateFlow(empty)
@@ -53,6 +57,7 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
         val user = auth.currentUser
         state.value = CloudState(userId = user?.uid)
         if (user == null) return
+        images.executor.execute { images.cleanup(user.uid) }
         val profile = db.collection("users").document(user.uid)
         var creatingProfile = false
         listeners +=
@@ -248,6 +253,7 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
     }
 
     override fun create(draft: WishDraft): String {
+        require(draft.isValid)
         val uid = requireNotNull(state.value.userId)
         val document = wishes().document()
         val data =
@@ -256,14 +262,87 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
                 "createdOn" to dateSource.today().toString(),
                 "createdAt" to FieldValue.serverTimestamp(),
                 "updatedAt" to FieldValue.serverTimestamp(),
-                "content" to WishDocument.content(draft),
+                "content" to
+                    WishDocument.content(
+                        draft.copy(
+                            cover =
+                                draft.cover?.takeUnless {
+                                    it.isLocal
+                                },
+                            attachments = draft.attachments.filterNot { it.isLocal },
+                        ),
+                    ),
                 "completion" to null,
             )
-        write { document.set(data) }
+        if (draft.cover?.isLocal != true && draft.attachments.none { it.isLocal }) {
+            write { document.set(data) }
+            return document.id
+        }
+        val uploaded = mutableMapOf<String, WishImage>()
+        write {
+            images.execute {
+                images.checkUser(uid)
+                Tasks.await(
+                    db.runTransaction { tx ->
+                        if (!tx.get(document).exists()) tx.set(document, data)
+                    },
+                )
+                val resolved = images.upload(uid, document, draft, uploaded)
+                images.checkUser(uid)
+                Tasks.await(
+                    db.runTransaction { tx ->
+                        val old = tx.get(document)
+                        check(old.exists())
+                        images.track(
+                            uid,
+                            images.paths(WishDocument.decode(document.id, requireNotNull(old.data)).content),
+                        )
+                        tx.update(
+                            document,
+                            mapOf(
+                                "content" to WishDocument.content(resolved),
+                                "updatedAt" to FieldValue.serverTimestamp(),
+                            ),
+                        )
+                    },
+                )
+                images.executor.execute { images.cleanup(uid) }
+            }
+        }
         return document.id
     }
 
-    override fun edit(id: String, draft: WishDraft) = updateWish(id, mapOf("content" to WishDocument.content(draft)))
+    override fun edit(id: String, draft: WishDraft) {
+        require(draft.isValid)
+        val document = wishes().document(id)
+        val uid = requireNotNull(state.value.userId)
+        val uploaded = mutableMapOf<String, WishImage>()
+        write {
+            images.execute {
+                images.checkUser(uid)
+                val resolved = images.upload(uid, document, draft, uploaded)
+                images.checkUser(uid)
+                Tasks.await(
+                    db.runTransaction { tx ->
+                        val old = tx.get(document)
+                        check(old.exists())
+                        val oldPaths = images.paths(WishDocument.decode(id, requireNotNull(old.data)).content)
+                        val newPaths = uploaded.values.mapNotNull { it.source }
+                        check(images.paths(resolved).all { it in oldPaths || it in newPaths })
+                        images.track(uid, oldPaths)
+                        tx.update(
+                            document,
+                            mapOf(
+                                "content" to WishDocument.content(resolved),
+                                "updatedAt" to FieldValue.serverTimestamp(),
+                            ),
+                        )
+                    },
+                )
+                images.executor.execute { images.cleanup(uid) }
+            }
+        }
+    }
 
     override fun complete(id: String) {
         val document = wishes().document(id)
@@ -294,7 +373,22 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
 
     override fun delete(id: String) {
         val document = wishes().document(id)
-        write { document.delete() }
+        val uid = requireNotNull(state.value.userId)
+        write {
+            images.execute {
+                images.checkUser(uid)
+                Tasks.await(
+                    db.runTransaction { tx ->
+                        val old = tx.get(document)
+                        if (old.exists()) {
+                            images.track(uid, images.paths(WishDocument.decode(id, requireNotNull(old.data)).content))
+                            tx.delete(document)
+                        }
+                    },
+                )
+                images.executor.execute { images.cleanup(uid) }
+            }
+        }
     }
 
     override fun renameUser(name: String) {
@@ -325,7 +419,7 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
 
     private fun fail(error: Exception?, fatal: Boolean = false, failure: CloudFailure? = null) {
         val reason =
-            failure ?: when ((error as? FirebaseFirestoreException)?.code) {
+            failure ?: storageFailure(error) ?: when ((error as? FirebaseFirestoreException)?.code) {
                 FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
                     CloudFailure.ACCESS
                 }
@@ -356,12 +450,24 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
         }
     }
 
+    private fun storageFailure(error: Exception?): CloudFailure? =
+        when ((error as? StorageException)?.errorCode) {
+            StorageException.ERROR_NOT_AUTHORIZED,
+            StorageException.ERROR_NOT_AUTHENTICATED,
+            -> CloudFailure.STORAGE_ACCESS
+
+            StorageException.ERROR_RETRY_LIMIT_EXCEEDED -> CloudFailure.NETWORK
+
+            else -> null
+        }
+
     override fun retry() {
         if (state.value.busy) return
         if (state.value.phase == CloudPhase.ERROR) connect() else retryWrite?.invoke() ?: dismissFailure()
     }
 
     override fun dismissFailure() {
+        state.value.userId?.let { uid -> images.executor.execute { images.cleanup(uid) } }
         retryWrite = null
         state.update { it.copy(failure = null) }
     }
@@ -375,5 +481,6 @@ class FirestoreWishesRepository(private val dateSource: DateSource) : CloudWishe
         clearPair()
         retryWrite = null
         state.value = CloudState()
+        images.executor.execute { images.executor.shutdown() }
     }
 }

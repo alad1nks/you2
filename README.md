@@ -37,12 +37,12 @@ users return to the tab they were viewing before authentication. For unpaired us
 All three tabs remain available; Wishes and Memories explain how to connect. **Invite your partner**
 opens a copyable-code dialog, and **I have an invite code** opens the join dialog. After pairing,
 **View our wishes** opens the shared list.
-Other platforms still use the demo flow with sign-out disabled. Personal photo selection/upload remains to be implemented.
+Other platforms still use the demo flow with sign-out disabled. Android supports private photo uploads for wish covers and attachments.
 
 For non-Android development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
 profile changes reset on restart or browser reload. Android supplies the current local date; `DemoDateSource` supplies the fixed date
-**October 28, 2026**. The image picker currently uses bundled illustrations. Theme and language
+**October 28, 2026**. Non-Android image pickers use bundled illustrations. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
 ## Design and resources
@@ -321,7 +321,7 @@ firebase deploy --only firestore:rules --project you2-ae09a
 ```
 
 This is a separate deployment step: a code merge does not deploy the rules. No collections need to be
-created manually. This implementation needs no Cloud Functions or Storage setup.
+created manually. Cloud Functions are not required. Photo uploads require a Firebase Storage bucket in the same project and the Storage rules below.
 
 Data layout:
 
@@ -351,7 +351,7 @@ can be explicitly retried with the same document ID and payload. Cancelling the 
 Edits update only the relevant fields; content edits use last-write-wins behavior. A stale memory edit
 cannot recreate a restored memory. Server timestamps track writes; wish deadlines remain local calendar dates.
 
-Current limits: each wish allows up to 12 attachments; photos still use bundled category illustrations,
+Current limits: each wish allows up to 12 attachments; Android photos use private Storage objects,
 wish lists are loaded in full (pagination
 is needed for larger histories), and pair unlinking/account deletion are not implemented. An account that
 has created its own invitation must receive its partner into that space; switching to another space is
@@ -413,8 +413,27 @@ to work around a denied request.
 
 ## Storage rules for wish images
 
-[storage.rules](storage.rules) prepares private image storage for Android. It does not implement the
-photo picker, uploads, or image references in Firestore; those remain a separate application change.
+Android uses the system photo picker for a cover and up to 12 attachments, with no broad media permission.
+Selections are decoded, resized to at most 2048 pixels on the longest edge, and re-encoded as JPEG
+without original metadata. Each encoded image must fit the 5 MiB limit. Previews are staged in app cache;
+cancelling the form does not upload anything. The system can evict staged files; select the photo again
+if a staged file is no longer available.
+
+Save shows the existing waiting/error/retry dialog while the upload completes. New wishes are first
+saved without local photos because Storage requires an existing wish. If an upload fails or the app
+closes, that wish can remain without its photos; retry in the current session or edit it to select again.
+Retries reuse completed uploads and the same wish ID. Replacement uploads use fresh object IDs, then
+update Firestore and clean up superseded files. Downloads use the authenticated Storage SDK and never
+request persistent download-token URLs. Unavailable images fall back to category artwork.
+
+A per-account persistent cleanup queue tracks uploads and removed references. Cleanup checks current
+server references before deleting, and retries after subsequent saves or sign-in. It also handles wish
+deletion. Uninstalling/clearing app data loses this client queue; guaranteed orphan collection requires
+a backend. Uploads and image edits/deletion require connectivity. Non-Android clients retain demo images.
+
+Create the default Firebase Storage bucket for the project in `androidApp/google-services.json` and
+ensure that configuration includes `storage_bucket`. Deploy both `firestore.rules` and `storage.rules`
+before using uploads. No production deployment is performed by the application build.
 
 Allowed paths are `couples/{coupleId}/wishes/{wishId}/{imageId}.jpg` (or `.png` / `.webp`). Use a new
 random ID per upload, containing 1–128 letters, digits, underscores, or hyphens before the extension.
@@ -427,15 +446,17 @@ Uploads must be nonempty, at most **5 MiB (5,242,880 bytes)**, and have a matchi
 upload implementation must decode/re-encode images. These rules do not enforce a per-wish file count;
 the existing 12-attachment limit applies to the wish model, not the number of uploaded Storage objects.
 
-Omit application `customMetadata` (or send an empty map). Omit `contentEncoding` or set it to `identity`;
-compressed encodings such as `gzip` are rejected. Omit `contentDisposition` or use exactly `inline` or
-`attachment`; custom filenames and other disposition directives are rejected. These restrictions do
-not prevent Firebase from issuing download tokens, and must not be treated as token revocation.
+The Android uploader sends JPEG content type, identity encoding, and inline disposition without custom
+metadata. Rules do not whitelist optional metadata: Firebase normalizes it during real uploads, and
+the Storage emulator does not reproduce every production shape. Authorization depends exclusively on
+Firebase Authentication and Firestore membership, never on file metadata ownership or validation claims.
+The app decodes image bytes for display and does not interpret custom metadata. Firebase can issue
+download tokens; these rules must not be treated as token revocation.
 
 Save the wish document before uploading. Image replacement uses a new object path, followed by a
 Firestore reference update and deletion of the old object. Use authenticated SDK downloads for private
-images; do not distribute persistent download-token URLs. Cleanup retries and reference persistence
-must be implemented with the upload flow. Existing Firestore rules still accept only bundled images.
+images; do not distribute persistent download-token URLs. The client persists references and retries cleanup. Firestore rules accept bundled keys or private
+image paths belonging to the same couple and wish; local file paths and URLs are rejected.
 
 To publish, paste the complete `storage.rules` file into Firebase Console → Storage → Rules → Publish,
 or run from the repository root with Firebase CLI access:
@@ -447,6 +468,9 @@ firebase deploy --only storage --project you2-ae09a
 When prompted, enable the Storage Rules permission to read Firestore; the membership checks use the
 `(default)` database in the same project. No bucket name or credentials are embedded in the rules.
 Preparing or committing these files does not deploy them.
+Rule releases can take several minutes to propagate. After publishing, allow that delay before
+retrying a denied upload; a successful Rules Playground simulation does not prove the Android upload
+has reached a server using the new release.
 
 `npm test` in `firebase-tests` runs both Firestore and Storage rules suites sequentially against local
 emulators (Firestore `8185`, Storage `9199`) using the `demo-you2` project. Storage tests cover both

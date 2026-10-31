@@ -61,6 +61,28 @@ class CloudSpaceGateTest {
             }
         }
 
+    @Test
+    fun storageDenialExplainsImageFailureAndOffersRetry() =
+        runDesktopComposeUiTest {
+            val repository = FakeCloud()
+            repository.cloudState.value =
+                CloudState(
+                    userId = "user",
+                    phase = CloudPhase.READY,
+                    failure = CloudFailure.STORAGE_ACCESS,
+                )
+            setContent {
+                CompositionLocalProvider(LocalAppLocale provides "en") {
+                    AppTheme(false) { CloudSpaceGate(repository, "user", {}) { Text("Private wishes") } }
+                }
+            }
+            onNodeWithText(
+                "Image upload was denied by Firebase Storage. Contact support if this continues.",
+            ).assertExists()
+            onNodeWithText("Retry").performClick()
+            runOnIdle { assertEquals(1, repository.retries) }
+        }
+
     private class FakeCloud :
         CloudWishesRepository,
         WishesRepository by InMemoryWishesRepository(DemoDateSource) {

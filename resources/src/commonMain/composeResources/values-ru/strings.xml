@@ -194,4 +194,7 @@
     <string name="cloud_invite_error">Приглашение недоступно. Проверьте код или попросите партнёра создать новый.</string>
     <string name="cloud_data_error">Не удалось прочитать сохранённые данные. Повторите попытку или обратитесь в поддержку.</string>
     <string name="cloud_attachment_limit">Можно сохранить до 12 вложений. Удалите лишние изображения.</string>
+    <string name="image_selection_error">Не удалось обработать изображение. Выберите другое фото.</string>
+    <string name="photo_images_hint">Выберите фото на устройстве</string>
+    <string name="cloud_storage_access_error">Firebase Storage отклонил загрузку изображения. Если ошибка повторяется, обратитесь в поддержку.</string>
 </resources>
