@@ -11,6 +11,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isRoot
@@ -53,6 +54,8 @@ class WishDetailsTest {
             }
             onNodeWithText("Presents").performClick()
             onNodeWithText("A little gift, just because").performClick()
+            onNodeWithTag("paired-list").assertDoesNotExist()
+            onNode(isDialog()).assertDoesNotExist()
             onNodeWithContentDescription("More options").performClick()
             onNodeWithText("Delete wish").performClick()
             onNodeWithText(
@@ -62,7 +65,7 @@ class WishDetailsTest {
             runOnIdle { assertEquals(initial, repository.space.value) }
             onNodeWithContentDescription("More options").performClick()
             onNodeWithText("Edit wish").performClick()
-            onNode(hasText("A little gift, just because") and hasAnyAncestor(isDialog())).assertExists()
+            onNode(hasText("A little gift, just because") and hasAnyAncestor(hasTestTag("wish-form"))).assertExists()
             onNodeWithText("Cancel").performClick()
             onNodeWithText("Mark as done").assertIsDisplayed()
             runOnIdle { assertEquals(initial, repository.space.value) }

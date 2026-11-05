@@ -11,10 +11,10 @@ import com.alad1nks.you2.core.model.WishCategory
 
 enum class MainTab { WISHES, MEMORIES, US }
 
-sealed interface OverlayRoute {
-    data class Details(val wishId: String) : OverlayRoute
+sealed interface PairedRoute {
+    data class Details(val wishId: String) : PairedRoute
 
-    data class Form(val wishId: String? = null) : OverlayRoute
+    data class Form(val wishId: String? = null) : PairedRoute
 }
 
 @Stable
@@ -23,21 +23,21 @@ class PairedNavigation {
         private set
     var sort by mutableStateOf(WishSort.NEWEST)
     var category by mutableStateOf<WishCategory?>(null)
-    var overlay by mutableStateOf<OverlayRoute?>(null)
+    var screen by mutableStateOf<PairedRoute?>(null)
         private set
 
     fun select(tab: MainTab) {
         this.tab = tab
-        overlay = null
+        screen = null
     }
 
-    fun open(route: OverlayRoute) {
-        overlay = route
+    fun open(route: PairedRoute) {
+        screen = route
     }
 
     fun back() {
-        val route = overlay
-        overlay = if (route is OverlayRoute.Form && route.wishId != null) OverlayRoute.Details(route.wishId) else null
+        val route = screen
+        screen = if (route is PairedRoute.Form && route.wishId != null) PairedRoute.Details(route.wishId) else null
     }
 
     companion object {
@@ -47,14 +47,14 @@ class PairedNavigation {
                     listOf(
                         it.tab.name,
                         it.category?.name.orEmpty(),
-                        when (it.overlay) {
-                            is OverlayRoute.Details -> "details"
-                            is OverlayRoute.Form -> "form"
+                        when (it.screen) {
+                            is PairedRoute.Details -> "details"
+                            is PairedRoute.Form -> "form"
                             null -> ""
                         },
-                        when (val route = it.overlay) {
-                            is OverlayRoute.Details -> route.wishId
-                            is OverlayRoute.Form -> route.wishId.orEmpty()
+                        when (val route = it.screen) {
+                            is PairedRoute.Details -> route.wishId
+                            is PairedRoute.Form -> route.wishId.orEmpty()
                             null -> ""
                         },
                         it.sort.name,
@@ -66,8 +66,8 @@ class PairedNavigation {
                         sort = values.getOrNull(4)?.let(WishSort::valueOf) ?: WishSort.NEWEST
                         category = values[1].takeIf { it.isNotEmpty() }?.let(WishCategory::valueOf)
                         when (values[2]) {
-                            "details" -> open(OverlayRoute.Details(values[3]))
-                            "form" -> open(OverlayRoute.Form(values[3].takeIf { it.isNotEmpty() }))
+                            "details" -> open(PairedRoute.Details(values[3]))
+                            "form" -> open(PairedRoute.Form(values[3].takeIf { it.isNotEmpty() }))
                         }
                     }
                 },

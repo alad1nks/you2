@@ -116,20 +116,20 @@ class PairedFoundationTest {
     fun returningFromAnOverlayPreservesTabAndFilter() {
         val navigation = PairedNavigation()
         navigation.category = WishCategory.MOVIES
-        navigation.open(OverlayRoute.Details("wish-1"))
+        navigation.open(PairedRoute.Details("wish-1"))
         navigation.back()
         assertEquals(MainTab.WISHES, navigation.tab)
         assertEquals(WishCategory.MOVIES, navigation.category)
-        navigation.open(OverlayRoute.Details("wish-1"))
-        navigation.open(OverlayRoute.Form("wish-1"))
+        navigation.open(PairedRoute.Details("wish-1"))
+        navigation.open(PairedRoute.Form("wish-1"))
         navigation.back()
-        assertEquals(OverlayRoute.Details("wish-1"), navigation.overlay)
+        assertEquals(PairedRoute.Details("wish-1"), navigation.screen)
         navigation.back()
-        assertNull(navigation.overlay)
+        assertNull(navigation.screen)
         navigation.select(MainTab.MEMORIES)
-        navigation.open(OverlayRoute.Details("wish-2"))
+        navigation.open(PairedRoute.Details("wish-2"))
         navigation.back()
         assertEquals(MainTab.MEMORIES, navigation.tab)
-        assertNull(navigation.overlay)
+        assertNull(navigation.screen)
     }
 }
