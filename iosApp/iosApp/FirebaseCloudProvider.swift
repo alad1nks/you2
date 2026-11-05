@@ -7,7 +7,7 @@ import Shared
 final class FirebaseCloudProvider: NativeCloudProvider {
     private let db = Firestore.firestore()
 
-    func newId() -> String { UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased() }
+    func doNewId() -> String { UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased() }
 
     func observe(userId: String, onChange: @escaping (NativeCloudSnapshot) -> Void) -> () -> Void {
         let session = CloudSession(db: db, uid: userId, emit: onChange)
