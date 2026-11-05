@@ -104,6 +104,15 @@ jobs:
       - name: Build iOS
         run: ./gradlew linkReleaseFrameworkIosArm64
 
+      # Compile the Swift host and its Firebase bridge as well as the Kotlin framework.
+      # Firebase configuration is only needed when running, not for this unsigned build.
+      - name: Build iOS simulator app
+        run: >-
+          xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp
+          -configuration Debug -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO build
+
   build-js:
     runs-on: macos-latest
     steps:

@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A11A00000000000000000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A11A00000000000000000003 /* FirebaseAuth */; };
+		A11A00000000000000000002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A11A00000000000000000004 /* FirebaseCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B8A7A6B806CE4345EAD96DD7 /* you2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = you2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -41,6 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A11A00000000000000000001 /* FirebaseAuth in Frameworks */,
+				A11A00000000000000000002 /* FirebaseCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +92,8 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
+				A11A00000000000000000003 /* FirebaseAuth */,
+				A11A00000000000000000004 /* FirebaseCore */,
 			);
 			productName = iosApp;
 			productReference = B8A7A6B806CE4345EAD96DD7 /* you2.app */;
@@ -114,6 +123,9 @@
 			);
 			mainGroup = 10795311BD5E46595FC95F77;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A11A00000000000000000005 /* firebase-ios-sdk */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 033522932354A11AE2461873 /* Products */;
 			projectDirPath = "";
@@ -368,6 +380,27 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A11A00000000000000000005 /* firebase-ios-sdk */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = { kind = exactVersion; version = 12.19.3; };
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A11A00000000000000000003 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A11A00000000000000000005 /* firebase-ios-sdk */;
+			productName = FirebaseAuth;
+		};
+		A11A00000000000000000004 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A11A00000000000000000005 /* firebase-ios-sdk */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 00C3A908F99665271C4122AB /* Project object */;
 }

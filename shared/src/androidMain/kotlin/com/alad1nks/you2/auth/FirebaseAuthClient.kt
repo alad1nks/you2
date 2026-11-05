@@ -60,7 +60,7 @@ internal class FirebaseAuthClient(private val auth: FirebaseAuth = FirebaseAuth.
         }
     }
 
-    override fun signOut() {
+    override fun signOut(): AuthError? {
         auth.signOut()
         val context = FirebaseApp.getInstance().applicationContext
         CredentialManager.create(context).clearCredentialStateAsync(
@@ -74,6 +74,7 @@ internal class FirebaseAuthClient(private val auth: FirebaseAuth = FirebaseAuth.
                 override fun onError(e: ClearCredentialException) = Unit
             },
         )
+        return null
     }
 }
 

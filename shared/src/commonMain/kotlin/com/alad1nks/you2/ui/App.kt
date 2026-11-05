@@ -2,7 +2,10 @@ package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -13,17 +16,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.alad1nks.you2.auth.AuthViewModel
+import com.alad1nks.you2.auth.messageId
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.di.CommonModules
 import com.alad1nks.you2.di.PlatformModules
 import com.alad1nks.you2.feature.designsystem.theme.AppTheme
+import com.alad1nks.you2.resources.generated.Res
+import com.alad1nks.you2.resources.generated.pair_close
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.module.Module
 import org.koin.dsl.koinConfiguration
 
 @Composable
-fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
-    KoinApplication(configuration = koinConfiguration { modules(CommonModules + PlatformModules) }) {
+fun App(platformModules: List<Module> = PlatformModules, onDarkThemeChanged: (Boolean) -> Unit = {}) {
+    KoinApplication(configuration = koinConfiguration { modules(CommonModules + platformModules) }) {
         val viewModel = koinViewModel<MainViewModel>()
         val authViewModel = koinViewModel<AuthViewModel>()
         val auth by authViewModel.state.collectAsState()
@@ -36,6 +44,19 @@ fun App(onDarkThemeChanged: (Boolean) -> Unit = {}) {
         AppTheme(darkTheme = darkTheme) {
             CompositionLocalProvider(LocalAppLocale provides language.code) {
                 Surface(Modifier.fillMaxSize()) {
+                    if (auth.user != null) {
+                        auth.error?.let { error ->
+                            AlertDialog(
+                                onDismissRequest = authViewModel::clearMessage,
+                                text = { Text(stringResource(error.messageId())) },
+                                confirmButton = {
+                                    TextButton(onClick = authViewModel::clearMessage) {
+                                        Text(stringResource(Res.string.pair_close))
+                                    }
+                                },
+                            )
+                        }
+                    }
                     key(auth.user?.id) {
                         if (authViewModel.isAvailable && auth.user == null) {
                             GuestExperience(auth, authViewModel, language, viewModel::changeLanguage, tabState)
