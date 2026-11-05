@@ -1,9 +1,23 @@
 package com.alad1nks.you2.di
 
+import com.alad1nks.you2.core.model.DateSource
 import com.alad1nks.you2.core.storage.datastore.di.StorageDataStoreModule
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.koin.core.module.Module
+import org.koin.dsl.module
+import kotlin.time.Clock
 
 actual val PlatformModules: List<Module> get() =
     listOf(
         StorageDataStoreModule,
+        module {
+            single<DateSource> {
+                DateSource {
+                    Clock.System.now().toLocalDateTime(
+                        TimeZone.currentSystemDefault(),
+                    ).date
+                }
+            }
+        },
     )

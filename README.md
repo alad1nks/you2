@@ -31,15 +31,15 @@ controls. Wish titles are required and limited to 80 characters; descriptions an
 limited to 500 characters.
 
 Android email/password registration, Google sign-in, password reset, session restoration, and sign-out use Firebase Authentication.
-Android uses Cloud Firestore for profiles, partner invitations, shared wishes, and memories. After sign-in,
+Android and iOS use Cloud Firestore for profiles, partner invitations, shared wishes, and memories. After sign-in,
 users return to the tab they were viewing before authentication. For unpaired users, Us shows
 **Your space**, with profile, appearance, and language settings.
 All three tabs remain available; Wishes and Memories explain how to connect. **Invite your partner**
 opens a copyable-code dialog, and **I have an invite code** opens the join dialog. After pairing,
 **View our wishes** opens the shared list.
 iOS supports Firebase email/password registration, sign-in, password reset, session restoration, and sign-out.
-Its post-login wishes, memories, and profile still use demo data; Firestore, photo uploads, and social sign-in
-are not yet connected on iOS. Desktop and Web still use the demo flow with sign-out disabled.
+Its profiles, partner invitations, wishes, and memories sync through Firestore using the same schema as Android.
+iOS photo uploads and social sign-in remain unavailable. Desktop and Web still use the demo flow with sign-out disabled.
 Android supports private photo uploads for wish covers and attachments.
 
 Tap a cover or attachment in wish or memory details to open the full-screen image viewer.
@@ -53,9 +53,9 @@ The close button has a transparent background, with a top shadow behind visible 
 On Android, hiding the controls also hides the status and navigation bars; showing the controls
 restores them. An edge swipe can temporarily reveal the system bars.
 
-For non-Android development and UI validation, the demo screens use seeded data for Alex and Mia:
+For Desktop/Web development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
-profile changes reset on restart or browser reload. Android supplies the current local date; `DemoDateSource` supplies the fixed date
+profile changes reset on restart or browser reload. Android and iOS supply the current local date; `DemoDateSource` supplies the fixed date
 **October 28, 2026**. Non-Android image pickers use bundled illustrations. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
@@ -180,7 +180,7 @@ The app's synchronized Xcode source folder automatically includes this plist as 
 The plist is ignored by Git, like Android's `google-services.json`; copy it separately to your Mac.
 Do not replace the app's existing `Info.plist`.
 
-The Xcode project references FirebaseCore and FirebaseAuth through Swift Package Manager,
+The Xcode project references FirebaseCore, FirebaseAuth, and FirebaseFirestore through Swift Package Manager,
 pinned to Firebase Apple SDK 12.19.3. Let Xcode resolve packages on the first build.
 Enable Email/Password in Firebase Console > Authentication > Sign-in method if it is not already enabled.
 `iOSApp` configures Firebase before creating the native auth provider and the shared Compose UI.
@@ -196,10 +196,26 @@ On a Mac, run the `iosApp` scheme on an ARM64 simulator or signed device and ver
 - Try a wrong password, an already registered email, and a disconnected network; verify errors and retry behavior.
 - Check keyboard scrolling and password visibility on a small iPhone, in English, Russian, and Kazakh.
 
-Authentication is real, but post-login content remains the in-memory Alex/Mia demonstration until iOS
-Firestore integration lands. Do not use this build for real couple data. Account deletion is also still pending
-before App Store release. PR CI builds both the Kotlin device framework and the unsigned simulator app
-(including Swift/Firebase); runtime authentication requires the local plist and a simulator/device test.
+iOS uses `FirebaseCloudProvider` and the shared `NativeCloudRepository` for profiles, invitations,
+wishes, and memories. Configure the default Firestore database and deploy the existing rules described
+below. The Firebase project must match Android to share a couple across platforms. Signed-in iOS never
+falls back to seeded data; its date source uses the current device timezone instead of the fixed demo date.
+Creation and completion use transactions, require connectivity, and preserve the wish ID/first completion
+on retries. Edits, restoration, memory changes, renaming, and deletion can queue offline; the UI shows
+cached/pending-write state. Sign-out detaches listeners and clears shared UI state; it does not erase
+Firebase's disk cache or cancel writes already submitted to the SDK.
+
+Also verify on two iOS/Android accounts: create and accept an invitation, regenerate/expire a code,
+rename both profiles, create/edit/delete a wish, complete it, edit its memory, restore it, and relaunch.
+Verify realtime updates, cached reads, offline edits, retry after reconnect, and account switching with
+an outstanding write. Invalid/used/self invitations must fail without changing membership. iOS retains
+bundled image artwork (including a fallback for Android Storage images); photo upload/download and
+orphan Storage cleanup are not implemented on iOS in this Firestore integration.
+
+Account deletion is still pending before App Store release. PR CI builds both the Kotlin device framework
+and the unsigned simulator app (including Swift/Firebase); runtime testing requires the local plist and
+a simulator/device. Shared JVM tests exercise snapshot decoding, metadata, account isolation, retries,
+calendar-date writes, and listener teardown.
 
 ## Code organization
 
@@ -221,7 +237,8 @@ before App Store release. PR CI builds both the Kotlin device framework and the 
 | [design/icons](design/icons) | Original SVG design references |
 
 `App()` creates Koin with `CommonModules + PlatformModules`. Android overrides the demo repository with
-`FirestoreWishesRepository` from `core/data/androidMain` and a real clock. `MainViewModel` observes the singleton
+`FirestoreWishesRepository` from `core/data/androidMain` and a real clock. iOS injects
+`NativeCloudRepository` with a Swift Firebase provider and a real clock. `MainViewModel` observes the singleton
 `WishesRepository.space` StateFlow and sends wish, memory, and profile mutations directly to that
 repository. Screens share the same `PairedSpace`, so lists and counters update together.
 `PairedNavigation` holds tab, filter, and overlay state.
@@ -353,11 +370,12 @@ emails, restores the Firebase session on restart, and provides sign-out from the
 Passwords stay in memory only and are cleared when changing forms or leaving the authentication screen.
 Authentication screens and state live in shared/commonMain and use the common English, Russian, and Kazakh resources.
 All platforms enter through the single shared App, which owns Koin, the theme, locale, and screen routing.
-Android DI supplies FirebaseAuthClient from shared/androidMain; other platforms keep the demo flow until an auth client is registered.
+Android DI supplies FirebaseAuthClient from shared/androidMain; iOS injects NativeAuthClient backed by FirebaseAuthProvider.
+Desktop and Web retain the demo flow.
 
-Android main tabs display the signed-in user's shared Firestore data. Loading, unpaired, and failed states
-never fall back to Alex/Mia sample content. iOS, Web, and Desktop authentication and cloud data,
-and email verification UI, are not implemented.
+Android and iOS main tabs display the signed-in user's shared Firestore data. Loading, unpaired, and failed
+states never fall back to Alex/Mia sample content. Web/Desktop cloud data and email verification UI
+are not implemented.
 
 Validation:
 
