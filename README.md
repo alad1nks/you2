@@ -37,7 +37,10 @@ users return to the tab they were viewing before authentication. For unpaired us
 All three tabs remain available; Wishes and Memories explain how to connect. **Invite your partner**
 opens a copyable-code dialog, and **I have an invite code** opens the join dialog. After pairing,
 **View our wishes** opens the shared list.
-Other platforms still use the demo flow with sign-out disabled. Android supports private photo uploads for wish covers and attachments.
+iOS supports Firebase email/password registration, sign-in, password reset, session restoration, and sign-out.
+Its post-login wishes, memories, and profile still use demo data; Firestore, photo uploads, and social sign-in
+are not yet connected on iOS. Desktop and Web still use the demo flow with sign-out disabled.
+Android supports private photo uploads for wish covers and attachments.
 
 Tap a cover or attachment in wish or memory details to open the full-screen image viewer.
 Images fit without cropping. Galleries support swiping, selectable thumbnails, and left/right arrow keys;
@@ -84,7 +87,7 @@ Platform requirements:
   `sdk.dir` in an untracked `local.properties`. The minimum supported Android API is 28.
 - **Desktop:** a desktop environment and the configured JDK.
 - **Web:** a browser. The project targets Kotlin/JS.
-- **iOS:** macOS and Xcode with support for the configured iOS 18.2 deployment target.
+- **iOS:** macOS and Xcode 16.3 or newer (Swift 6.1 for the Firebase package), with support for the configured iOS 18.2 deployment target.
   Kotlin targets are `iosArm64` and `iosSimulatorArm64`.
 
 Dependency versions are defined in [gradle/libs.versions.toml](gradle/libs.versions.toml),
@@ -167,6 +170,36 @@ To build just the framework on macOS:
 ```
 
 Build and archive the full iOS application in Xcode.
+
+#### iOS Firebase authentication
+
+Register an Apple app in the existing Firebase project `you2-ae09a` with bundle ID
+`com.alad1nks.you2`. Download its configuration to
+`iosApp/iosApp/GoogleService-Info.plist` (beside `iOSApp.swift`, not beside the Xcode project).
+The app's synchronized Xcode source folder automatically includes this plist as a bundled resource.
+The plist is ignored by Git, like Android's `google-services.json`; copy it separately to your Mac.
+Do not replace the app's existing `Info.plist`.
+
+The Xcode project references FirebaseCore and FirebaseAuth through Swift Package Manager,
+pinned to Firebase Apple SDK 12.19.3. Let Xcode resolve packages on the first build.
+Enable Email/Password in Firebase Console > Authentication > Sign-in method if it is not already enabled.
+`iOSApp` configures Firebase before creating the native auth provider and the shared Compose UI.
+Firebase owns credential storage and session restoration; passwords and tokens are not stored in app preferences.
+The Swift provider implements `NativeAuthProvider`, and `NativeAuthClient` maps it into the shared auth flow.
+Google and Apple sign-in are not part of this initial email/password integration.
+
+On a Mac, run the `iosApp` scheme on an ARM64 simulator or signed device and verify:
+
+- Register with a new email; sign out and sign back in, including with an existing Android email/password account.
+- Terminate and relaunch: the session should remain signed in. Sign out, relaunch, and confirm the guest screen returns.
+- Request password reset, follow the email, and sign in using the new password.
+- Try a wrong password, an already registered email, and a disconnected network; verify errors and retry behavior.
+- Check keyboard scrolling and password visibility on a small iPhone, in English, Russian, and Kazakh.
+
+Authentication is real, but post-login content remains the in-memory Alex/Mia demonstration until iOS
+Firestore integration lands. Do not use this build for real couple data. Account deletion is also still pending
+before App Store release. PR CI builds both the Kotlin device framework and the unsigned simulator app
+(including Swift/Firebase); runtime authentication requires the local plist and a simulator/device test.
 
 ## Code organization
 

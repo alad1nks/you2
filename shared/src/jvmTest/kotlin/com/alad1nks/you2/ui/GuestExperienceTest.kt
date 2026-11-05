@@ -209,5 +209,5 @@ private class GuestAuthClient : AuthClient {
 
     override fun resetPassword(email: String, complete: (AuthError?) -> Unit) = complete(null)
 
-    override fun signOut() = Unit
+    override fun signOut(): AuthError? = null
 }

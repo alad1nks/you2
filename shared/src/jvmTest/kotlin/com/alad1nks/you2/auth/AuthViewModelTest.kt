@@ -207,7 +207,10 @@ private class FakeAuthClient(override var currentUser: AuthUser? = null) : AuthC
         record(AuthMode.RESET, email, "", complete)
     }
 
-    override fun signOut() = emit(null)
+    override fun signOut(): AuthError? {
+        emit(null)
+        return null
+    }
 
     fun emit(user: AuthUser?) {
         currentUser = user

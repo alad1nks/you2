@@ -28,5 +28,5 @@ internal interface AuthClient {
 
     fun resetPassword(email: String, complete: (AuthError?) -> Unit)
 
-    fun signOut()
+    fun signOut(): AuthError?
 }

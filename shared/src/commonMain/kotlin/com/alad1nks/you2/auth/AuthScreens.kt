@@ -460,7 +460,7 @@ private fun AuthPage(
     }
 }
 
-private fun AuthError.messageId(): StringResource =
+internal fun AuthError.messageId(): StringResource =
     when (this) {
         AuthError.EMAIL -> Res.string.auth_error_email
         AuthError.PASSWORD -> Res.string.auth_error_password

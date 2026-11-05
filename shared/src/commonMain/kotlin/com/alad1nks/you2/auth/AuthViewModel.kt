@@ -22,7 +22,7 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
     private var cleared = false
     private val unsubscribe =
         client?.observeUser { user ->
-            mutableState.update { it.copy(user = user, error = null, resetSent = false) }
+            if (!cleared) mutableState.update { it.copy(user = user, error = null, resetSent = false) }
         }
 
     fun changeMode(mode: AuthMode) {
@@ -72,8 +72,8 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
 
     fun signOut() {
         if (state.value.busy) return
-        client?.signOut()
-        mutableState.value = AuthState()
+        val failure = client?.signOut()
+        mutableState.value = AuthState(user = client?.currentUser, error = failure)
     }
 
     fun signInWithGoogle(launch: GoogleSignInLauncher) {
