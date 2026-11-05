@@ -43,6 +43,15 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
 
+      - name: Record Windows screenshot references
+        run: ./gradlew.bat :shared:recordRoborazziJvm
+
+      - name: Upload recorded references
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: recorded-screenshot-references
+          path: shared/src/jvmTest/screenshots/
+
       - name: Verify screenshots
         run: ./gradlew.bat :shared:verifyRoborazziJvm
 
