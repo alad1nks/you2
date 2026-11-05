@@ -14,42 +14,41 @@ final class FirebaseAuthProvider: NativeAuthProvider {
         Self.identity(auth.currentUser)
     }
 
-    func observeUser(onChange: @escaping (NativeAuthUser?) -> KotlinUnit) -> () -> KotlinUnit {
+    func observeUser(onChange: @escaping (NativeAuthUser?) -> Void) -> () -> Void {
         var active = true
         let handle = auth.addStateDidChangeListener { _, user in
             guard active else { return }
-            _ = onChange(Self.identity(user))
+            onChange(Self.identity(user))
         }
         return { [auth] in
             if active {
                 active = false
                 auth.removeStateDidChangeListener(handle)
             }
-            return KotlinUnit()
         }
     }
 
-    func signIn(email: String, password: String, complete: @escaping (NativeAuthFailure?) -> KotlinUnit) {
+    func signIn(email: String, password: String, complete: @escaping (NativeAuthFailure?) -> Void) {
         auth.signIn(withEmail: email, password: password) { _, error in
-            _ = complete(Self.failure(error))
+            complete(Self.failure(error))
         }
     }
 
-    func register(email: String, password: String, complete: @escaping (NativeAuthFailure?) -> KotlinUnit) {
+    func register(email: String, password: String, complete: @escaping (NativeAuthFailure?) -> Void) {
         auth.createUser(withEmail: email, password: password) { _, error in
-            _ = complete(Self.failure(error))
+            complete(Self.failure(error))
         }
     }
 
-    func resetPassword(email: String, complete: @escaping (NativeAuthFailure?) -> KotlinUnit) {
+    func resetPassword(email: String, complete: @escaping (NativeAuthFailure?) -> Void) {
         auth.sendPasswordReset(withEmail: email) { error in
             // Match Android: do not reveal whether an email address has an account.
             if let error = error as NSError?,
                error.domain == AuthErrorDomain,
                AuthErrorCode(rawValue: error.code) == .userNotFound {
-                _ = complete(nil)
+                complete(nil)
             } else {
-                _ = complete(Self.failure(error))
+                complete(Self.failure(error))
             }
         }
     }
