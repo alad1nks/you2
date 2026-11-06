@@ -1,17 +1,20 @@
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 import Foundation
 import Shared
 
 /// Firebase SDK objects stay in the Apple host; the shared repository owns UI state and retries.
 final class FirebaseCloudProvider: NativeCloudProvider {
     private let db = Firestore.firestore()
+    @MainActor private lazy var images = WishImageUploads()
 
     func doNewId() -> String { UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased() }
 
     func observe(userId: String, onChange: @escaping (NativeCloudSnapshot) -> Void) -> () -> Void {
         let session = CloudSession(db: db, uid: userId, emit: onChange)
         session.start()
+        Task { @MainActor in await images.cleanup(userId) }
         return { session.close() }
     }
 
@@ -69,37 +72,38 @@ final class FirebaseCloudProvider: NativeCloudProvider {
         }
         guard let coupleId else { complete(.data); return }
         let wish = db.collection("couples").document(coupleId).collection("wishes").document(documentId)
+        if operation == "create" || operation == "edit" || operation == "delete" {
+            Task { @MainActor in
+                do {
+                    if operation == "delete" {
+                        try await images.delete(uid: userId, wish: wish)
+                    } else {
+                        try await images.save(operation: operation, uid: userId, wish: wish, fields: fields)
+                    }
+                    complete(nil)
+                } catch { complete(Self.failure(error)) }
+            }
+            return
+        }
         switch operation {
-        case "create", "complete":
-            // Retrying creation keeps its ID; concurrent completion preserves the first memory.
+        case "complete":
+            // Concurrent completion preserves the first memory.
             db.runTransaction({ tx, errorPointer in
                 do {
                     guard Auth.auth().currentUser?.uid == userId else { throw CloudError.access }
                     let old = try tx.getDocument(wish)
-                    if operation == "create" {
-                        if !old.exists {
-                            tx.setData(["authorId": userId, "createdOn": fields["createdOn"] ?? "",
-                                        "content": fields["content"] ?? [:], "completion": NSNull(),
-                                        "createdAt": FieldValue.serverTimestamp(),
-                                        "updatedAt": FieldValue.serverTimestamp()], forDocument: wish)
-                        }
-                    } else {
-                        guard old.exists else { throw CloudError.data }
-                        if old.get("completion") is NSNull {
-                            tx.updateData(["completion": ["date": fields["date"] ?? "", "authorId": userId, "memory": ""],
-                                           "updatedAt": FieldValue.serverTimestamp()], forDocument: wish)
-                        }
+                    guard old.exists else { throw CloudError.data }
+                    if old.get("completion") is NSNull {
+                        tx.updateData(["completion": ["date": fields["date"] ?? "", "authorId": userId, "memory": ""],
+                                       "updatedAt": FieldValue.serverTimestamp()], forDocument: wish)
                     }
                     return nil
                 } catch { errorPointer?.pointee = error as NSError; return nil }
             }, completion: { _, error in finish(error) })
-        case "edit":
-            wish.updateData(["content": fields["content"] ?? [:], "updatedAt": FieldValue.serverTimestamp()], completion: finish)
         case "restore":
             wish.updateData(["completion": NSNull(), "updatedAt": FieldValue.serverTimestamp()], completion: finish)
         case "memory":
             wish.updateData(["completion.memory": fields["memory"] ?? "", "updatedAt": FieldValue.serverTimestamp()], completion: finish)
-        case "delete": wish.delete(completion: finish)
         default: complete(.data)
         }
     }
@@ -113,7 +117,15 @@ final class FirebaseCloudProvider: NativeCloudProvider {
             case .data: return .data
             }
         }
+        if let error = error as? PhotoWriteError { return error == .access ? .access : .data }
         let ns = error as NSError
+        if ns.domain == StorageErrorDomain {
+            switch StorageErrorCode(rawValue: ns.code) {
+            case .unauthorized, .unauthenticated: return .access
+            case .retryLimitExceeded: return .network
+            default: return .data
+            }
+        }
         guard ns.domain == FirestoreErrorDomain else { return .unknown }
         switch FirestoreErrorCode.Code(rawValue: ns.code) {
         case .permissionDenied: return invitation ? .invite : .access

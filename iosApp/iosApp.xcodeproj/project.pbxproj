@@ -10,6 +10,7 @@
 		A11A00000000000000000001 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A11A00000000000000000003 /* FirebaseAuth */; };
 		A11A00000000000000000002 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A11A00000000000000000004 /* FirebaseCore */; };
 		A11A00000000000000000006 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A11A00000000000000000007 /* FirebaseFirestore */; };
+		A11A00000000000000000008 = {isa = PBXBuildFile; productRef = A11A00000000000000000009; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 				A11A00000000000000000001 /* FirebaseAuth in Frameworks */,
 				A11A00000000000000000002 /* FirebaseCore in Frameworks */,
 				A11A00000000000000000006 /* FirebaseFirestore in Frameworks */,
+                A11A00000000000000000008,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +99,7 @@
 				A11A00000000000000000003 /* FirebaseAuth */,
 				A11A00000000000000000004 /* FirebaseCore */,
 				A11A00000000000000000007 /* FirebaseFirestore */,
+                A11A00000000000000000009,
 			);
 			productName = iosApp;
 			productReference = B8A7A6B806CE4345EAD96DD7 /* you2.app */;
@@ -411,6 +414,7 @@
             package = A11A00000000000000000005 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
             productName = FirebaseFirestore;
         };
+        A11A00000000000000000009 = {isa = XCSwiftPackageProductDependency; package = A11A00000000000000000005; productName = FirebaseStorage; };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 00C3A908F99665271C4122AB /* Project object */;

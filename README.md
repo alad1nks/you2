@@ -39,8 +39,8 @@ opens a copyable-code dialog, and **I have an invite code** opens the join dialo
 **View our wishes** opens the shared list.
 iOS supports Firebase email/password registration, sign-in, password reset, session restoration, and sign-out.
 Its profiles, partner invitations, wishes, and memories sync through Firestore using the same schema as Android.
-iOS photo uploads and social sign-in remain unavailable. Desktop and Web still use the demo flow with sign-out disabled.
-Android supports private photo uploads for wish covers and attachments.
+iOS social sign-in remains unavailable. Desktop and Web still use the demo flow with sign-out disabled.
+Android and iOS support private photo uploads for wish covers and attachments.
 
 Tap a cover or attachment in wish or memory details to open the full-screen image viewer.
 Images fit without cropping. Galleries support swiping, selectable thumbnails, and left/right arrow keys;
@@ -51,12 +51,13 @@ Drag to pan while zoomed; return to fitted size to swipe between images. A singl
 the close button and gallery controls. Switching images resets the zoom.
 The close button has a transparent background, with a top shadow behind visible controls.
 On Android, hiding the controls also hides the status and navigation bars; showing the controls
-restores them. An edge swipe can temporarily reveal the system bars.
+restores them. An edge swipe can temporarily reveal the system bars. On iOS, hiding controls hides
+the status bar and requests automatic hiding of the home indicator; closing the viewer restores both.
 
 For Desktop/Web development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
 profile changes reset on restart or browser reload. Android and iOS supply the current local date; `DemoDateSource` supplies the fixed date
-**October 28, 2026**. Non-Android image pickers use bundled illustrations. Theme and language
+**October 28, 2026**. Desktop and Web image pickers use bundled illustrations. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
 ## Design and resources
@@ -208,9 +209,11 @@ Firebase's disk cache or cancel writes already submitted to the SDK.
 Also verify on two iOS/Android accounts: create and accept an invitation, regenerate/expire a code,
 rename both profiles, create/edit/delete a wish, complete it, edit its memory, restore it, and relaunch.
 Verify realtime updates, cached reads, offline edits, retry after reconnect, and account switching with
-an outstanding write. Invalid/used/self invitations must fail without changing membership. iOS retains
-bundled image artwork (including a fallback for Android Storage images); photo upload/download and
-orphan Storage cleanup are not implemented on iOS in this Firestore integration.
+an outstanding write. Invalid/used/self invitations must fail without changing membership.
+Also verify photo selection (single cover and multiple attachments), cancellation, replacement/deletion,
+retry after interrupted uploads, and cross-platform viewing of private Storage images. On iOS, toggle
+viewer controls and close the viewer to check status bar/home indicator restoration. Both mobile clients
+use bundled category artwork when a photo is unavailable and persist pending Storage cleanup.
 
 Account deletion is still pending before App Store release. PR CI builds both the Kotlin device framework
 and the unsigned simulator app (including Swift/Firebase); runtime testing requires the local plist and
@@ -508,7 +511,7 @@ to work around a denied request.
 
 ## Storage rules for wish images
 
-Android uses the system photo picker for a cover and up to 12 attachments, with no broad media permission.
+Android and iOS use the system photo picker for a cover and up to 12 attachments, with no broad media permission.
 Selections are decoded, resized to at most 2048 pixels on the longest edge, and re-encoded as JPEG
 without original metadata. Each encoded image must fit the 5 MiB limit. Previews are staged in app cache;
 cancelling the form does not upload anything. The system can evict staged files; select the photo again
@@ -524,7 +527,7 @@ request persistent download-token URLs. Unavailable images fall back to category
 A per-account persistent cleanup queue tracks uploads and removed references. Cleanup checks current
 server references before deleting, and retries after subsequent saves or sign-in. It also handles wish
 deletion. Uninstalling/clearing app data loses this client queue; guaranteed orphan collection requires
-a backend. Uploads and image edits/deletion require connectivity. Non-Android clients retain demo images.
+a backend. Uploads and image edits/deletion require connectivity. Desktop and Web retain demo images.
 
 Create the default Firebase Storage bucket for the project in `androidApp/google-services.json` and
 ensure that configuration includes `storage_bucket`. Deploy both `firestore.rules` and `storage.rules`
