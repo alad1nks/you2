@@ -108,8 +108,9 @@ the system locale. Keep all three string sets updated together. Seeded wish titl
 memories represent user-authored content and remain English when the UI language changes.
 
 After changing visible assets, fonts, or copy, run the shared screenshot verification described in
-[the README](../README.md#screenshot-regression-tests). Record new references on Windows with JDK 21
-only for intentional changes, and visually review the PNG differences before committing.
+[the README](../README.md#screenshot-regression-tests). For intentional visual changes, run
+**Generate screenshots** on your pushed feature branch, wait for success, pull the generated commit,
+and visually review the PNG differences before creating a PR. CI uses Ubuntu 24.04 with JDK 21.
 
 ## Image loading indicators
 

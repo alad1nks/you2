@@ -297,17 +297,27 @@ Changes to seeded development data or the fixed date can affect many screenshot 
 ### Screenshot regression tests
 
 Roborazzi captures the production shared UI on the JVM without an emulator. References are committed
-under `shared/src/jvmTest/screenshots`. Generate and verify them on **Windows with JDK 21**, matching
-the `windows-2025` CI runner; font rendering can differ on other operating systems.
+under `shared/src/jvmTest/screenshots`. CI generates and verifies them on **Ubuntu 24.04 with
+Amazon Corretto JDK 21**, using Xvfb; font rendering can differ on other operating systems.
 
-```powershell
-# Compare with committed references; missing or changed images fail verification.
-.\gradlew.bat :shared:verifyRoborazziJvm
-
-# For intentional visual changes, record and review the changed PNGs before committing.
-.\gradlew.bat :shared:recordRoborazziJvm
-.\gradlew.bat :shared:verifyRoborazziJvm
+```bash
+# Compare with committed references on Ubuntu with JDK 21 and Xvfb installed.
+xvfb-run --auto-servernum ./gradlew :shared:verifyRoborazziJvm
 ```
+
+For intentional visual changes, commit and push your feature branch, then run
+[Generate screenshots](.github/workflows/generate-screenshots.yml) in GitHub Actions, selecting
+that branch in **Use workflow from** (or `gh workflow run generate-screenshots.yml --ref <branch>`).
+Wait for the run to succeed, then run `git pull --ff-only origin <branch>` and visually review
+the changed PNGs **before creating the PR**. The workflow records and verifies references,
+commits only the screenshot directory, and pushes to the selected branch. It creates no commit
+when references are unchanged. Runs from `main` or tags are rejected. If the branch advances
+during generation, the push fails instead of overwriting changes; pull and rerun the workflow.
+
+GitHub requires a manually dispatched workflow to exist on the default branch first. After
+installing this workflow, regenerate the existing Windows references on a feature branch to
+complete the Ubuntu baseline migration. Do not replace CI references with locally generated
+macOS or Windows images.
 
 A plain `:shared:jvmTest` runs interactions without pixel verification. Screenshot scenarios cover
 light/dark themes, category covers, empty and long content, dialogs, forms, details, and complete journeys.
@@ -321,7 +331,8 @@ behavior. Those need device/emulator validation, and iOS builds require macOS/Xc
 
 | Workflow | Trigger | Configured behavior |
 | --- | --- | --- |
-| [pr-checks.yml](.github/workflows/pr-checks.yml) | PRs targeting `main` or `master` | Android debug build, iOS release framework, production JS webpack build, shared JVM jars, ktlint, and Windows screenshot verification |
+| [pr-checks.yml](.github/workflows/pr-checks.yml) | PRs targeting `main` or `master` | Android debug build, iOS release framework, production JS webpack build, shared JVM jars, ktlint, and Ubuntu screenshot verification |
+| [generate-screenshots.yml](.github/workflows/generate-screenshots.yml) | Manual, feature branches only | Record and verify Ubuntu screenshots, commit and push references to the selected branch |
 | [build-and-deploy.yml](.github/workflows/build-and-deploy.yml) | Push to `main` | Tests and release APK build, followed by APK publication under `you2` in `alad1nks/alad1nks.github.io` |
 | [release.yml](.github/workflows/release.yml) | Push to `release/*` | Tests and release AAB build, followed by AAB publication to the same repository |
 
