@@ -16,7 +16,6 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -99,14 +98,14 @@ class WishFormTest {
             onNodeWithText("Edit wish").performClick()
             onNodeWithTag("wish-title").performTextReplacement("Discard this edit")
             onNodeWithText("Cancel").performClick()
-            onNode(hasText("A new shared idea") and hasAnyAncestor(isDialog())).assertExists()
+            onNode(hasText("A new shared idea") and hasAnyAncestor(hasTestTag("wish-details"))).assertExists()
             onNodeWithContentDescription("More options").performClick()
             onNodeWithText("Edit wish").performClick()
             onNodeWithTag("wish-title").performTextReplacement("Saved edit")
             onNodeWithTag("wish-form").performScrollToNode(hasText("Remove image"))
             onNodeWithText("Remove image").performClick()
             onNodeWithTag("save-wish").performClick()
-            onNode(hasText("Saved edit") and hasAnyAncestor(isDialog())).assertExists()
+            onNode(hasText("Saved edit") and hasAnyAncestor(hasTestTag("wish-details"))).assertExists()
             runOnIdle {
                 assertEquals(13, repository.space.value.active.size)
                 assertNull(repository.space.value.active.first().content.cover)

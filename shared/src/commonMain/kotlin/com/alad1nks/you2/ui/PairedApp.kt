@@ -28,7 +28,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -76,6 +78,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun AppContent(
     space: PairedSpace,
@@ -100,147 +103,145 @@ internal fun AppContent(
     val wishesScroll = rememberLazyListState()
     val memoriesScroll = rememberLazyListState()
     val usScroll = rememberLazyListState()
+    BackHandler(enabled = navigation.screen != null) { navigation.back() }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(contentAlignment = Alignment.TopCenter) {
-            Box(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
-            )
-            Scaffold(
-                modifier = Modifier.fillMaxSize().safeDrawingPadding(),
-                topBar = { CoupleHeader(space.couple.you.name, space.couple.partner.name) },
-                bottomBar = {
-                    Box {
-                        Column {
-                            if (navigation.tab == MainTab.WISHES) {
-                                PrimaryButton(
-                                    stringResource(Res.string.add_wish),
-                                    { navigation.open(OverlayRoute.Form()) },
-                                    Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
-                                    leadingIcon = { Text("+") },
+            if (navigation.screen == null) {
+                Box(
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                        .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                )
+                Scaffold(
+                    modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+                    topBar = { CoupleHeader(space.couple.you.name, space.couple.partner.name) },
+                    bottomBar = {
+                        Box {
+                            Column {
+                                if (navigation.tab == MainTab.WISHES) {
+                                    PrimaryButton(
+                                        stringResource(Res.string.add_wish),
+                                        { navigation.open(PairedRoute.Form()) },
+                                        Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
+                                        leadingIcon = { Text("+") },
+                                    )
+                                }
+                                BottomNavigation(navigation.tab, navigation::select)
+                            }
+                            if (navigation.tab == MainTab.WISHES && wishesScroll.canScrollForward) {
+                                val background = MaterialTheme.colorScheme.background
+                                Box(
+                                    Modifier.fillMaxWidth().height(AppSpacing.section).offset(y = -AppSpacing.section)
+                                        .background(
+                                            Brush.verticalGradient(listOf(background.copy(alpha = 0f), background)),
+                                        ),
                                 )
                             }
-                            BottomNavigation(navigation.tab, navigation::select)
                         }
-                        if (navigation.tab == MainTab.WISHES && wishesScroll.canScrollForward) {
-                            val background = MaterialTheme.colorScheme.background
-                            Box(
-                                Modifier.fillMaxWidth().height(AppSpacing.section).offset(y = -AppSpacing.section)
-                                    .background(
-                                        Brush.verticalGradient(listOf(background.copy(alpha = 0f), background)),
-                                    ),
+                    },
+                ) { padding ->
+                    LazyColumn(
+                        modifier =
+                            Modifier.fillMaxSize().padding(padding).padding(horizontal = AppSpacing.page)
+                                .testTag("paired-list"),
+                        state =
+                            when (navigation.tab) {
+                                MainTab.WISHES -> wishesScroll
+                                MainTab.MEMORIES -> memoriesScroll
+                                MainTab.US -> usScroll
+                            },
+                        verticalArrangement =
+                            Arrangement.spacedBy(
+                                if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.detailsGap,
+                            ),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = AppSpacing.large),
+                    ) {
+                        if (navigation.tab == MainTab.WISHES) {
+                            wishesContent(
+                                space,
+                                today,
+                                navigation.category,
+                                onCategory = { navigation.category = it },
+                                sort = navigation.sort,
+                                onSort = { navigation.sort = it },
+                                onOpen = { navigation.open(PairedRoute.Details(it)) },
                             )
+                        } else if (navigation.tab == MainTab.MEMORIES) {
+                            memoriesContent(space) { navigation.open(PairedRoute.Details(it)) }
+                        } else {
+                            usContent(space, darkTheme, language, onSignOut) { usDialog = it }
                         }
-                    }
-                },
-            ) { padding ->
-                LazyColumn(
-                    modifier =
-                        Modifier.fillMaxSize().padding(padding).padding(horizontal = AppSpacing.page)
-                            .testTag("paired-list"),
-                    state =
-                        when (navigation.tab) {
-                            MainTab.WISHES -> wishesScroll
-                            MainTab.MEMORIES -> memoriesScroll
-                            MainTab.US -> usScroll
-                        },
-                    verticalArrangement =
-                        Arrangement.spacedBy(
-                            if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.detailsGap,
-                        ),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = AppSpacing.large),
-                ) {
-                    if (navigation.tab == MainTab.WISHES) {
-                        wishesContent(
-                            space,
-                            today,
-                            navigation.category,
-                            onCategory = { navigation.category = it },
-                            sort = navigation.sort,
-                            onSort = { navigation.sort = it },
-                            onOpen = { navigation.open(OverlayRoute.Details(it)) },
-                        )
-                    } else if (navigation.tab == MainTab.MEMORIES) {
-                        memoriesContent(space) { navigation.open(OverlayRoute.Details(it)) }
-                    } else {
-                        usContent(space, darkTheme, language, onSignOut) { usDialog = it }
                     }
                 }
+                usDialog?.let { dialog ->
+                    UsSettingsDialog(
+                        dialog,
+                        space.couple.you.name,
+                        darkTheme,
+                        language,
+                        onDismiss = { usDialog = null },
+                        onRenameUser = onRenameUser,
+                        onSetDarkTheme = onSetDarkTheme,
+                        onSetLanguage = onSetLanguage,
+                        syncedProfile = onSignOut != null,
+                    )
+                }
             }
-            usDialog?.let { dialog ->
-                UsSettingsDialog(
-                    dialog,
-                    space.couple.you.name,
-                    darkTheme,
-                    language,
-                    onDismiss = { usDialog = null },
-                    onRenameUser = onRenameUser,
-                    onSetDarkTheme = onSetDarkTheme,
-                    onSetLanguage = onSetLanguage,
-                    syncedProfile = onSignOut != null,
-                )
-            }
-            navigation.overlay?.let { route ->
-                OverlayDialog(
-                    darkTheme = darkTheme,
-                    onDismiss = navigation::back,
+            navigation.screen?.let { route ->
+                Surface(
+                    Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background,
                 ) {
-                    Surface(
-                        Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background,
-                    ) {
-                        Box(Modifier.safeDrawingPadding().imePadding()) {
-                            when (route) {
-                                is OverlayRoute.Details -> {
-                                    val wish = space.wishes.find { it.id == route.wishId }
-                                    if (wish != null) {
-                                        WishDetails(
-                                            wish,
-                                            space.couple,
-                                            today,
-                                            onBack = {
-                                                if (wish.completion != null) {
-                                                    navigation.select(
-                                                        MainTab.MEMORIES,
-                                                    )
-                                                } else {
-                                                    navigation.back()
-                                                }
-                                            },
-                                            onEdit = { navigation.open(OverlayRoute.Form(wish.id)) },
-                                            onDelete = {
-                                                onDeleteWish(wish.id)
+                    Box(Modifier.safeDrawingPadding().imePadding()) {
+                        when (route) {
+                            is PairedRoute.Details -> {
+                                val wish = space.wishes.find { it.id == route.wishId }
+                                if (wish != null) {
+                                    WishDetails(
+                                        wish,
+                                        space.couple,
+                                        today,
+                                        onBack = {
+                                            if (wish.completion != null) {
+                                                navigation.select(
+                                                    MainTab.MEMORIES,
+                                                )
+                                            } else {
                                                 navigation.back()
-                                            },
-                                            onRestore = {
-                                                onRestoreWish(wish.id)
-                                                navigation.back()
-                                            },
-                                            onEditMemory = { onEditMemory(wish.id, it) },
-                                            onComplete = {
-                                                onCompleteWish(wish.id)
-                                                navigation.back()
-                                            },
-                                        )
-                                    } else {
-                                        TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
-                                    }
-                                }
-
-                                is OverlayRoute.Form -> {
-                                    WishForm(
-                                        wishId = route.wishId,
-                                        initial = space.wishes.find { it.id == route.wishId }?.content,
-                                        couple = space.couple,
-                                        today = today,
-                                        onCancel = navigation::back,
-                                        onSave = { draft ->
-                                            onSaveWish(route.wishId, draft)
+                                            }
+                                        },
+                                        onEdit = { navigation.open(PairedRoute.Form(wish.id)) },
+                                        onDelete = {
+                                            onDeleteWish(wish.id)
+                                            navigation.back()
+                                        },
+                                        onRestore = {
+                                            onRestoreWish(wish.id)
+                                            navigation.back()
+                                        },
+                                        onEditMemory = { onEditMemory(wish.id, it) },
+                                        onComplete = {
+                                            onCompleteWish(wish.id)
                                             navigation.back()
                                         },
                                     )
+                                } else {
+                                    TextButton(navigation::back) { Text(stringResource(Res.string.back)) }
                                 }
+                            }
+
+                            is PairedRoute.Form -> {
+                                WishForm(
+                                    wishId = route.wishId,
+                                    initial = space.wishes.find { it.id == route.wishId }?.content,
+                                    couple = space.couple,
+                                    today = today,
+                                    onCancel = navigation::back,
+                                    onSave = { draft ->
+                                        onSaveWish(route.wishId, draft)
+                                        navigation.back()
+                                    },
+                                )
                             }
                         }
                     }

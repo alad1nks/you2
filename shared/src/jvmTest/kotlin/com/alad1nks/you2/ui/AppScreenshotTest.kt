@@ -12,8 +12,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -105,7 +105,7 @@ class AppScreenshotTest {
             onNodeWithText("31 Dec 2026 – 2 Jan 2027 · Upcoming").assertIsDisplayed()
             onRoot().captureRoboImage("src/jvmTest/screenshots/wishes_long_320.png")
             onNodeWithTag("wish-5").performClick()
-            onNode(hasText(longTitle) and hasAnyAncestor(isDialog())).assertExists()
+            onNode(hasText(longTitle) and hasAnyAncestor(hasTestTag("wish-details"))).assertExists()
             onNodeWithText("Back").performClick()
             onNodeWithText("31 Dec 2026 – 2 Jan 2027 · Upcoming").assertIsDisplayed()
         }
