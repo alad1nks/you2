@@ -107,11 +107,18 @@ internal class NativeCloudRepository(
 
     override fun create(draft: WishDraft): String {
         val id = provider.newId()
-        write("create", id, mapOf("content" to WishDocument.content(draft), "createdOn" to dates.today().toString()))
+        write("create", id, mapOf("content" to nativeContent(draft), "createdOn" to dates.today().toString()))
         return id
     }
 
-    override fun edit(id: String, draft: WishDraft) = write("edit", id, mapOf("content" to WishDocument.content(draft)))
+    override fun edit(id: String, draft: WishDraft) = write("edit", id, mapOf("content" to nativeContent(draft)))
+
+    // Local paths cross only the native boundary. The provider uploads them before Firestore writes.
+    private fun nativeContent(draft: WishDraft): Map<String, Any?> {
+        require(draft.attachments.size <= 12)
+        return WishDocument.content(draft.copy(cover = null, attachments = emptyList())) +
+            mapOf("cover" to draft.cover?.key, "attachments" to draft.attachments.map { it.key })
+    }
 
     override fun complete(id: String) = write("complete", id, mapOf("date" to dates.today().toString()))
 

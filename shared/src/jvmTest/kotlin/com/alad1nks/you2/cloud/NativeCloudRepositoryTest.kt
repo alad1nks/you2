@@ -10,9 +10,11 @@ import com.alad1nks.you2.core.data.repository.WishDocument
 import com.alad1nks.you2.core.model.DateSource
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDraft
+import com.alad1nks.you2.core.model.WishImage
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -128,6 +130,29 @@ class NativeCloudRepositoryTest {
         provider.completion!!(NativeCloudFailure.NETWORK)
         repository.retry()
         assertEquals(invitation, provider.writes.last())
+    }
+
+    @Test
+    fun localPhotosReachNativeUploaderAndSurviveRetryWithoutWeakeningFirestoreValidation() {
+        provider.emit(ready())
+        val photo = WishImage(source = "file:///cache/photo.jpg")
+        val withPhotos = draft.copy(cover = photo, attachments = listOf(photo))
+        repository.create(withPhotos)
+        val first = provider.writes.last()
+        val content = first.fields["content"] as Map<*, *>
+        assertEquals(photo.key, content["cover"])
+        assertEquals(listOf(photo.key), content["attachments"])
+        assertFailsWith<IllegalArgumentException> { WishDocument.content(withPhotos) }
+        provider.completion!!(NativeCloudFailure.NETWORK)
+        repository.retry()
+        assertEquals(first, provider.writes.last())
+        provider.completion!!(null)
+        repository.edit(first.id, withPhotos)
+        assertEquals(content, provider.writes.last().fields["content"])
+        provider.completion!!(null)
+        assertFailsWith<IllegalArgumentException> {
+            repository.edit(first.id, draft.copy(attachments = List(13) { photo }))
+        }
     }
 
     private fun ready() =
