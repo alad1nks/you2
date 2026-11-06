@@ -25,7 +25,10 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.runDesktopComposeUiTest
+import androidx.compose.ui.test.swipe
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.Density
 import com.alad1nks.you2.core.data.repository.DemoDateSource
 import com.alad1nks.you2.core.data.repository.DemoSpace
@@ -39,6 +42,58 @@ import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class ImageViewerTest {
+    @Test
+    fun swipeDownDismissesImage() = exerciseVerticalSwipe(upward = false)
+
+    @Test
+    fun swipeUpDismissesImage() = exerciseVerticalSwipe(upward = true)
+
+    private fun exerciseVerticalSwipe(upward: Boolean) =
+        runDesktopComposeUiTest(width = 412, height = 917) {
+            var open by mutableStateOf(true)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
+                    AppTheme(darkTheme = false) {
+                        if (open) {
+                            ImageViewer(listOf(WishImage(WishCategory.ADVENTURES)), 0, "Gallery") { open = false }
+                        }
+                    }
+                }
+            }
+            val direction = if (upward) -1f else 1f
+            onNodeWithTag("zoomable-image-0").performTouchInput {
+                down(center)
+                moveTo(center + Offset(0f, direction * 60f), delayMillis = 200)
+                moveTo(center + Offset(0f, direction * 100f), delayMillis = 200)
+            }
+            onNodeWithTag("image-pages").assert(
+                SemanticsMatcher("Image follows the vertical drag") {
+                    it.config[ImageDismissOffset] * direction > 70f
+                },
+            )
+            onNodeWithTag("zoomable-image-0").performTouchInput { up() }
+            onNodeWithTag("image-pages").assert(SemanticsMatcher.expectValue(ImageDismissOffset, 0f))
+            // A short, slow drag settles back instead of closing the viewer.
+            onNodeWithTag("zoomable-image-0").performTouchInput {
+                swipe(center, center + Offset(0f, direction * 70f), durationMillis = 700)
+            }
+            onNodeWithTag("image-pages").assert(SemanticsMatcher.expectValue(ImageDismissOffset, 0f))
+            // Vertical panning while zoomed must not dismiss the image.
+            onNodeWithTag("zoomable-image-0").performTouchInput { doubleClick() }
+            onNodeWithTag("zoomable-image-0").performTouchInput {
+                if (upward) swipeUp() else swipeDown()
+            }
+            onNodeWithTag("image-viewer").assertIsDisplayed()
+            onNodeWithTag("zoomable-image-0").performTouchInput { doubleClick() }
+            // Dismissal also works with hidden controls.
+            onNodeWithTag("zoomable-image-0").performTouchInput { click() }
+            mainClock.advanceTimeBy(400)
+            onNodeWithTag("zoomable-image-0").performTouchInput {
+                if (upward) swipeUp() else swipeDown()
+            }
+            onNodeWithTag("image-viewer").assertDoesNotExist()
+        }
+
     @Test
     fun zoomPanAndToggleControls() =
         runDesktopComposeUiTest(width = 412, height = 917) {
