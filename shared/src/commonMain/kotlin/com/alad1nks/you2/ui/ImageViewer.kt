@@ -10,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -46,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -59,6 +62,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
@@ -81,6 +86,8 @@ import com.alad1nks.you2.resources.generated.view_image
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.abs
+import kotlin.math.sign
 
 @Composable
 internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: String, onDismiss: () -> Unit) {
@@ -91,6 +98,10 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
         val thumbnails = rememberLazyListState()
         val scope = rememberCoroutineScope()
         val transform = remember(pager.currentPage) { ImageTransform() }
+        var dismissOffset by remember { mutableStateOf(0f) }
+        var viewerHeight by remember { mutableStateOf(1f) }
+        var dismissAnimation by remember { mutableStateOf<Job?>(null) }
+        val dismissProgress = (abs(dismissOffset) / (viewerHeight * .5f)).coerceIn(0f, 1f)
         var zoomAnimation by remember(transform) { mutableStateOf<Job?>(null) }
         DisposableEffect(transform) { onDispose { zoomAnimation?.cancel() } }
         val viewerFocus = remember { FocusRequester() }
@@ -101,7 +112,10 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
             if (images.size > 1) thumbnails.animateScrollToItem(pager.currentPage)
         }
         Box(
-            Modifier.fillMaxSize().background(onBackgroundLight).testTag("image-viewer")
+            Modifier.fillMaxSize()
+                .onSizeChanged { viewerHeight = it.height.toFloat().coerceAtLeast(1f) }
+                .drawBehind { drawRect(onBackgroundLight.copy(alpha = 1f - dismissProgress)) }
+                .testTag("image-viewer")
                 .onPreviewKeyEvent { event ->
                     if (event.type != KeyEventType.KeyDown) {
                         false
@@ -129,7 +143,66 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
         ) {
             HorizontalPager(
                 pager,
-                Modifier.fillMaxSize().testTag("image-pages"),
+                Modifier.fillMaxSize().testTag("image-pages")
+                    .semantics { this[ImageDismissOffset] = dismissOffset }
+                    .pointerInput(transform) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            if (transform.scale > 1f || dismissAnimation?.isActive == true) return@awaitEachGesture
+                            val velocity = VelocityTracker()
+                            velocity.addPosition(down.uptimeMillis, down.position)
+                            var total = Offset.Zero
+                            var dragging = false
+                            var released = false
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                // A pinch belongs to the zoom handler, even before it crosses touch slop.
+                                if (event.changes.count { it.pressed } > 1 || transform.scale > 1f) break
+                                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                if (change.isConsumed) break
+                                velocity.addPosition(change.uptimeMillis, change.position)
+                                if (!change.pressed) {
+                                    released = true
+                                    break
+                                }
+                                total += change.positionChange()
+                                if (!dragging) {
+                                    val horizontal = abs(total.x)
+                                    if (horizontal > viewConfiguration.touchSlop && horizontal >= abs(total.y)) {
+                                        break
+                                    }
+                                    if (abs(total.y) <= viewConfiguration.touchSlop) continue
+                                    dragging = true
+                                    zoomAnimation?.cancel()
+                                    dismissOffset = total.y - sign(total.y) * viewConfiguration.touchSlop
+                                } else {
+                                    dismissOffset += change.positionChange().y
+                                }
+                                change.consume()
+                            }
+                            if (dragging) {
+                                val speed = velocity.calculateVelocity().y
+                                val dismiss =
+                                    released && (
+                                        abs(dismissOffset) > size.height * .18f ||
+                                            (abs(speed) > 1000.dp.toPx() && speed * dismissOffset > 0f)
+                                    )
+                                dismissAnimation =
+                                    scope.launch {
+                                        val target = if (dismiss) sign(dismissOffset) * size.height else 0f
+                                        animate(dismissOffset, target, animationSpec = tween(200)) { value, _ ->
+                                            dismissOffset = value
+                                        }
+                                        if (dismiss) onDismiss()
+                                    }
+                            }
+                        }
+                    }
+                    .graphicsLayer {
+                        translationY = dismissOffset
+                        scaleX = 1f - dismissProgress * .15f
+                        scaleY = scaleX
+                    },
                 userScrollEnabled = transform.scale == 1f,
             ) { index ->
                 val imageState = wishImageState(images[index])
@@ -197,12 +270,14 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
                 exit = fadeOut(tween(220)),
             ) {
                 Box(
-                    Modifier.fillMaxWidth().height(144.dp).testTag("image-viewer-top-shadow")
+                    Modifier.alpha(
+                        1f - dismissProgress,
+                    ).fillMaxWidth().height(144.dp).testTag("image-viewer-top-shadow")
                         .background(imageViewerTopShadow),
                 )
             }
             if (controlsVisible) {
-                Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+                Box(Modifier.alpha(1f - dismissProgress).fillMaxSize().safeDrawingPadding()) {
                     Row(
                         Modifier.fillMaxWidth().height(72.dp).padding(horizontal = AppSpacing.large),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -283,6 +358,8 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
         }
     }
 }
+
+internal val ImageDismissOffset = SemanticsPropertyKey<Float>("ImageDismissOffset")
 
 internal val ImageZoom = SemanticsPropertyKey<Float>("ImageZoom")
 
