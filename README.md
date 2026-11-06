@@ -87,13 +87,13 @@ Platform requirements:
   `sdk.dir` in an untracked `local.properties`. The minimum supported Android API is 28.
 - **Desktop:** a desktop environment and the configured JDK.
 - **Web:** a browser. The project targets Kotlin/JS.
-- **iOS:** macOS and Xcode 16.3 or newer (Swift 6.1 for the Firebase package), with support for the configured iOS 18.2 deployment target.
+- **iOS:** macOS and Xcode 26.2 or newer (Swift 6.2.3 for the Firebase package), with support for the configured iOS 18.2 deployment target.
   Kotlin targets are `iosArm64` and `iosSimulatorArm64`.
 
 Dependency versions are defined in [gradle/libs.versions.toml](gradle/libs.versions.toml),
-with Gradle 9.8.0 pinned in [the wrapper configuration](gradle/wrapper/gradle-wrapper.properties).
-The project currently pins Kotlin 2.4.20, Compose Multiplatform 1.12.1, Material 3 1.9.0,
-and Android Gradle Plugin 9.4.1. These are repository settings, not a claim about the latest releases.
+with Gradle 9.8.2 pinned in [the wrapper configuration](gradle/wrapper/gradle-wrapper.properties).
+The project currently pins Kotlin 2.4.21, Compose Multiplatform 1.12.2, Material 3 1.9.0,
+and Android Gradle Plugin 9.5.1. These are repository settings, not a claim about the latest releases.
 
 ## Running and building
 
@@ -181,7 +181,7 @@ The plist is ignored by Git, like Android's `google-services.json`; copy it sepa
 Do not replace the app's existing `Info.plist`.
 
 The Xcode project references FirebaseCore, FirebaseAuth, and FirebaseFirestore through Swift Package Manager,
-pinned to Firebase Apple SDK 12.19.3. Let Xcode resolve packages on the first build.
+pinned to Firebase Apple SDK 13.1.1. Let Xcode resolve packages on the first build.
 Enable Email/Password in Firebase Console > Authentication > Sign-in method if it is not already enabled.
 `iOSApp` configures Firebase before creating the native auth provider and the shared Compose UI.
 Firebase owns credential storage and session restoration; passwords and tokens are not stored in app preferences.
@@ -487,7 +487,7 @@ administrative process. New validation prevents further malformed writes but doe
 
 ### Rules tests
 
-Rules tests use a **demo project and local emulator only**, without production credentials. Install Node 22
+Rules tests use a **demo project and local emulator only**, without production credentials. Install Node 24.12 or newer
 and Java 21, then run:
 
 ```powershell
