@@ -25,6 +25,12 @@ android {
     namespace = "com.alad1nks.you2"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     defaultConfig {
         applicationId = "com.alad1nks.you2"
         minSdk = libs.versions.android.minSdk.get().toInt()
