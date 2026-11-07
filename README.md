@@ -41,7 +41,8 @@ iOS supports Firebase email/password registration, sign-in, password reset, sess
 Its profiles, partner invitations, wishes, and memories sync through Firestore using the same schema as Android.
 iOS social sign-in remains unavailable. Desktop still uses the demo flow with sign-out disabled.
 Web supports Firebase email/password and Google authentication, session restoration, password reset,
-and sign-out; its wishes and profiles still use local demo data rather than Firestore.
+and sign-out. Profiles, partner invitations, wishes, and memories sync through the same Firestore
+database and schema as Android and iOS.
 Android and iOS support private photo uploads for wish covers and attachments.
 
 Tap a cover or attachment in wish or memory details to open the full-screen image viewer.
@@ -56,9 +57,9 @@ On Android, hiding the controls also hides the status and navigation bars; showi
 restores them. An edge swipe can temporarily reveal the system bars. On iOS, hiding controls hides
 the status bar and requests automatic hiding of the home indicator; closing the viewer restores both.
 
-For Desktop/Web development and UI validation, the demo screens use seeded data for Alex and Mia:
+For Desktop development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
-profile changes reset on restart or browser reload. Android and iOS supply the current local date; `DemoDateSource` supplies the fixed date
+profile changes reset when the demo restarts. Android, iOS, and Web supply the current local date; `DemoDateSource` supplies the fixed date
 **October 28, 2026**. Desktop and Web image pickers use bundled illustrations. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
@@ -157,7 +158,7 @@ Build static production files with `:webApp:jsBrowserDistribution`.
 Outputs are in `webApp/build/dist/js/productionExecutable`.
 The browser entry point, HTML, and CSS are under `webApp/src/webMain`.
 
-#### Web authentication on localhost
+#### Web authentication and Firestore on localhost
 
 The web app uses the Firebase JavaScript SDK (managed by Gradle) and the registered web app in
 `you2-ae09a`. Its public client configuration lives in
@@ -172,14 +173,36 @@ Google sign-in opens a popup from the button click, so allow popups for localhos
 
 Firebase manages browser session persistence. The app waits for the initial auth-state event before
 showing guest or signed-in content, and waits for sign-out to complete before clearing auth state.
-For this auth-only integration, the signed-in screens still display Alex/Mia demo wishes and profiles.
-These are not the signed-in account's cloud data, do not sync with Android/iOS, and reset on reload.
-Do not use these demo screens to store private account data. Web Firestore and image uploads are pending.
+Signed-in screens use Firestore rather than Alex/Mia demo data. New accounts get an empty profile
+and can create or accept a partner invitation. Paired accounts receive realtime profiles, wishes,
+and memories, including changes from Android/iOS. Publish `firestore.rules` to the project's default
+Firestore database before using these flows. No additional web-specific rules or indexes are required.
+
+Web writes use transactions and require connectivity; failed operations expose the existing retry
+action. The SDK uses its default in-memory cache (no persistent browser database). Sign-out and
+account switching remove listeners and clear displayed private data. Existing cached data can be
+displayed during a temporary disconnect, but an offline cache miss never creates a new profile.
+Web photo uploads/downloads are not implemented: existing private image references are preserved
+when editing, and rendered using category artwork. Web can select bundled category images.
+Web deletions and image-reference changes do not clean up existing Storage objects.
 
 Verify registration, existing-account login, wrong-password errors, password reset, Google sign-in and
 popup cancellation. Reload to check session restoration, then sign out and reload to check the guest
 screen returns. Test account switching and a second browser tab as well. When deploying later, authorize
 the deployed hostname and verify the Google popup on that host.
+
+Web Firestore integration tests run the actual Kotlin/JS adapter in headless Chrome against the
+local Firestore emulator with mock authenticated users. Install Chrome, Node 24.12+, and Java 21,
+then run from the repository root (use `gradlew.bat` instead of `./gradlew` on Windows):
+
+```shell
+npm --prefix firebase-tests ci
+npm --prefix firebase-tests exec -- firebase emulators:exec --config firebase.json --project demo-you2 --only firestore "./gradlew :shared:jsBrowserTest"
+```
+
+The tests cover two-account pairing, revoked invitations, realtime edits, the wish/memory lifecycle,
+idempotent creation/completion, outsider read/write denial, reconnecting, sign-out, and offline profile
+cache misses. They use only the `demo-you2` emulator project, never production credentials.
 
 ### iOS
 
@@ -276,7 +299,9 @@ calendar-date writes, and listener teardown.
 
 `App()` creates Koin with `CommonModules + PlatformModules`. Android overrides the demo repository with
 `FirestoreWishesRepository` from `core/data/androidMain` and a real clock. iOS injects
-`NativeCloudRepository` with a Swift Firebase provider and a real clock. `MainViewModel` observes the singleton
+`NativeCloudRepository` with a Swift Firebase provider and a real clock. Web uses the same repository
+with `WebCloudProvider`, the Firebase JavaScript SDK, and the browser's current local date.
+`MainViewModel` observes the singleton
 `WishesRepository.space` StateFlow and sends wish, memory, and profile mutations directly to that
 repository. Screens share the same `PairedSpace`, so lists and counters update together.
 `PairedNavigation` holds tab, filter, and overlay state.

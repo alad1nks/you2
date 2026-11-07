@@ -3,7 +3,7 @@ package com.alad1nks.you2.auth
 import kotlin.js.Promise
 
 /** Public Firebase web configuration. Credentials and session persistence belong to the SDK. */
-private val firebaseAuth: WebFirebaseAuth by lazy {
+internal val firebaseApp: dynamic by lazy {
     val options = js("({})")
     options.apiKey = "AIzaSyDxS2_csqcYwEnBERyySF8OZ-tNtUctBEw"
     options.authDomain = "you2-ae09a.firebaseapp.com"
@@ -11,11 +11,11 @@ private val firebaseAuth: WebFirebaseAuth by lazy {
     options.storageBucket = "you2-ae09a.firebasestorage.app"
     options.messagingSenderId = "1084716048064"
     options.appId = "1:1084716048064:web:8cc1c5646cd0235f8b9725"
-    getAuth(initializeApp(options))
+    initializeApp(options)
 }
 
 internal class WebAuthClient : AuthClient {
-    private val auth = firebaseAuth
+    private val auth = getAuth(firebaseApp)
     override val currentUser: AuthUser?
         get() = auth.currentUser?.let { AuthUser(it.uid, it.email.orEmpty()) }
 

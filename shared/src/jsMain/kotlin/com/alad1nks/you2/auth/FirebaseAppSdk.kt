@@ -3,4 +3,4 @@
 
 package com.alad1nks.you2.auth
 
-internal external fun initializeApp(options: dynamic): dynamic
+internal external fun initializeApp(options: dynamic, name: String = definedExternally): dynamic
