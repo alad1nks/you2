@@ -1,8 +1,10 @@
 package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -15,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.alad1nks.you2.auth.AuthViewModel
 import com.alad1nks.you2.auth.messageId
@@ -73,7 +76,11 @@ fun App(platformModules: List<Module> = PlatformModules, onDarkThemeChanged: (Bo
                         }
                     }
                     key(auth.user?.id) {
-                        if (authViewModel.isAvailable && auth.user == null) {
+                        if (auth.restoringSession) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        } else if (authViewModel.isAvailable && auth.user == null) {
                             GuestExperience(auth, authViewModel, language, viewModel::changeLanguage, tabState)
                         } else {
                             CloudSpaceGate(

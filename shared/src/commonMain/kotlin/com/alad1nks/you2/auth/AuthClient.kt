@@ -17,6 +17,7 @@ internal enum class AuthError {
 
 internal interface AuthClient {
     val currentUser: AuthUser?
+    val restoringSession: Boolean get() = false
 
     fun observeUser(onChange: (AuthUser?) -> Unit): () -> Unit
 
@@ -28,5 +29,7 @@ internal interface AuthClient {
 
     fun resetPassword(email: String, complete: (AuthError?) -> Unit)
 
-    fun signOut(): AuthError?
+    fun signOut(): AuthError? = AuthError.UNKNOWN
+
+    fun signOut(complete: (AuthError?) -> Unit) = complete(signOut())
 }

@@ -9,6 +9,67 @@ import kotlin.test.assertTrue
 
 class AuthViewModelTest {
     @Test
+    fun sessionRestorationBlocksRequestsUntilFirstAuthEvent() {
+        val client = FakeAuthClient(restoringSession = true)
+        val model = AuthViewModel(client)
+        assertTrue(model.state.value.restoringSession)
+        model.submit("user@example.com", "password", "")
+        model.signInWithGoogle { error("Must wait for restoration") }
+        assertEquals(0, client.calls)
+        client.emit(AuthUser("restored", "user@example.com"))
+        assertFalse(model.state.value.restoringSession)
+        assertEquals("restored", model.state.value.user?.id)
+    }
+
+    @Test
+    fun browserGoogleCompletionUsesExistingSessionWithoutAnotherTokenExchange() {
+        val client = FakeAuthClient()
+        val model = AuthViewModel(client)
+        model.signInWithGoogle {
+            client.emit(AuthUser("browser", "user@example.com"))
+            it(GoogleSignInResult.SignedIn)
+        }
+        assertEquals(0, client.calls)
+        assertEquals("browser", model.state.value.user?.id)
+        assertFalse(model.state.value.busy)
+        assertNull(model.state.value.error)
+    }
+
+    @Test
+    fun asynchronousSignOutWaitsAndRetainsUserOnFailure() {
+        val client = FakeAuthClient(AuthUser("existing", "user@example.com"))
+        client.deferSignOut = true
+        val model = AuthViewModel(client)
+        model.signOut()
+        model.signOut()
+        assertTrue(model.state.value.busy)
+        assertEquals(1, client.calls)
+        assertEquals("existing", model.state.value.user?.id)
+        client.finish(AuthError.NETWORK)
+        assertFalse(model.state.value.busy)
+        assertEquals("existing", model.state.value.user?.id)
+        assertEquals(AuthError.NETWORK, model.state.value.error)
+        model.signOut()
+        client.emit(null)
+        client.finish(null)
+        assertEquals(AuthState(), model.state.value)
+    }
+
+    @Test
+    fun signOutCompletionAfterDisposalIsIgnored() {
+        val client = FakeAuthClient(AuthUser("existing", "user@example.com"))
+        client.deferSignOut = true
+        val model = AuthViewModel(client)
+        val store = ViewModelStore()
+        store.put("auth", model)
+        model.signOut()
+        val before = model.state.value
+        store.clear()
+        client.finish(AuthError.NETWORK)
+        assertEquals(before, model.state.value)
+    }
+
+    @Test
     fun googleSignInBlocksOtherRequestsAndExchangesTokenForSession() {
         val client = FakeAuthClient()
         val model = AuthViewModel(client)
@@ -175,7 +236,11 @@ class AuthViewModelTest {
     }
 }
 
-private class FakeAuthClient(override var currentUser: AuthUser? = null) : AuthClient {
+private class FakeAuthClient(
+    override var currentUser: AuthUser? = null,
+    override val restoringSession: Boolean = false,
+) : AuthClient {
+    var deferSignOut = false
     var calls = 0
     var email = ""
     var password = ""
@@ -213,6 +278,15 @@ private class FakeAuthClient(override var currentUser: AuthUser? = null) : AuthC
     override fun signOut(): AuthError? {
         emit(null)
         return null
+    }
+
+    override fun signOut(complete: (AuthError?) -> Unit) {
+        if (deferSignOut) {
+            calls++
+            completion = complete
+        } else {
+            complete(signOut())
+        }
     }
 
     fun emit(user: AuthUser?) {

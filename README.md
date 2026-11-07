@@ -39,7 +39,9 @@ opens a copyable-code dialog, and **I have an invite code** opens the join dialo
 **View our wishes** opens the shared list.
 iOS supports Firebase email/password registration, sign-in, password reset, session restoration, and sign-out.
 Its profiles, partner invitations, wishes, and memories sync through Firestore using the same schema as Android.
-iOS social sign-in remains unavailable. Desktop and Web still use the demo flow with sign-out disabled.
+iOS social sign-in remains unavailable. Desktop still uses the demo flow with sign-out disabled.
+Web supports Firebase email/password and Google authentication, session restoration, password reset,
+and sign-out; its wishes and profiles still use local demo data rather than Firestore.
 Android and iOS support private photo uploads for wish covers and attachments.
 
 Tap a cover or attachment in wish or memory details to open the full-screen image viewer.
@@ -154,6 +156,30 @@ Outputs are under `desktopApp/build/compose/binaries`.
 Build static production files with `:webApp:jsBrowserDistribution`.
 Outputs are in `webApp/build/dist/js/productionExecutable`.
 The browser entry point, HTML, and CSS are under `webApp/src/webMain`.
+
+#### Web authentication on localhost
+
+The web app uses the Firebase JavaScript SDK (managed by Gradle) and the registered web app in
+`you2-ae09a`. Its public client configuration lives in
+`shared/src/jsMain/kotlin/com/alad1nks/you2/auth/WebAuthClient.kt`; Analytics is not initialized.
+Do not add service-account credentials to the browser app.
+
+In Firebase Console, enable **Email/Password** and **Google** under **Authentication > Sign-in method**.
+Under **Authentication > Settings > Authorized domains**, add `localhost` (a hostname without a scheme
+or port). Start `./gradlew :webApp:jsBrowserDevelopmentRun` and open the localhost URL printed by Gradle.
+This connects to the real Firebase project, not the Auth emulator; accounts created here are real accounts.
+Google sign-in opens a popup from the button click, so allow popups for localhost if the browser blocks it.
+
+Firebase manages browser session persistence. The app waits for the initial auth-state event before
+showing guest or signed-in content, and waits for sign-out to complete before clearing auth state.
+For this auth-only integration, the signed-in screens still display Alex/Mia demo wishes and profiles.
+These are not the signed-in account's cloud data, do not sync with Android/iOS, and reset on reload.
+Do not use these demo screens to store private account data. Web Firestore and image uploads are pending.
+
+Verify registration, existing-account login, wrong-password errors, password reset, Google sign-in and
+popup cancellation. Reload to check session restoration, then sign out and reload to check the guest
+screen returns. Test account switching and a second browser tab as well. When deploying later, authorize
+the deployed hostname and verify the Google popup on that host.
 
 ### iOS
 

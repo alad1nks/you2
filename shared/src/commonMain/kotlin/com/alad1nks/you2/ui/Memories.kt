@@ -73,7 +73,7 @@ internal fun LazyListScope.memoriesContent(space: PairedSpace, onOpen: (String) 
                 Text(
                     stringResource(
                         Res.string.memory_month,
-                        stringArrayResource(Res.array.full_months)[month.month.ordinal],
+                        stringArrayResource(Res.array.full_months).getOrNull(month.month.ordinal).orEmpty(),
                         month.year,
                     ),
                     Modifier.weight(1f),
