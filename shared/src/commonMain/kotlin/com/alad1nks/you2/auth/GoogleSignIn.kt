@@ -8,6 +8,9 @@ internal sealed interface GoogleSignInResult {
     data object Cancelled : GoogleSignInResult
 
     data object Failed : GoogleSignInResult
+
+    /** Browser Firebase has already exchanged the Google credential for a session. */
+    data object SignedIn : GoogleSignInResult
 }
 
 internal typealias GoogleSignInLauncher = ((GoogleSignInResult) -> Unit) -> Unit

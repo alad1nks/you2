@@ -87,6 +87,7 @@ kotlin {
             implementation(projects.core.storage.datastore)
         }
         jsMain.dependencies {
+            implementation(npm("firebase", "13.2.0"))
             implementation(libs.wrappers.browser)
 
             implementation(projects.core.storage.js)

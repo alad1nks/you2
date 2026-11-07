@@ -293,7 +293,7 @@ internal fun WishDateBadge(dates: WishDates, today: LocalDate) {
                         Res.string.same_month_range,
                         dates.start.day,
                         dates.end.day,
-                        stringArrayResource(Res.array.short_months)[dates.start.month.ordinal],
+                        stringArrayResource(Res.array.short_months).getOrNull(dates.start.month.ordinal).orEmpty(),
                         dates.start.year,
                     )
                 } else {
@@ -327,6 +327,6 @@ internal fun wishDateText(date: LocalDate): String =
     stringResource(
         Res.string.formatted_date,
         date.day,
-        stringArrayResource(Res.array.short_months)[date.month.ordinal],
+        stringArrayResource(Res.array.short_months).getOrNull(date.month.ordinal).orEmpty(),
         date.year,
     )
