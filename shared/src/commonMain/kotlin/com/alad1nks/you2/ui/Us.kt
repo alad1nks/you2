@@ -174,9 +174,16 @@ internal fun LazyListScope.usContent(
         }
     }
     item {
+        var confirmSignOut by rememberSaveable { mutableStateOf(false) }
+        if (confirmSignOut && onSignOut != null) {
+            SignOutDialog(onDismiss = { confirmSignOut = false }, onConfirm = {
+                confirmSignOut = false
+                onSignOut()
+            })
+        }
         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
             OutlinedButton(
-                onSignOut ?: {},
+                { confirmSignOut = true },
                 Modifier.fillMaxWidth().heightIn(min = 52.dp),
                 enabled = onSignOut != null,
             ) {

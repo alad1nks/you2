@@ -13,6 +13,7 @@ internal data class AuthState(
     val busy: Boolean = false,
     val error: AuthError? = null,
     val resetSent: Boolean = false,
+    val registrationName: String? = null,
 )
 
 internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
@@ -22,7 +23,16 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
     private var cleared = false
     private val unsubscribe =
         client?.observeUser { user ->
-            if (!cleared) mutableState.update { it.copy(user = user, error = null, resetSent = false) }
+            if (!cleared) {
+                mutableState.update {
+                    it.copy(
+                        user = user,
+                        error = null,
+                        resetSent = false,
+                        registrationName = it.registrationName.takeIf { _ -> it.user?.id == user?.id },
+                    )
+                }
+            }
         }
 
     fun changeMode(mode: AuthMode) {
@@ -33,7 +43,7 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
         mutableState.update { it.copy(error = null, resetSent = false) }
     }
 
-    fun submit(email: String, password: String, confirmation: String) {
+    fun submit(email: String, password: String, confirmation: String, name: String = "") {
         if (state.value.busy || state.value.user != null) return
         val client = client ?: return
         val address = email.trim()
@@ -57,6 +67,12 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
                     it.copy(
                         user = client.currentUser,
                         busy = false,
+                        registrationName =
+                            if (mode == AuthMode.REGISTER && failure == null) {
+                                name.trim().takeIf { it.isNotEmpty() }
+                            } else {
+                                null
+                            },
                         error = failure,
                         resetSent = mode == AuthMode.RESET && failure == null,
                     )
@@ -68,6 +84,10 @@ internal class AuthViewModel(private val client: AuthClient?) : ViewModel() {
             AuthMode.REGISTER -> client.register(address, password, complete)
             AuthMode.RESET -> client.resetPassword(address, complete)
         }
+    }
+
+    fun registrationNameSaved() {
+        mutableState.update { it.copy(registrationName = null) }
     }
 
     fun signOut() {

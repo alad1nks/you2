@@ -47,6 +47,13 @@ class UsTest {
             onNodeWithText("Us").performClick()
             onNodeWithTag("paired-list").performScrollToNode(hasText("Sign out"))
             onNodeWithText("Sign out").performClick()
+            onNodeWithTag("sign-out-dialog").assertIsDisplayed()
+            onNodeWithTag("sign-out-dialog").captureRoboImage("src/jvmTest/screenshots/sign_out_confirmation.png")
+            runOnIdle { assertEquals(0, signOutCalls) }
+            onNodeWithTag("sign-out-cancel").performClick()
+            runOnIdle { assertEquals(0, signOutCalls) }
+            onNodeWithText("Sign out").performClick()
+            onNodeWithTag("sign-out-confirm").performClick()
             runOnIdle { assertEquals(1, signOutCalls) }
         }
 

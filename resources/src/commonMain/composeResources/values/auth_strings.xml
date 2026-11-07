@@ -34,4 +34,20 @@
     <string name="auth_enter_password">Enter your password</string>
     <string name="auth_new_here">New to you2?</string>
     <string name="auth_existing_account">Already have an account?</string>
+    <string name="auth_login_email">Log in with email</string>
+    <string name="auth_signup_email">Sign up with email</string>
+    <string name="auth_login_email_body">Log in with your email and password.</string>
+    <string name="auth_signup_email_body">Create your account with your email address.</string>
+    <string name="auth_name">Your name</string>
+    <string name="auth_name_placeholder">What should we call you?</string>
+    <string name="auth_confirm_placeholder">Enter your password again</string>
+    <string name="sign_out_title">Sign out of you2?</string>
+    <string name="sign_out_body">You’ll need to log in again to access your shared space.</string>
+    <string name="sign_out_saved">Your wishes and memories will stay saved.</string>
+    <string name="auth_error_credentials_title">Email or password doesn’t match.</string>
+    <string name="auth_error_credentials_hint">Check your details and try again.</string>
+    <string name="auth_signing_in">Signing in…</string>
+    <string name="auth_creating_account">Creating account…</string>
+    <string name="auth_sending_reset">Sending reset email…</string>
+    <string name="auth_connecting">Connecting you to your shared space…</string>
 </resources>

@@ -123,6 +123,13 @@ internal fun UnpairedExperience(
     onConnected: () -> Unit,
     tabState: MutableState<MainTab>,
 ) {
+    var confirmSignOut by rememberSaveable(state.userId) { mutableStateOf(false) }
+    if (confirmSignOut) {
+        SignOutDialog(onDismiss = { confirmSignOut = false }, onConfirm = {
+            confirmSignOut = false
+            onSignOut()
+        })
+    }
     var tab by tabState
     var dialog by rememberSaveable(state.userId) { mutableStateOf<PairDialog?>(null) }
     var settings by rememberSaveable(state.userId) { mutableStateOf<UsDialog?>(null) }
@@ -254,7 +261,10 @@ internal fun UnpairedExperience(
                                         }
                                     }
                                 }
-                                OutlinedButton(onSignOut, Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                                OutlinedButton(
+                                    { confirmSignOut = true },
+                                    Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                                ) {
                                     Icon(AppIcons.Logout, null, Modifier.size(20.dp))
                                     Text(stringResource(Res.string.sign_out), Modifier.padding(start = 10.dp))
                                 }
