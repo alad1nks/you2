@@ -95,6 +95,7 @@ internal fun WishDetails(
     var menuOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     var deleteOpen by rememberSaveable(wish.id) { mutableStateOf(false) }
     val images = listOf(wish.content.cover ?: WishImage(wish.content.category)) + wish.content.attachments
+    val imageStates = images.map { image -> key(wish.id, image) { wishImageState(image) } }
     var viewerIndex by rememberSaveable(wish.id, images) { mutableStateOf<Int?>(null) }
     Scaffold(
         topBar = {
@@ -186,7 +187,7 @@ internal fun WishDetails(
             }
             item {
                 WishCover(
-                    wish.content.cover ?: WishImage(wish.content.category),
+                    imageStates.first(),
                     Modifier.testTag("wish-cover").clickable(
                         role = Role.Button,
                         onClickLabel = stringResource(Res.string.view_image, 1),
@@ -246,9 +247,9 @@ internal fun WishDetails(
                     }
                 }
             }
-            itemsIndexed(wish.content.attachments) { index, attachment ->
+            itemsIndexed(wish.content.attachments) { index, _ ->
                 WishCover(
-                    attachment,
+                    imageStates[index + 1],
                     Modifier.testTag("wish-attachment-$index").clickable(
                         role = Role.Button,
                         onClickLabel = stringResource(Res.string.view_image, index + 2),
@@ -311,7 +312,7 @@ internal fun WishDetails(
     }
     viewerIndex?.let { index ->
         key(wish.id, images) {
-            ImageViewer(images, index, wish.content.title) { viewerIndex = null }
+            ImageViewer(imageStates, index, wish.content.title) { viewerIndex = null }
         }
     }
     if (editMemoryOpen && completion != null) {

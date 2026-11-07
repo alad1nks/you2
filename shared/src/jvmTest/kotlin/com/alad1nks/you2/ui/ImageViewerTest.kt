@@ -6,16 +6,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -43,6 +47,30 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class ImageViewerTest {
     @Test
+    fun sharedLoadingStateSurvivesViewerReopening() =
+        runDesktopComposeUiTest(width = 412, height = 917) {
+            val painter = ColorPainter(Color.Red)
+            var image by mutableStateOf(WishImageState(painter, isLoading = true))
+            var open by mutableStateOf(true)
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
+                    AppTheme(darkTheme = false) {
+                        if (open) ImageViewer(listOf(image, image), 0, "Gallery") { open = false }
+                    }
+                }
+            }
+            // The page and both thumbnails observe the same ongoing load.
+            onAllNodesWithTag("image-loading").assertCountEquals(3)
+            runOnIdle { image = WishImageState(painter) }
+            onAllNodesWithTag("image-loading").assertCountEquals(0)
+            onNodeWithContentDescription("Close image viewer").performClick()
+            onNodeWithTag("image-viewer").assertDoesNotExist()
+            runOnIdle { open = true }
+            onNodeWithTag("image-viewer").assertIsDisplayed()
+            onAllNodesWithTag("image-loading").assertCountEquals(0)
+        }
+
+    @Test
     fun swipeDownDismissesImage() = exerciseVerticalSwipe(upward = false)
 
     @Test
@@ -55,7 +83,11 @@ class ImageViewerTest {
                 CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
                     AppTheme(darkTheme = false) {
                         if (open) {
-                            ImageViewer(listOf(WishImage(WishCategory.ADVENTURES)), 0, "Gallery") { open = false }
+                            ImageViewer(
+                                listOf(wishImageState(WishImage(WishCategory.ADVENTURES))),
+                                0,
+                                "Gallery",
+                            ) { open = false }
                         }
                     }
                 }
@@ -103,7 +135,8 @@ class ImageViewerTest {
                     AppTheme(darkTheme = false) {
                         if (open) {
                             ImageViewer(
-                                listOf(WishImage(WishCategory.ADVENTURES), WishImage(WishCategory.PLANS)),
+                                listOf(WishImage(WishCategory.ADVENTURES), WishImage(WishCategory.PLANS))
+                                    .map { wishImageState(it) },
                                 0,
                                 "Gallery",
                             ) { open = false }
@@ -241,7 +274,13 @@ class ImageViewerTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
                     AppTheme(darkTheme = true) {
-                        if (open) ImageViewer(images, initialIndex, "A weekend by the sea") { open = false }
+                        if (open) {
+                            ImageViewer(
+                                images.map { wishImageState(it) },
+                                initialIndex,
+                                "A weekend by the sea",
+                            ) { open = false }
+                        }
                     }
                 }
             }
