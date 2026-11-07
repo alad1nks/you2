@@ -22,7 +22,14 @@ kotlin {
     jvm()
 
     js {
-        browser()
+        binaries.executable()
+        browser {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+        }
     }
 
     android {

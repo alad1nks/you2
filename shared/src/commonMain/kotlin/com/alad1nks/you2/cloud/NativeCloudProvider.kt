@@ -1,6 +1,6 @@
 package com.alad1nks.you2.cloud
 
-/** Apple SDK boundary. Calls/callbacks run on main; unsubscribe suppresses queued events. */
+/** Platform SDK boundary (Apple and Web). Calls/callbacks run on main; unsubscribe suppresses queued events. */
 interface NativeCloudProvider {
     fun observe(userId: String, onChange: (NativeCloudSnapshot) -> Unit): () -> Unit
 
