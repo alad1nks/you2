@@ -2,11 +2,13 @@ package com.alad1nks.you2.auth
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -24,8 +26,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +49,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
@@ -70,14 +72,18 @@ import com.alad1nks.you2.feature.designsystem.theme.surfaceContainerLowestLight
 import com.alad1nks.you2.resources.generated.Res
 import com.alad1nks.you2.resources.generated.auth_back
 import com.alad1nks.you2.resources.generated.auth_confirm
+import com.alad1nks.you2.resources.generated.auth_confirm_placeholder
+import com.alad1nks.you2.resources.generated.auth_connecting
 import com.alad1nks.you2.resources.generated.auth_create_body
 import com.alad1nks.you2.resources.generated.auth_create_password
 import com.alad1nks.you2.resources.generated.auth_create_title
+import com.alad1nks.you2.resources.generated.auth_creating_account
 import com.alad1nks.you2.resources.generated.auth_email
 import com.alad1nks.you2.resources.generated.auth_email_placeholder
-import com.alad1nks.you2.resources.generated.auth_email_separator
 import com.alad1nks.you2.resources.generated.auth_enter_password
 import com.alad1nks.you2.resources.generated.auth_error_credentials
+import com.alad1nks.you2.resources.generated.auth_error_credentials_hint
+import com.alad1nks.you2.resources.generated.auth_error_credentials_title
 import com.alad1nks.you2.resources.generated.auth_error_email
 import com.alad1nks.you2.resources.generated.auth_error_google
 import com.alad1nks.you2.resources.generated.auth_error_in_use
@@ -91,6 +97,10 @@ import com.alad1nks.you2.resources.generated.auth_existing_account
 import com.alad1nks.you2.resources.generated.auth_forgot
 import com.alad1nks.you2.resources.generated.auth_google
 import com.alad1nks.you2.resources.generated.auth_hide
+import com.alad1nks.you2.resources.generated.auth_login_email
+import com.alad1nks.you2.resources.generated.auth_login_email_body
+import com.alad1nks.you2.resources.generated.auth_name
+import com.alad1nks.you2.resources.generated.auth_name_placeholder
 import com.alad1nks.you2.resources.generated.auth_new_here
 import com.alad1nks.you2.resources.generated.auth_password
 import com.alad1nks.you2.resources.generated.auth_register
@@ -98,7 +108,11 @@ import com.alad1nks.you2.resources.generated.auth_reset
 import com.alad1nks.you2.resources.generated.auth_reset_body
 import com.alad1nks.you2.resources.generated.auth_reset_sent
 import com.alad1nks.you2.resources.generated.auth_send_reset
+import com.alad1nks.you2.resources.generated.auth_sending_reset
 import com.alad1nks.you2.resources.generated.auth_show
+import com.alad1nks.you2.resources.generated.auth_signing_in
+import com.alad1nks.you2.resources.generated.auth_signup_email
+import com.alad1nks.you2.resources.generated.auth_signup_email_body
 import com.alad1nks.you2.resources.generated.auth_welcome
 import com.alad1nks.you2.resources.generated.auth_welcome_body
 import com.alad1nks.you2.resources.generated.back
@@ -119,6 +133,10 @@ internal fun AuthForm(
     onBackToGuest: (() -> Unit)? = null,
     googleSignIn: GoogleSignInLauncher? = rememberGoogleSignInLauncher(),
 ) {
+    var emailForm by rememberSaveable { mutableStateOf(false) }
+    val choosingMethod = state.mode != AuthMode.RESET && !emailForm
+    var name by rememberSaveable { mutableStateOf("") }
+    var showConfirmation by remember(state.mode) { mutableStateOf(false) }
     var email by rememberSaveable { mutableStateOf("") }
     // Passwords deliberately never enter saved instance state, preferences, or logs.
     var password by remember(state.mode) { mutableStateOf("") }
@@ -133,8 +151,8 @@ internal fun AuthForm(
         }
     val description =
         when (state.mode) {
-            AuthMode.SIGN_IN -> Res.string.auth_welcome_body
-            AuthMode.REGISTER -> Res.string.auth_create_body
+            AuthMode.SIGN_IN -> if (choosingMethod) Res.string.auth_welcome_body else Res.string.auth_login_email_body
+            AuthMode.REGISTER -> if (choosingMethod) Res.string.auth_create_body else Res.string.auth_signup_email_body
             AuthMode.RESET -> Res.string.auth_reset_body
         }
     val action =
@@ -146,28 +164,44 @@ internal fun AuthForm(
     val ready =
         !state.busy && email.isNotBlank() &&
             (state.mode == AuthMode.RESET || password.isNotEmpty()) &&
-            (state.mode != AuthMode.REGISTER || confirmation.isNotEmpty())
+            (state.mode != AuthMode.REGISTER || (confirmation.isNotEmpty() && name.trim().length in 1..80))
     val submit: () -> Unit = {
         if (ready) {
             focus.clearFocus()
-            viewModel.submit(email, password, confirmation)
+            viewModel.submit(email, password, confirmation, name)
         }
     }
     val goBack: () -> Unit = {
         if (!state.busy) {
             focus.clearFocus()
-            if (state.mode == AuthMode.RESET || onBackToGuest == null) {
+            if (state.mode == AuthMode.RESET) {
                 viewModel.changeMode(AuthMode.SIGN_IN)
-            } else {
+                emailForm = true
+            } else if (emailForm) {
+                emailForm = false
+                password = ""
+                confirmation = ""
+                showPassword = false
+                showConfirmation = false
+                viewModel.clearMessage()
+            } else if (onBackToGuest != null) {
                 onBackToGuest()
+            } else {
+                viewModel.changeMode(AuthMode.SIGN_IN)
             }
         }
     }
-    BackHandler(onBackToGuest != null || state.mode != AuthMode.SIGN_IN) { goBack() }
+    BackHandler(onBackToGuest != null || emailForm || state.mode != AuthMode.SIGN_IN) { goBack() }
     AuthPage(
+        choosingMethod = choosingMethod,
         header = {
-            if (onBackToGuest != null || state.mode != AuthMode.SIGN_IN) {
-                TextButton(onClick = goBack, enabled = !state.busy) {
+            if (onBackToGuest != null || emailForm || state.mode != AuthMode.SIGN_IN) {
+                TextButton(
+                    onClick = goBack,
+                    enabled = !state.busy,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    contentPadding = PaddingValues(horizontal = AppSpacing.medium, vertical = AppSpacing.small),
+                ) {
                     Icon(AppIcons.ArrowBack, null, Modifier.size(20.dp))
                     Spacer(Modifier.width(AppSpacing.small))
                     Text(stringResource(Res.string.back))
@@ -184,7 +218,7 @@ internal fun AuthForm(
             }
         },
     ) {
-        if (state.mode != AuthMode.RESET && googleSignIn != null) {
+        if (choosingMethod && googleSignIn != null) {
             Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.large)) {
                 OutlinedButton(
                     onClick = {
@@ -207,134 +241,180 @@ internal fun AuthForm(
                     Spacer(Modifier.width(AppSpacing.medium))
                     Text(stringResource(Res.string.auth_google), textAlign = TextAlign.Center)
                 }
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    HorizontalDivider(Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
-                    Text(
-                        stringResource(Res.string.auth_email_separator),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                    HorizontalDivider(Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
-                }
             }
         }
-        AuthField(
-            value = email,
-            onValueChange = {
-                email = it
-                viewModel.clearMessage()
-            },
-            label = stringResource(Res.string.auth_email),
-            placeholder = stringResource(Res.string.auth_email_placeholder),
-            enabled = !state.busy,
-            isError = state.error == AuthError.EMAIL || state.error == AuthError.CREDENTIALS,
-            keyboardType = KeyboardType.Email,
-            imeAction = if (state.mode == AuthMode.RESET) ImeAction.Done else ImeAction.Next,
-            onDone = submit,
-            tag = "auth-email",
-        )
-        if (state.mode != AuthMode.RESET) {
-            AuthField(
-                value = password,
-                onValueChange = {
-                    password = it
+        if (choosingMethod) {
+            AuthErrorMessage(state.error)
+            PrimaryButton(
+                stringResource(
+                    if (state.mode == AuthMode.REGISTER) Res.string.auth_signup_email else Res.string.auth_login_email,
+                ),
+                onClick = {
+                    emailForm = true
                     viewModel.clearMessage()
                 },
-                label = stringResource(Res.string.auth_password),
-                placeholder =
+                enabled = !state.busy,
+                modifier = Modifier.testTag("auth-choose-email"),
+                textStyle = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp, lineHeight = 24.sp),
+            )
+        } else {
+            if (state.mode == AuthMode.REGISTER) {
+                AuthField(
+                    name,
+                    { name = it },
+                    stringResource(Res.string.auth_name),
+                    stringResource(Res.string.auth_name_placeholder),
+                    !state.busy,
+                    false,
+                    KeyboardType.Text,
+                    ImeAction.Next,
+                    submit,
+                    "auth-name",
+                )
+            }
+            AuthField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    viewModel.clearMessage()
+                },
+                label = stringResource(Res.string.auth_email),
+                placeholder = stringResource(Res.string.auth_email_placeholder),
+                enabled = !state.busy,
+                isError = state.error == AuthError.EMAIL || state.error == AuthError.CREDENTIALS,
+                keyboardType = KeyboardType.Email,
+                imeAction = if (state.mode == AuthMode.RESET) ImeAction.Done else ImeAction.Next,
+                onDone = submit,
+                tag = "auth-email",
+            )
+            if (state.mode != AuthMode.RESET) {
+                AuthField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        viewModel.clearMessage()
+                    },
+                    label = stringResource(Res.string.auth_password),
+                    placeholder =
+                        stringResource(
+                            if (state.mode == AuthMode.REGISTER) {
+                                Res.string.auth_create_password
+                            } else {
+                                Res.string.auth_enter_password
+                            },
+                        ),
+                    enabled = !state.busy,
+                    isError = state.error in listOf(AuthError.PASSWORD, AuthError.WEAK_PASSWORD, AuthError.CREDENTIALS),
+                    keyboardType = KeyboardType.Password,
+                    imeAction = if (state.mode == AuthMode.REGISTER) ImeAction.Next else ImeAction.Done,
+                    onDone = submit,
+                    visualTransformation =
+                        if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { showPassword = !showPassword },
+                            enabled = !state.busy,
+                            modifier = Modifier.padding(end = 6.dp).size(44.dp).testTag("auth-password-visibility"),
+                        ) {
+                            Icon(
+                                if (showPassword) AppIcons.VisibilityOff else AppIcons.Visibility,
+                                contentDescription =
+                                    stringResource(if (showPassword) Res.string.auth_hide else Res.string.auth_show),
+                                modifier = Modifier.size(AppDimensions.icon),
+                                tint = MaterialTheme.colorScheme.secondary,
+                            )
+                        }
+                    },
+                    tag = "auth-password",
+                )
+            }
+            if (state.mode == AuthMode.REGISTER) {
+                AuthField(
+                    value = confirmation,
+                    onValueChange = {
+                        confirmation = it
+                        viewModel.clearMessage()
+                    },
+                    label = stringResource(Res.string.auth_confirm),
+                    placeholder = stringResource(Res.string.auth_confirm_placeholder),
+                    enabled = !state.busy,
+                    isError = state.error == AuthError.PASSWORD_MISMATCH,
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                    onDone = submit,
+                    visualTransformation =
+                        if (showConfirmation) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { showConfirmation = !showConfirmation },
+                            enabled = !state.busy,
+                            modifier = Modifier.padding(end = 6.dp).size(44.dp).testTag("auth-confirmation-visibility"),
+                        ) {
+                            Icon(
+                                if (showConfirmation) AppIcons.VisibilityOff else AppIcons.Visibility,
+                                stringResource(if (showConfirmation) Res.string.auth_hide else Res.string.auth_show),
+                                Modifier.size(AppDimensions.icon),
+                                tint = MaterialTheme.colorScheme.secondary,
+                            )
+                        }
+                    },
+                    tag = "auth-confirmation",
+                )
+            }
+            if (state.mode == AuthMode.SIGN_IN) {
+                Text(
+                    stringResource(Res.string.auth_forgot),
+                    Modifier.align(Alignment.End).clickable(enabled = !state.busy, role = Role.Button) {
+                        viewModel.changeMode(AuthMode.RESET)
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            AuthErrorMessage(state.error)
+            if (state.resetSent) {
+                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = AppShapes.field) {
+                    Text(
+                        stringResource(Res.string.auth_reset_sent),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(AppSpacing.large).semantics { liveRegion = LiveRegionMode.Polite },
+                    )
+                }
+            }
+            PrimaryButton(
+                text =
                     stringResource(
-                        if (state.mode == AuthMode.REGISTER) {
-                            Res.string.auth_create_password
+                        if (state.busy) {
+                            when (state.mode) {
+                                AuthMode.SIGN_IN -> Res.string.auth_signing_in
+                                AuthMode.REGISTER -> Res.string.auth_creating_account
+                                AuthMode.RESET -> Res.string.auth_sending_reset
+                            }
                         } else {
-                            Res.string.auth_enter_password
+                            action
                         },
                     ),
-                enabled = !state.busy,
-                isError = state.error in listOf(AuthError.PASSWORD, AuthError.WEAK_PASSWORD, AuthError.CREDENTIALS),
-                keyboardType = KeyboardType.Password,
-                imeAction = if (state.mode == AuthMode.REGISTER) ImeAction.Next else ImeAction.Done,
-                onDone = submit,
-                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(
-                        onClick = { showPassword = !showPassword },
-                        enabled = !state.busy,
-                        modifier = Modifier.size(44.dp).testTag("auth-password-visibility"),
-                    ) {
-                        Icon(
-                            if (showPassword) AppIcons.VisibilityOff else AppIcons.Visibility,
-                            contentDescription =
-                                stringResource(if (showPassword) Res.string.auth_hide else Res.string.auth_show),
-                            modifier = Modifier.size(AppDimensions.icon),
-                            tint = MaterialTheme.colorScheme.secondary,
-                        )
-                    }
-                },
-                tag = "auth-password",
+                onClick = submit,
+                enabled = ready,
+                modifier = Modifier.testTag("auth-submit"),
+                textStyle = MaterialTheme.typography.labelLarge.copy(fontSize = 16.sp, lineHeight = 24.sp),
             )
-        }
-        if (state.mode == AuthMode.REGISTER) {
-            AuthField(
-                value = confirmation,
-                onValueChange = {
-                    confirmation = it
-                    viewModel.clearMessage()
-                },
-                label = stringResource(Res.string.auth_confirm),
-                placeholder = stringResource(Res.string.auth_confirm),
-                enabled = !state.busy,
-                isError = state.error == AuthError.PASSWORD_MISMATCH,
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Done,
-                onDone = submit,
-                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                tag = "auth-confirmation",
-            )
-        }
-        if (state.mode == AuthMode.SIGN_IN) {
-            TextButton(
-                onClick = { viewModel.changeMode(AuthMode.RESET) },
-                enabled = !state.busy,
-                modifier = Modifier.align(Alignment.End),
-            ) { Text(stringResource(Res.string.auth_forgot)) }
-        }
-        state.error?.let {
-            Text(
-                stringResource(it.messageId()),
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
-        }
-        if (state.resetSent) {
-            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = AppShapes.field) {
+            if (state.busy && state.mode != AuthMode.RESET) {
                 Text(
-                    stringResource(Res.string.auth_reset_sent),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(AppSpacing.large).semantics { liveRegion = LiveRegionMode.Polite },
+                    stringResource(Res.string.auth_connecting),
+                    Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
-        PrimaryButton(
-            text = stringResource(action),
-            onClick = submit,
-            enabled = ready,
-            modifier = Modifier.testTag("auth-submit"),
-            leadingIcon =
-                if (state.busy) {
-                    (
-                        {
-                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                        }
-                    )
-                } else {
-                    null
-                },
-        )
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+        ) {
             if (state.mode != AuthMode.RESET) {
                 Text(
                     stringResource(
@@ -348,22 +428,45 @@ internal fun AuthForm(
                     textAlign = TextAlign.Center,
                 )
             }
-            TextButton(
-                onClick = {
-                    viewModel.changeMode(
-                        if (state.mode == AuthMode.SIGN_IN) AuthMode.REGISTER else AuthMode.SIGN_IN,
-                    )
+            Text(
+                stringResource(
+                    when (state.mode) {
+                        AuthMode.SIGN_IN -> Res.string.auth_register
+                        AuthMode.REGISTER -> Res.string.guest_log_in
+                        AuthMode.RESET -> Res.string.auth_back
+                    },
+                ),
+                Modifier.clickable(enabled = !state.busy, role = Role.Button) {
+                    emailForm = state.mode == AuthMode.RESET
+                    viewModel.changeMode(if (state.mode == AuthMode.SIGN_IN) AuthMode.REGISTER else AuthMode.SIGN_IN)
                 },
-                enabled = !state.busy,
-            ) {
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AuthErrorMessage(error: AuthError?) {
+    if (error == null) return
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = AppShapes.field) {
+        Column(
+            Modifier.fillMaxWidth().padding(AppSpacing.large).semantics { liveRegion = LiveRegionMode.Polite },
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                stringResource(
+                    if (error == AuthError.CREDENTIALS) Res.string.auth_error_credentials_title else error.messageId(),
+                ),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.error,
+            )
+            if (error == AuthError.CREDENTIALS) {
                 Text(
-                    stringResource(
-                        when (state.mode) {
-                            AuthMode.SIGN_IN -> Res.string.auth_register
-                            AuthMode.REGISTER -> Res.string.guest_log_in
-                            AuthMode.RESET -> Res.string.auth_back
-                        },
-                    ),
+                    stringResource(Res.string.auth_error_credentials_hint),
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
         }
@@ -415,6 +518,7 @@ private fun AuthField(
 
 @Composable
 private fun AuthPage(
+    choosingMethod: Boolean,
     header: @Composable RowScope.() -> Unit,
     introduction: @Composable () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
@@ -422,37 +526,38 @@ private fun AuthPage(
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
             val wide = maxWidth >= 1000.dp
+            val spacious = maxWidth >= 600.dp
             Column(Modifier.fillMaxSize()) {
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight)
-                        .padding(horizontal = if (wide) 40.dp else AppSpacing.page),
+                        .padding(
+                            start = (if (wide) 40.dp else AppSpacing.page) - AppSpacing.medium,
+                            end = if (wide) 40.dp else AppSpacing.page,
+                        ),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                     content = header,
                 )
-                if (wide) {
-                    Row(
-                        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
-                            .padding(horizontal = 64.dp, vertical = 72.dp),
-                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.section),
-                    ) {
-                        Box(Modifier.weight(1f)) { introduction() }
-                        Column(
-                            Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(AppSpacing.detailsGap),
-                            content = content,
-                        )
-                    }
-                } else {
-                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
-                        Column(
-                            Modifier.widthIn(max = 588.dp).fillMaxWidth().verticalScroll(rememberScrollState())
-                                .padding(AppSpacing.page),
-                            verticalArrangement = Arrangement.spacedBy(28.dp),
-                        ) {
-                            introduction()
-                            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.detailsGap), content = content)
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                    val top =
+                        if (spacious) {
+                            if (choosingMethod) 120.dp else 72.dp
+                        } else {
+                            if (choosingMethod) 72.dp else AppSpacing.page
                         }
+                    val gap = if (choosingMethod) AppSpacing.page else AppSpacing.detailsGap
+                    Column(
+                        Modifier.widthIn(max = 488.dp).fillMaxWidth().verticalScroll(rememberScrollState())
+                            .padding(
+                                start = AppSpacing.page,
+                                end = AppSpacing.page,
+                                top = top,
+                                bottom = AppSpacing.page,
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(gap),
+                    ) {
+                        introduction()
+                        Column(verticalArrangement = Arrangement.spacedBy(gap), content = content)
                     }
                 }
             }

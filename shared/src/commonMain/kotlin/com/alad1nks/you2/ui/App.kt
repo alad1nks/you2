@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.alad1nks.you2.auth.AuthViewModel
 import com.alad1nks.you2.auth.messageId
+import com.alad1nks.you2.core.data.repository.CloudPhase
 import com.alad1nks.you2.core.model.Language
 import com.alad1nks.you2.di.CommonModules
 import com.alad1nks.you2.di.PlatformModules
@@ -41,6 +43,19 @@ fun App(platformModules: List<Module> = PlatformModules, onDarkThemeChanged: (Bo
         SideEffect { onDarkThemeChanged(darkTheme) }
         val language by viewModel.language.collectAsState(Language.SYSTEM)
         val space by viewModel.space.collectAsState()
+        viewModel.cloud?.let { repository ->
+            val cloud by repository.cloudState.collectAsState()
+            LaunchedEffect(auth.user?.id, auth.registrationName, cloud) {
+                val name = auth.registrationName
+                if (name != null && cloud.userId == auth.user?.id && !cloud.busy &&
+                    cloud.phase in listOf(CloudPhase.UNPAIRED, CloudPhase.READY) && cloud.failure == null
+                ) {
+                    repository.renameUser(name)
+                    // The repository retains failed writes for its explicit retry action.
+                    authViewModel.registrationNameSaved()
+                }
+            }
+        }
         AppTheme(darkTheme = darkTheme) {
             CompositionLocalProvider(LocalAppLocale provides language.code) {
                 Surface(Modifier.fillMaxSize()) {

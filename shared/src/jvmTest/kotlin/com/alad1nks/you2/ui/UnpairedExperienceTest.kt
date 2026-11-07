@@ -205,7 +205,9 @@ class UnpairedExperienceTest {
                     }
                 }
             }
-            onNodeWithText("Sign out").performScrollTo().assertIsDisplayed()
+            onNodeWithText("Sign out").performScrollTo().performClick()
+            onNodeWithTag("sign-out-dialog").assertIsDisplayed()
+            onNodeWithTag("sign-out-cancel").performScrollTo().performClick()
             onNodeWithText("Your profile").performScrollTo().performClick()
             onNodeWithTag("profile-name").assertExists()
             onNodeWithText("Cancel").performClick()

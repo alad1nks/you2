@@ -34,4 +34,20 @@
     <string name="auth_enter_password">Құпиясөзді енгізіңіз</string>
     <string name="auth_new_here">you2-ге алғаш келдіңіз бе?</string>
     <string name="auth_existing_account">Аккаунтыңыз бар ма?</string>
+    <string name="auth_login_email">Поштамен кіру</string>
+    <string name="auth_signup_email">Поштамен тіркелу</string>
+    <string name="auth_login_email_body">Поштаңыз бен құпиясөзіңіз арқылы кіріңіз.</string>
+    <string name="auth_signup_email_body">Электрондық поштаңызбен аккаунт жасаңыз.</string>
+    <string name="auth_name">Есіміңіз</string>
+    <string name="auth_name_placeholder">Сізді қалай атаймыз?</string>
+    <string name="auth_confirm_placeholder">Құпиясөзді қайта енгізіңіз</string>
+    <string name="sign_out_title">you2 қолданбасынан шығу керек пе?</string>
+    <string name="sign_out_body">Ортақ кеңістігіңізге кіру үшін қайта кіру қажет болады.</string>
+    <string name="sign_out_saved">Тілектеріңіз бен естеліктеріңіз сақталады.</string>
+    <string name="auth_error_credentials_title">Пошта немесе құпиясөз сәйкес келмейді.</string>
+    <string name="auth_error_credentials_hint">Деректеріңізді тексеріп, қайта көріңіз.</string>
+    <string name="auth_signing_in">Кіру…</string>
+    <string name="auth_creating_account">Аккаунт жасалуда…</string>
+    <string name="auth_sending_reset">Хат жіберілуде…</string>
+    <string name="auth_connecting">Ортақ кеңістігіңізге қосылуда…</string>
 </resources>

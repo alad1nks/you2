@@ -34,4 +34,20 @@
     <string name="auth_enter_password">Введите пароль</string>
     <string name="auth_new_here">Впервые в you2?</string>
     <string name="auth_existing_account">Уже есть аккаунт?</string>
+    <string name="auth_login_email">Войти по почте</string>
+    <string name="auth_signup_email">Зарегистрироваться по почте</string>
+    <string name="auth_login_email_body">Войдите с помощью почты и пароля.</string>
+    <string name="auth_signup_email_body">Создайте аккаунт с помощью электронной почты.</string>
+    <string name="auth_name">Ваше имя</string>
+    <string name="auth_name_placeholder">Как к вам обращаться?</string>
+    <string name="auth_confirm_placeholder">Введите пароль ещё раз</string>
+    <string name="sign_out_title">Выйти из you2?</string>
+    <string name="sign_out_body">Чтобы открыть ваше общее пространство, нужно будет войти снова.</string>
+    <string name="sign_out_saved">Ваши желания и воспоминания останутся сохранены.</string>
+    <string name="auth_error_credentials_title">Почта или пароль не совпадают.</string>
+    <string name="auth_error_credentials_hint">Проверьте данные и попробуйте снова.</string>
+    <string name="auth_signing_in">Входим…</string>
+    <string name="auth_creating_account">Создаём аккаунт…</string>
+    <string name="auth_sending_reset">Отправляем письмо…</string>
+    <string name="auth_connecting">Подключаем вас к общему пространству…</string>
 </resources>

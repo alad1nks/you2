@@ -1,6 +1,7 @@
 package com.alad1nks.you2.auth
 
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -48,18 +49,26 @@ class AuthScreensTest {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f, fontScale), LocalAppLocale provides locale) {
                     AppTheme(darkTheme = dark) {
-                        AuthForm(state.value, model, Language.SYSTEM, {}, {}, googleSignIn = {})
+                        key(
+                            state.value.mode,
+                        ) { AuthForm(state.value, model, Language.SYSTEM, {}, {}, googleSignIn = {}) }
                     }
                 }
             }
             AuthMode.entries.forEach { mode ->
                 runOnIdle { state.value = AuthState(mode = mode) }
-                onNodeWithTag("auth-email").performScrollTo().assertIsDisplayed()
                 if (mode != AuthMode.RESET) {
                     onNodeWithTag("auth-google").performScrollTo().assertIsDisplayed().assertIsEnabled()
+                    if (width > 320) {
+                        onRoot().captureRoboImage(
+                            "src/jvmTest/screenshots/auth_${width}_${dark}_${mode.name}_METHODS.png",
+                        )
+                    }
+                    onNodeWithTag("auth-choose-email").performScrollTo().performClick()
                 } else {
                     onNodeWithTag("auth-google").assertDoesNotExist()
                 }
+                onNodeWithTag("auth-email").performScrollTo().assertIsDisplayed()
                 if (width > 320) {
                     onRoot().captureRoboImage("src/jvmTest/screenshots/auth_${width}_${dark}_${mode.name}.png")
                 }
@@ -81,6 +90,8 @@ class AuthScreensTest {
                     if (locale == "en") toggle.assertContentDescriptionEquals("Hide password")
                     if (mode == AuthMode.REGISTER) {
                         onNodeWithTag("auth-confirmation").performTextInput("sample-password")
+                        onNodeWithTag("auth-confirmation").assert(masked)
+                        onNodeWithTag("auth-confirmation-visibility").performScrollTo().performClick()
                         onNodeWithTag("auth-confirmation").assert(masked.not())
                     }
                     if (width == 412 && mode == AuthMode.SIGN_IN) {
@@ -88,12 +99,29 @@ class AuthScreensTest {
                     }
                     toggle.performClick()
                     onNodeWithTag("auth-password").assert(masked)
+                    if (mode == AuthMode.SIGN_IN) {
+                        onNodeWithTag("auth-email").performScrollTo().performTextInput("alex@example.com")
+                        runOnIdle { state.value = AuthState(error = AuthError.CREDENTIALS) }
+                        if (width > 320) {
+                            onRoot().captureRoboImage(
+                                "src/jvmTest/screenshots/auth_${width}_${dark}_ERROR.png",
+                            )
+                        }
+                        runOnIdle { state.value = AuthState(busy = true) }
+                        onNodeWithTag("auth-password-visibility").assertIsNotEnabled()
+                        onNodeWithTag("auth-submit").performScrollTo().assertIsNotEnabled()
+                        if (width > 320) {
+                            onRoot().captureRoboImage(
+                                "src/jvmTest/screenshots/auth_${width}_${dark}_LOADING.png",
+                            )
+                        }
+                    }
                 }
             }
             runOnIdle { state.value = AuthState(mode = AuthMode.RESET, resetSent = true) }
             onNodeWithTag("auth-submit").performScrollTo().assertIsDisplayed()
             runOnIdle { state.value = AuthState(busy = true) }
             onNodeWithTag("auth-google").performScrollTo().assertIsNotEnabled()
-            onNodeWithTag("auth-password-visibility").performScrollTo().assertIsNotEnabled()
+            onNodeWithTag("auth-choose-email").performScrollTo().assertIsNotEnabled()
         }
 }
