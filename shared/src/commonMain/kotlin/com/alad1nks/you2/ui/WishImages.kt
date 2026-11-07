@@ -154,8 +154,18 @@ internal fun WishCover(
     height: Dp = 160.dp,
     showLoadingLabel: Boolean = true,
 ) {
+    WishCover(wishImageState(image), modifier, height, showLoadingLabel)
+}
+
+@Composable
+internal fun WishCover(
+    state: WishImageState,
+    modifier: Modifier = Modifier,
+    height: Dp = 160.dp,
+    showLoadingLabel: Boolean = true,
+) {
     WishImageContent(
-        wishImageState(image),
+        state,
         null,
         modifier.fillMaxWidth().heightIn(min = height, max = height).clip(AppShapes.image),
         contentScale = ContentScale.Crop,

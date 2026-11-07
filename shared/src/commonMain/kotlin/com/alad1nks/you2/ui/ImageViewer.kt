@@ -75,7 +75,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.alad1nks.you2.core.model.WishImage
 import com.alad1nks.you2.feature.designsystem.theme.AppShapes
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.feature.designsystem.theme.backgroundLight
@@ -90,7 +89,7 @@ import kotlin.math.abs
 import kotlin.math.sign
 
 @Composable
-internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: String, onDismiss: () -> Unit) {
+internal fun ImageViewer(images: List<WishImageState>, initialIndex: Int, title: String, onDismiss: () -> Unit) {
     if (images.isEmpty()) return
     var controlsVisible by remember { mutableStateOf(true) }
     OverlayDialog(darkTheme = true, onDismiss = onDismiss, hideSystemBars = !controlsVisible) {
@@ -205,7 +204,7 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
                     },
                 userScrollEnabled = transform.scale == 1f,
             ) { index ->
-                val imageState = wishImageState(images[index])
+                val imageState = images[index]
                 val painter = imageState.painter
                 val active = index == pager.currentPage
                 var viewport by remember { mutableStateOf(Size.Zero) }
@@ -330,7 +329,7 @@ internal fun ImageViewer(images: List<WishImage>, initialIndex: Int, title: Stri
                                     val selected = pager.currentPage == index
                                     val shape = RoundedCornerShape(8.dp)
                                     WishImageContent(
-                                        wishImageState(image),
+                                        image,
                                         stringResource(Res.string.view_image, index + 1),
                                         Modifier.size(64.dp, 48.dp).clip(shape).alpha(if (selected) 1f else .6f)
                                             .then(
