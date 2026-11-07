@@ -9,6 +9,70 @@ import kotlin.test.assertTrue
 
 class NativeAuthClientTest {
     @Test
+    fun googleTokenIsExchangedForTheNativeFirebaseSession() {
+        val provider = FakeNativeAuthProvider()
+        val model = AuthViewModel(NativeAuthClient(provider))
+        model.signInWithGoogle(nativeGoogleSignInLauncher(provider))
+        assertTrue(model.state.value.busy)
+        provider.googleCompletion!!("google-token", null)
+        assertEquals(listOf("google", "google-token"), provider.request)
+        assertTrue(model.state.value.busy)
+        provider.currentUser = NativeAuthUser("google-user", "person@example.com")
+        provider.observer?.invoke(provider.currentUser)
+        provider.completion!!(null)
+        assertEquals("google-user", model.state.value.user?.id)
+        assertFalse(model.state.value.busy)
+        assertNull(model.state.value.error)
+    }
+
+    @Test
+    fun googleCancellationFailureAndMissingTokenAllowRetryWithoutExchangingCredentials() {
+        val provider = FakeNativeAuthProvider()
+        val model = AuthViewModel(NativeAuthClient(provider))
+        listOf(
+            Triple(null, NativeGoogleSignInFailure.CANCELLED, null),
+            Triple(null, NativeGoogleSignInFailure.FAILED, AuthError.GOOGLE),
+            Triple(null, null, AuthError.GOOGLE),
+            Triple(" ", null, AuthError.GOOGLE),
+        ).forEach { (token, failure, expectedError) ->
+            model.signInWithGoogle(nativeGoogleSignInLauncher(provider))
+            provider.googleCompletion!!(token, failure)
+            assertFalse(model.state.value.busy)
+            assertEquals(expectedError, model.state.value.error)
+            assertNull(provider.request)
+        }
+    }
+
+    @Test
+    fun googleExchangeErrorsMatchAndroidAndLateChooserResultsAreIgnored() {
+        val provider = FakeNativeAuthProvider()
+        val model = AuthViewModel(NativeAuthClient(provider))
+        NativeAuthFailure.entries.forEach { failure ->
+            model.signInWithGoogle(nativeGoogleSignInLauncher(provider))
+            provider.googleCompletion!!("token", null)
+            provider.completion!!(failure)
+            val expected =
+                when (failure) {
+                    NativeAuthFailure.NETWORK -> AuthError.NETWORK
+                    NativeAuthFailure.TOO_MANY_REQUESTS -> AuthError.TOO_MANY_REQUESTS
+                    NativeAuthFailure.EMAIL_IN_USE -> AuthError.EMAIL_IN_USE
+                    else -> AuthError.GOOGLE
+                }
+            assertEquals(expected, model.state.value.error)
+            assertFalse(model.state.value.busy)
+        }
+        provider.request = null
+        model.signInWithGoogle(nativeGoogleSignInLauncher(provider))
+        val before = model.state.value
+        val store = ViewModelStore()
+        store.put("auth", model)
+        store.clear()
+        provider.googleCompletion!!("late-token", null)
+        assertNull(provider.request)
+        assertEquals(before, model.state.value)
+    }
+
+    @Test
     fun restoredSessionAndFailedSignOutKeepTheActualNativeIdentity() {
         val provider = FakeNativeAuthProvider()
         provider.currentUser = NativeAuthUser("restored", "user@example.com")
@@ -94,6 +158,7 @@ private class FakeNativeAuthProvider : NativeAuthProvider {
     var observer: ((NativeAuthUser?) -> Unit)? = null
     var completion: ((NativeAuthFailure?) -> Unit)? = null
     var request: List<String>? = null
+    var googleCompletion: ((String?, NativeGoogleSignInFailure?) -> Unit)? = null
     var failure: NativeAuthFailure? = null
     var unsubscribed = false
 
@@ -107,6 +172,15 @@ private class FakeNativeAuthProvider : NativeAuthProvider {
 
     override fun signIn(email: String, password: String, complete: (NativeAuthFailure?) -> Unit) {
         request = listOf("signIn", email, password)
+        completion = complete
+    }
+
+    override fun launchGoogleSignIn(complete: (String?, NativeGoogleSignInFailure?) -> Unit) {
+        googleCompletion = complete
+    }
+
+    override fun signInWithGoogle(idToken: String, complete: (NativeAuthFailure?) -> Unit) {
+        request = listOf("google", idToken)
         completion = complete
     }
 

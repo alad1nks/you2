@@ -7,3 +7,6 @@ CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
 
 OTHER_LDFLAGS=$(inherited) -ObjC
+
+// Must match REVERSED_CLIENT_ID in the Apple GoogleService-Info.plist.
+GOOGLE_REVERSED_CLIENT_ID=com.googleusercontent.apps.1084716048064-lhdbpa0b3jaqb0u18ckf43u9kiehhelf

@@ -187,10 +187,19 @@ Enable Email/Password in Firebase Console > Authentication > Sign-in method if i
 `iOSApp` configures Firebase before creating the native auth provider and the shared Compose UI.
 Firebase owns credential storage and session restoration; passwords and tokens are not stored in app preferences.
 The Swift provider implements `NativeAuthProvider`, and `NativeAuthClient` maps it into the shared auth flow.
-Google and Apple sign-in are not part of this initial email/password integration.
+Google sign-in uses GoogleSignIn-iOS 10.1.0 and the same shared button and auth flow as Android.
+Enable Google in Firebase Console > Authentication > Sign-in method. The Apple plist must contain
+`CLIENT_ID`; `GOOGLE_REVERSED_CLIENT_ID` in `iosApp/Configuration/Config.xcconfig` must match its
+`REVERSED_CLIENT_ID` (update it when switching Firebase projects). SwiftUI forwards callback URLs
+to the Google SDK. Google credentials are exchanged for a Firebase session; signing out clears both
+sessions. Cancelling the account chooser returns to the form without an error.
+See [Firebase's Google sign-in setup](https://firebase.google.com/docs/auth/ios/google-signin).
+Apple sign-in is not implemented.
 
 On a Mac, run the `iosApp` scheme on an ARM64 simulator or signed device and verify:
 
+- Sign in with Google using an existing Android account; verify the same profile and couple are restored.
+- Cancel Google sign-in, retry, then sign out and choose a different Google account.
 - Register with a new email; sign out and sign back in, including with an existing Android email/password account.
 - Terminate and relaunch: the session should remain signed in. Sign out, relaunch, and confirm the guest screen returns.
 - Request password reset, follow the email, and sign in using the new password.

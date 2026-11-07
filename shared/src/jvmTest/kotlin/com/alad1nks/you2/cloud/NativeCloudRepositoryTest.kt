@@ -4,6 +4,7 @@ import com.alad1nks.you2.auth.NativeAuthClient
 import com.alad1nks.you2.auth.NativeAuthFailure
 import com.alad1nks.you2.auth.NativeAuthProvider
 import com.alad1nks.you2.auth.NativeAuthUser
+import com.alad1nks.you2.auth.NativeGoogleSignInFailure
 import com.alad1nks.you2.core.data.repository.CloudFailure
 import com.alad1nks.you2.core.data.repository.CloudPhase
 import com.alad1nks.you2.core.data.repository.WishDocument
@@ -223,6 +224,10 @@ private class FakeAuth : NativeAuthProvider {
     }
 
     override fun signIn(email: String, password: String, complete: (NativeAuthFailure?) -> Unit) = Unit
+
+    override fun launchGoogleSignIn(complete: (String?, NativeGoogleSignInFailure?) -> Unit) = Unit
+
+    override fun signInWithGoogle(idToken: String, complete: (NativeAuthFailure?) -> Unit) = Unit
 
     override fun register(email: String, password: String, complete: (NativeAuthFailure?) -> Unit) = Unit
 
