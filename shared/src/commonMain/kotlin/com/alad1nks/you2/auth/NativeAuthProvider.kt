@@ -9,12 +9,22 @@ interface NativeAuthProvider {
 
     fun signIn(email: String, password: String, complete: (NativeAuthFailure?) -> Unit)
 
+    /**
+     * Delivers a short-lived token for synchronous consumption by [signInWithGoogle] inside [complete].
+     * A null token with no failure is treated as a failed sign-in.
+     */
+    fun launchGoogleSignIn(complete: (String?, NativeGoogleSignInFailure?) -> Unit)
+
+    fun signInWithGoogle(idToken: String, complete: (NativeAuthFailure?) -> Unit)
+
     fun register(email: String, password: String, complete: (NativeAuthFailure?) -> Unit)
 
     fun resetPassword(email: String, complete: (NativeAuthFailure?) -> Unit)
 
     fun signOut(): NativeAuthFailure?
 }
+
+enum class NativeGoogleSignInFailure { CANCELLED, FAILED }
 
 data class NativeAuthUser(val id: String, val email: String)
 
@@ -28,6 +38,19 @@ internal class NativeAuthClient(private val provider: NativeAuthProvider) : Auth
 
     override fun signIn(email: String, password: String, complete: (AuthError?) -> Unit) =
         provider.signIn(email, password) { complete(it?.toAuthError()) }
+
+    override fun signInWithGoogle(idToken: String, complete: (AuthError?) -> Unit) =
+        provider.signInWithGoogle(idToken) { failure ->
+            complete(
+                when (failure) {
+                    null -> null
+                    NativeAuthFailure.NETWORK -> AuthError.NETWORK
+                    NativeAuthFailure.TOO_MANY_REQUESTS -> AuthError.TOO_MANY_REQUESTS
+                    NativeAuthFailure.EMAIL_IN_USE -> AuthError.EMAIL_IN_USE
+                    else -> AuthError.GOOGLE
+                },
+            )
+        }
 
     override fun register(email: String, password: String, complete: (AuthError?) -> Unit) =
         provider.register(email, password) { complete(it?.toAuthError()) }
@@ -50,3 +73,15 @@ private fun NativeAuthFailure.toAuthError(): AuthError =
         NativeAuthFailure.TOO_MANY_REQUESTS -> AuthError.TOO_MANY_REQUESTS
         NativeAuthFailure.UNKNOWN -> AuthError.UNKNOWN
     }
+
+internal fun nativeGoogleSignInLauncher(provider: NativeAuthProvider): GoogleSignInLauncher = { complete ->
+    provider.launchGoogleSignIn { token, failure ->
+        complete(
+            when {
+                failure == NativeGoogleSignInFailure.CANCELLED -> GoogleSignInResult.Cancelled
+                failure != null || token.isNullOrBlank() -> GoogleSignInResult.Failed
+                else -> GoogleSignInResult.Token(token)
+            },
+        )
+    }
+}

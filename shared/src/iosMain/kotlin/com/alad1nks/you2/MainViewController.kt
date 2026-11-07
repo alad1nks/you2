@@ -26,6 +26,7 @@ fun mainViewController(
             module {
                 single<NativeSystemBarsProvider> { systemBars }
                 single<NativePhotoProvider> { photoProvider }
+                single<NativeAuthProvider> { authProvider }
                 single<AuthClient> { NativeAuthClient(authProvider) }
                 single<WishesRepository> { NativeCloudRepository(cloudProvider, get(), get()) } onClose {
                     (it as? NativeCloudRepository)?.close()
