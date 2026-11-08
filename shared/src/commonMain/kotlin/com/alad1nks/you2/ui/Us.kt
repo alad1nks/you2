@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -72,7 +71,7 @@ import org.jetbrains.compose.resources.stringResource
 
 internal enum class UsDialog { PROFILE, APPEARANCE, LANGUAGE }
 
-internal fun LazyListScope.usContent(
+internal fun AdaptiveSections.usContent(
     space: PairedSpace,
     darkTheme: Boolean,
     language: Language,

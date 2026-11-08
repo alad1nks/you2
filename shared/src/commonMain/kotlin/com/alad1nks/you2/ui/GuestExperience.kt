@@ -134,22 +134,38 @@ internal fun GuestScreen(
                     .windowInsetsBottomHeight(WindowInsets.navigationBars)
                     .background(MaterialTheme.colorScheme.surfaceContainer),
             )
-            Column(Modifier.widthIn(max = 600.dp).fillMaxSize().safeDrawingPadding()) {
+            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
                 GuestHeader(language, onSetLanguage)
                 BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-                    // At the design size this is 497dp of content + 216dp of actions.
-                    // On short screens both sections scroll together, leaving the tabs accessible.
                     val viewportHeight = maxHeight
+                    val layout = AppLayout(maxWidth)
                     key(tab) {
-                        Column(
-                            Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
-                                .heightIn(min = viewportHeight).testTag("guest-content"),
-                        ) {
-                            GuestPreview(
-                                tab,
-                                Modifier.fillMaxWidth().heightIn(min = (viewportHeight - 216.dp).coerceAtLeast(0.dp)),
-                            )
-                            GuestActions(tab, onAuthenticate)
+                        if (layout.expanded) {
+                            Row(
+                                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                                    .padding(horizontal = 64.dp, vertical = 16.dp).testTag("guest-content"),
+                                horizontalArrangement = Arrangement.spacedBy(32.dp),
+                            ) {
+                                GuestPreview(tab, Modifier.weight(1f), horizontalInset = 0.dp)
+                                Box(Modifier.weight(1f).padding(top = 112.dp)) {
+                                    GuestActions(tab, onAuthenticate, horizontalInset = 0.dp)
+                                }
+                            }
+                        } else {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                                Column(
+                                    Modifier.widthIn(max = 588.dp).fillMaxWidth().verticalScroll(rememberScrollState())
+                                        .heightIn(min = viewportHeight).testTag("guest-content"),
+                                ) {
+                                    GuestPreview(
+                                        tab,
+                                        Modifier.fillMaxWidth().heightIn(
+                                            min = (viewportHeight - 216.dp).coerceAtLeast(0.dp),
+                                        ),
+                                    )
+                                    GuestActions(tab, onAuthenticate)
+                                }
+                            }
                         }
                     }
                 }
@@ -216,9 +232,13 @@ internal fun GuestLanguageSelector(language: Language, onSetLanguage: (Language)
 }
 
 @Composable
-private fun GuestPreview(tab: MainTab, modifier: Modifier) {
+private fun GuestPreview(
+    tab: MainTab,
+    modifier: Modifier,
+    horizontalInset: androidx.compose.ui.unit.Dp = AppSpacing.page,
+) {
     Column(
-        modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.large),
+        modifier.padding(horizontal = horizontalInset, vertical = AppSpacing.large),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
     ) {
         if (tab == MainTab.US) GuestIllustration(tab)
@@ -347,10 +367,14 @@ private fun GuestExampleCard(memory: Boolean) {
 }
 
 @Composable
-private fun GuestActions(tab: MainTab, onAuthenticate: (AuthMode) -> Unit) {
+private fun GuestActions(
+    tab: MainTab,
+    onAuthenticate: (AuthMode) -> Unit,
+    horizontalInset: androidx.compose.ui.unit.Dp = AppSpacing.page,
+) {
     Column(
         Modifier.fillMaxWidth().heightIn(min = 216.dp)
-            .padding(horizontal = AppSpacing.page, vertical = AppSpacing.cardInset),
+            .padding(horizontal = horizontalInset, vertical = AppSpacing.cardInset),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.medium),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

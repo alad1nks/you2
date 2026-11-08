@@ -147,7 +147,7 @@ internal fun UnpairedExperience(
                     .windowInsetsBottomHeight(WindowInsets.navigationBars)
                     .background(MaterialTheme.colorScheme.surfaceContainer),
             )
-            Column(Modifier.widthIn(max = 600.dp).fillMaxSize().safeDrawingPadding()) {
+            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight)
                         .padding(horizontal = AppSpacing.page),
@@ -171,12 +171,23 @@ internal fun UnpairedExperience(
                 }
                 BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
                     val viewport = maxHeight
+                    val layout = AppLayout(maxWidth)
                     key(tab) {
                         Column(
                             Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
                                 .heightIn(
                                     min = viewport,
-                                ).padding(horizontal = AppSpacing.page, vertical = AppSpacing.large),
+                                ).padding(
+                                    horizontal =
+                                        if (tab == MainTab.US) {
+                                            ((maxWidth - 642.dp) / 2).coerceAtLeast(
+                                                24.dp,
+                                            )
+                                        } else {
+                                            layout.listInset
+                                        },
+                                    vertical = AppSpacing.large,
+                                ),
                             verticalArrangement = Arrangement.spacedBy(AppSpacing.cardInset),
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
@@ -288,7 +299,9 @@ internal fun UnpairedExperience(
                                             )
                                         }
                                     }
-                                    ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
+                                    Box(Modifier.widthIn(max = 440.dp)) {
+                                        ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
+                                    }
                                 }
                             }
                         }

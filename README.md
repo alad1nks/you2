@@ -72,6 +72,13 @@ defines the shared colors, typography, forms, components, spacing, and category 
 Shared strings, Roboto fonts, and category illustrations live in [resources](resources).
 See [the asset guide](resources/ASSETS.md) for their locations, provenance, and usage.
 
+Tablet windows follow the portrait (834 ? 1194) and landscape (1194 ? 834) Figma layouts.
+At 600 dp, pages gain tablet spacing; wishes use two columns from 760 dp and three from 1000 dp.
+At 1000 dp, wish forms, details, and Us use two columns, memory months appear side by side,
+and guest previews sit beside authentication actions. Bottom navigation stays centered in both
+orientations. Narrow split-screen windows use the compact layout. Authentication forms retain
+their existing 440 dp content width, and image viewing remains full screen.
+
 ## Development setup
 
 Clone the application and open the repository in your IDE:

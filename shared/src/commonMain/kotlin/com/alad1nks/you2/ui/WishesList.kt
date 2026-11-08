@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -69,6 +70,7 @@ internal fun LazyListScope.wishesContent(
     onOpen: (String) -> Unit,
     sort: WishSort,
     onSort: (WishSort) -> Unit,
+    columns: Int = 1,
 ) {
     item(key = "heading") {
         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
@@ -107,10 +109,19 @@ internal fun LazyListScope.wishesContent(
         }
     }
     item(key = "filters") {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-            CategoryChip(stringResource(Res.string.all_wishes), category == null, { onCategory(null) })
-            WishCategory.entries.forEach { option ->
-                CategoryChip(stringResource(option.label), category == option, { onCategory(option) })
+        val options = listOf<WishCategory?>(null) + WishCategory.entries
+        val rows = if (columns == 2) listOf(options.take(3), options.drop(3)) else listOf(options)
+        Column {
+            rows.forEach { row ->
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                    row.forEach { option ->
+                        CategoryChip(
+                            stringResource(option?.label ?: Res.string.all_wishes),
+                            category == option,
+                            { onCategory(option) },
+                        )
+                    }
+                }
             }
         }
     }
@@ -132,21 +143,29 @@ internal fun LazyListScope.wishesContent(
             }
         }
     }
-    items(wishes, key = { it.id }, contentType = { "wish" }) { wish ->
-        val categoryLabel = stringResource(wish.content.category.label).uppercase()
-        WishCard(
-            title = wish.content.title,
-            description = wish.content.description,
-            author =
-                if (wish.authorId == space.couple.you.id) {
-                    stringResource(Res.string.wish_attribution_you, categoryLabel)
-                } else {
-                    stringResource(Res.string.wish_attribution, categoryLabel, space.couple.partner.name)
-                },
-            onClick = { onOpen(wish.id) },
-            modifier = Modifier.testTag(wish.id),
-            date = { WishDateBadge(wish.content.dates, today) },
-        )
+    items(wishes.chunked(columns), key = { it.first().id }, contentType = { "wish-row-$columns" }) { row ->
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            row.forEach { wish ->
+                Box(Modifier.weight(1f)) {
+                    val categoryLabel = stringResource(wish.content.category.label).uppercase()
+                    WishCard(
+                        title = wish.content.title,
+                        description = wish.content.description,
+                        author =
+                            if (wish.authorId == space.couple.you.id) {
+                                stringResource(Res.string.wish_attribution_you, categoryLabel)
+                            } else {
+                                stringResource(Res.string.wish_attribution, categoryLabel, space.couple.partner.name)
+                            },
+                        onClick = { onOpen(wish.id) },
+                        modifier = Modifier.testTag(wish.id),
+                        contentMinHeight = if (columns > 1) 116.dp else 0.dp,
+                        date = { WishDateBadge(wish.content.dates, today) },
+                    )
+                }
+            }
+            repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+        }
     }
 }
 
