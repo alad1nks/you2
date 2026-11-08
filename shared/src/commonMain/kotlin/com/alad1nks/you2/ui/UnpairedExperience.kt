@@ -141,173 +141,187 @@ internal fun UnpairedExperience(
     }
     val join = { if (state.inviteCode == null && !pending) dialog = PairDialog.JOIN }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Box(contentAlignment = Alignment.TopCenter) {
-            Box(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
-            )
-            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight)
-                        .padding(horizontal = AppSpacing.page),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+        NavigationWorkspace(tab, { tab = it }) {
+            val desktop = LocalDesktopLayout.current
+            Box(contentAlignment = Alignment.TopCenter) {
+                Box(
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                        .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                )
+                Column(Modifier.fillMaxSize().safeDrawingPadding()) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                        Modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight)
+                            .padding(horizontal = if (desktop) 40.dp else AppSpacing.page),
+                        horizontalArrangement = if (desktop) Arrangement.End else Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(AppIcons.FavoriteBorder, null, Modifier.size(24.dp), MaterialTheme.colorScheme.primary)
-                        Text(
-                            stringResource(Res.string.brand),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    Surface(onClick = { tab = MainTab.US }, shape = CircleShape) {
-                        Avatar(name, Modifier.size(40.dp), textStyle = MaterialTheme.typography.labelLarge)
-                    }
-                }
-                BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-                    val viewport = maxHeight
-                    val layout = AppLayout(maxWidth)
-                    key(tab) {
-                        Column(
-                            Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
-                                .heightIn(
-                                    min = viewport,
-                                ).padding(
-                                    horizontal =
-                                        if (tab == MainTab.US) {
-                                            ((maxWidth - 642.dp) / 2).coerceAtLeast(
-                                                24.dp,
-                                            )
-                                        } else {
-                                            layout.listInset
-                                        },
-                                    vertical = AppSpacing.large,
-                                ),
-                            verticalArrangement = Arrangement.spacedBy(AppSpacing.cardInset),
-                        ) {
-                            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-                                Text(
-                                    stringResource(
-                                        when (tab) {
-                                            MainTab.US -> Res.string.pair_space
-                                            MainTab.WISHES -> Res.string.wishes
-                                            MainTab.MEMORIES -> Res.string.memories
-                                        },
-                                    ),
-                                    style = MaterialTheme.typography.headlineLarge,
+                        if (!desktop) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    AppIcons.FavoriteBorder,
+                                    null,
+                                    Modifier.size(24.dp),
+                                    MaterialTheme.colorScheme.primary,
                                 )
                                 Text(
-                                    stringResource(
-                                        when (tab) {
-                                            MainTab.US -> Res.string.pair_beginning
-                                            MainTab.WISHES -> Res.string.pair_wishes_hint
-                                            MainTab.MEMORIES -> Res.string.pair_memories_hint
-                                        },
-                                    ),
-                                    color = MaterialTheme.colorScheme.secondary,
+                                    stringResource(Res.string.brand),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
                             }
-                            if (tab == MainTab.US) {
-                                Surface(
-                                    shape = AppShapes.card,
-                                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
-                                ) {
-                                    Row(
-                                        Modifier.fillMaxWidth().heightIn(min = 88.dp).padding(AppSpacing.large),
-                                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.large),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Avatar(
-                                            name,
-                                            Modifier.size(56.dp),
-                                            textStyle = MaterialTheme.typography.headlineMedium,
-                                        )
-                                        Column(
-                                            Modifier.weight(1f),
-                                            verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
-                                        ) {
-                                            Text(name, style = MaterialTheme.typography.headlineMedium)
-                                            Text(
-                                                stringResource(Res.string.pair_unpaired),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.secondary,
-                                            )
-                                        }
-                                    }
-                                }
-                                ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
-                                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
+                        }
+                        Surface(onClick = { tab = MainTab.US }, shape = CircleShape) {
+                            Avatar(name, Modifier.size(40.dp), textStyle = MaterialTheme.typography.labelLarge)
+                        }
+                    }
+                    BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                        val viewport = maxHeight
+                        val layout = AppLayout(maxWidth)
+                        key(tab) {
+                            Column(
+                                Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+                                    .heightIn(
+                                        min = viewport,
+                                    ).padding(
+                                        horizontal =
+                                            if (tab == MainTab.US) {
+                                                ((maxWidth - 642.dp) / 2).coerceAtLeast(
+                                                    24.dp,
+                                                )
+                                            } else {
+                                                layout.listInset
+                                            },
+                                        vertical = AppSpacing.large,
+                                    ),
+                                verticalArrangement = Arrangement.spacedBy(AppSpacing.cardInset),
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
                                     Text(
-                                        stringResource(Res.string.make_it_yours),
-                                        style = MaterialTheme.typography.labelLarge,
+                                        stringResource(
+                                            when (tab) {
+                                                MainTab.US -> Res.string.pair_space
+                                                MainTab.WISHES -> Res.string.wishes
+                                                MainTab.MEMORIES -> Res.string.memories
+                                            },
+                                        ),
+                                        style = MaterialTheme.typography.headlineLarge,
                                     )
+                                    Text(
+                                        stringResource(
+                                            when (tab) {
+                                                MainTab.US -> Res.string.pair_beginning
+                                                MainTab.WISHES -> Res.string.pair_wishes_hint
+                                                MainTab.MEMORIES -> Res.string.pair_memories_hint
+                                            },
+                                        ),
+                                        color = MaterialTheme.colorScheme.secondary,
+                                    )
+                                }
+                                if (tab == MainTab.US) {
                                     Surface(
                                         shape = AppShapes.card,
                                         color = MaterialTheme.colorScheme.surfaceContainerLowest,
                                         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
                                     ) {
-                                        Column {
-                                            SettingsRow(
-                                                Res.string.your_profile,
-                                                stringResource(Res.string.edit_profile),
-                                            ) { settings = UsDialog.PROFILE }
-                                            SettingsRow(
-                                                Res.string.appearance,
-                                                stringResource(
-                                                    if (darkTheme) Res.string.dark_theme else Res.string.light_theme,
-                                                ),
-                                            ) {
-                                                settings = UsDialog.APPEARANCE
-                                            }
-                                            SettingsRow(
-                                                Res.string.language,
-                                                stringResource(language.label),
-                                            ) { settings = UsDialog.LANGUAGE }
-                                        }
-                                    }
-                                }
-                                OutlinedButton(
-                                    { confirmSignOut = true },
-                                    Modifier.fillMaxWidth().heightIn(min = 52.dp),
-                                ) {
-                                    Icon(AppIcons.Logout, null, Modifier.size(20.dp))
-                                    Text(stringResource(Res.string.sign_out), Modifier.padding(start = 10.dp))
-                                }
-                            } else {
-                                Column(
-                                    Modifier.fillMaxWidth().weight(1f).padding(top = 10.dp, bottom = 16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
-                                ) {
-                                    Surface(
-                                        Modifier.size(96.dp),
-                                        shape = CircleShape,
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(
-                                                AppIcons.FavoriteBorder,
-                                                null,
-                                                Modifier.size(48.dp),
-                                                MaterialTheme.colorScheme.primary,
+                                        Row(
+                                            Modifier.fillMaxWidth().heightIn(min = 88.dp).padding(AppSpacing.large),
+                                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.large),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Avatar(
+                                                name,
+                                                Modifier.size(56.dp),
+                                                textStyle = MaterialTheme.typography.headlineMedium,
                                             )
+                                            Column(
+                                                Modifier.weight(1f),
+                                                verticalArrangement = Arrangement.spacedBy(AppSpacing.xs),
+                                            ) {
+                                                Text(name, style = MaterialTheme.typography.headlineMedium)
+                                                Text(
+                                                    stringResource(Res.string.pair_unpaired),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.secondary,
+                                                )
+                                            }
                                         }
                                     }
-                                    Box(Modifier.widthIn(max = 440.dp)) {
-                                        ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
+                                    ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
+                                    Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
+                                        Text(
+                                            stringResource(Res.string.make_it_yours),
+                                            style = MaterialTheme.typography.labelLarge,
+                                        )
+                                        Surface(
+                                            shape = AppShapes.card,
+                                            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
+                                        ) {
+                                            Column {
+                                                SettingsRow(
+                                                    Res.string.your_profile,
+                                                    stringResource(Res.string.edit_profile),
+                                                ) { settings = UsDialog.PROFILE }
+                                                SettingsRow(
+                                                    Res.string.appearance,
+                                                    stringResource(
+                                                        if (darkTheme) {
+                                                            Res.string.dark_theme
+                                                        } else {
+                                                            Res.string.light_theme
+                                                        },
+                                                    ),
+                                                ) {
+                                                    settings = UsDialog.APPEARANCE
+                                                }
+                                                SettingsRow(
+                                                    Res.string.language,
+                                                    stringResource(language.label),
+                                                ) { settings = UsDialog.LANGUAGE }
+                                            }
+                                        }
+                                    }
+                                    OutlinedButton(
+                                        { confirmSignOut = true },
+                                        Modifier.fillMaxWidth().heightIn(min = 52.dp),
+                                    ) {
+                                        Icon(AppIcons.Logout, null, Modifier.size(20.dp))
+                                        Text(stringResource(Res.string.sign_out), Modifier.padding(start = 10.dp))
+                                    }
+                                } else {
+                                    Column(
+                                        Modifier.fillMaxWidth().weight(1f).padding(top = 10.dp, bottom = 16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
+                                    ) {
+                                        Surface(
+                                            Modifier.size(96.dp),
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.primaryContainer,
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    AppIcons.FavoriteBorder,
+                                                    null,
+                                                    Modifier.size(48.dp),
+                                                    MaterialTheme.colorScheme.primary,
+                                                )
+                                            }
+                                        }
+                                        Box(Modifier.widthIn(max = 440.dp)) {
+                                            ConnectionCard(tab, pending, state.inviteCode != null, invite, join)
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    if (!desktop) BottomNavigation(tab) { tab = it }
                 }
-                BottomNavigation(tab) { tab = it }
             }
         }
     }

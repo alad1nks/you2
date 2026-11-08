@@ -105,27 +105,31 @@ fun PrimaryButton(
 }
 
 @Composable
-fun CoupleHeader(yourName: String, partnerName: String, modifier: Modifier = Modifier) {
+fun CoupleHeader(yourName: String, partnerName: String, modifier: Modifier = Modifier, showBrand: Boolean = true) {
     Row(
-        modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight).padding(horizontal = AppSpacing.page),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier.fillMaxWidth().heightIn(
+            min = AppDimensions.headerHeight,
+        ).padding(horizontal = if (showBrand) AppSpacing.page else 40.dp),
+        horizontalArrangement = if (showBrand) Arrangement.SpaceBetween else Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                AppIcons.FavoriteBorder,
-                null,
-                Modifier.size(AppDimensions.icon),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            Text(
-                stringResource(Res.string.brand),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
+        if (showBrand) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    AppIcons.FavoriteBorder,
+                    null,
+                    Modifier.size(AppDimensions.icon),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    stringResource(Res.string.brand),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
         Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
             Row(Modifier.padding(AppSpacing.medium), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {

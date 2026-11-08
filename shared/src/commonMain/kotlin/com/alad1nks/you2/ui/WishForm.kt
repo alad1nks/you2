@@ -133,12 +133,13 @@ internal fun WishForm(
     val scrollState = rememberLazyListState()
     BoxWithConstraints {
         val layout = AppLayout(maxWidth)
+        val desktop = LocalDesktopLayout.current
         Scaffold(
             topBar = {
                 Row(
                     Modifier.fillMaxWidth().heightIn(
                         min = AppDimensions.headerHeight,
-                    ).padding(horizontal = AppSpacing.large),
+                    ).padding(horizontal = if (desktop) 40.dp else AppSpacing.large),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -166,13 +167,13 @@ internal fun WishForm(
                 }
             },
             bottomBar = {
-                Box {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                     PrimaryButton(
                         stringResource(if (wishId == null) Res.string.add_to_wishes else Res.string.save_changes),
                         { state.draftOrNull()?.let(onSave) },
-                        Modifier.padding(
-                            horizontal = if (layout.expanded) layout.actionInset else layout.detailInset,
-                            vertical = AppSpacing.listGap,
+                        Modifier.workspaceAction(
+                            desktop,
+                            if (layout.expanded) layout.actionInset else layout.detailInset,
                         ).testTag("save-wish"),
                         enabled = state.draftOrNull() != null,
                     )

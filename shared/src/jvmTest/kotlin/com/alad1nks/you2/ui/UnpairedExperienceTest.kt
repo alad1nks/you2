@@ -38,6 +38,26 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class UnpairedExperienceTest {
     @Test
+    fun desktopPairingUsesPersistentNavigation() =
+        runDesktopComposeUiTest(width = 1280, height = 900) {
+            val repository = PairingCloud()
+            setContent {
+                CompositionLocalProvider(LocalDensity provides Density(1f), LocalAppLocale provides "en") {
+                    AppTheme(false) { CloudSpaceGate(repository, "user", {}) { Text("Private wishes") } }
+                }
+            }
+            onNodeWithTag("desktop-navigation").assertIsDisplayed()
+            onRoot().captureRoboImage("src/jvmTest/screenshots/desktop_unpaired_wishes.png")
+            onNodeWithText("Invite your partner").performClick()
+            runOnIdle { repository.cloudState.value = repository.cloudState.value.copy(inviteCode = CODE) }
+            onNodeWithText(CODE).assertIsDisplayed()
+            onRoot().captureRoboImage("src/jvmTest/screenshots/desktop_pair_invite.png")
+            onNodeWithText("Close").performClick()
+            onNode(hasText("Memories") and isSelectable()).performClick()
+            onRoot().captureRoboImage("src/jvmTest/screenshots/desktop_unpaired_memories.png")
+        }
+
+    @Test
     fun creatingInvitationDisablesJoiningOnEveryTab() = invitationOwnerCannotJoin(restored = false)
 
     @Test

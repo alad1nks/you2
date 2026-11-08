@@ -128,67 +128,81 @@ internal fun GuestScreen(
     onAuthenticate: (AuthMode) -> Unit,
 ) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Box(contentAlignment = Alignment.TopCenter) {
-            Box(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
-            )
-            Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-                GuestHeader(language, onSetLanguage)
-                BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
-                    val viewportHeight = maxHeight
-                    val layout = AppLayout(maxWidth)
-                    key(tab) {
-                        if (layout.expanded) {
-                            Row(
-                                Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                                    .padding(horizontal = 64.dp, vertical = 16.dp).testTag("guest-content"),
-                                horizontalArrangement = Arrangement.spacedBy(32.dp),
-                            ) {
-                                GuestPreview(tab, Modifier.weight(1f), horizontalInset = 0.dp)
-                                Box(Modifier.weight(1f).padding(top = 112.dp)) {
-                                    GuestActions(tab, onAuthenticate, horizontalInset = 0.dp)
-                                }
-                            }
-                        } else {
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-                                Column(
-                                    Modifier.widthIn(max = 588.dp).fillMaxWidth().verticalScroll(rememberScrollState())
-                                        .heightIn(min = viewportHeight).testTag("guest-content"),
+        NavigationWorkspace(tab, onSelectTab) {
+            val desktop = LocalDesktopLayout.current
+            Box(contentAlignment = Alignment.TopCenter) {
+                Box(
+                    Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                        .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                )
+                Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+                    GuestHeader(language, onSetLanguage, desktop)
+                    BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                        val viewportHeight = maxHeight
+                        val layout = AppLayout(maxWidth)
+                        key(tab) {
+                            if (layout.expanded) {
+                                Row(
+                                    Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                                        .padding(horizontal = 64.dp, vertical = 16.dp).testTag("guest-content"),
+                                    horizontalArrangement = Arrangement.spacedBy(32.dp),
                                 ) {
-                                    GuestPreview(
-                                        tab,
-                                        Modifier.fillMaxWidth().heightIn(
-                                            min = (viewportHeight - 216.dp).coerceAtLeast(0.dp),
-                                        ),
-                                    )
-                                    GuestActions(tab, onAuthenticate)
+                                    GuestPreview(tab, Modifier.weight(1f), horizontalInset = 0.dp)
+                                    Box(Modifier.weight(1f).padding(top = if (desktop) 98.dp else 112.dp)) {
+                                        GuestActions(tab, onAuthenticate, horizontalInset = 0.dp)
+                                    }
+                                }
+                            } else {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+                                    Column(
+                                        Modifier.widthIn(
+                                            max = 588.dp,
+                                        ).fillMaxWidth().verticalScroll(rememberScrollState())
+                                            .heightIn(min = viewportHeight).testTag("guest-content"),
+                                    ) {
+                                        GuestPreview(
+                                            tab,
+                                            Modifier.fillMaxWidth().heightIn(
+                                                min = (viewportHeight - 216.dp).coerceAtLeast(0.dp),
+                                            ),
+                                        )
+                                        GuestActions(tab, onAuthenticate)
+                                    }
                                 }
                             }
                         }
                     }
+                    if (!desktop) BottomNavigation(tab, onSelectTab)
                 }
-                BottomNavigation(tab, onSelectTab)
             }
         }
     }
 }
 
 @Composable
-private fun GuestHeader(language: Language, onSetLanguage: (Language) -> Unit) {
+private fun GuestHeader(language: Language, onSetLanguage: (Language) -> Unit, desktop: Boolean) {
     Row(
-        Modifier.fillMaxWidth().heightIn(min = AppDimensions.headerHeight).padding(horizontal = AppSpacing.page),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        Modifier.fillMaxWidth().heightIn(
+            min = AppDimensions.headerHeight,
+        ).padding(horizontal = if (desktop) 40.dp else AppSpacing.page),
+        horizontalArrangement = if (desktop) Arrangement.End else Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(AppIcons.FavoriteBorder, null, Modifier.size(AppDimensions.icon), MaterialTheme.colorScheme.primary)
-            Text(
-                stringResource(Res.string.brand),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-            )
+        if (!desktop) {
+            Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    AppIcons.FavoriteBorder,
+                    null,
+                    Modifier.size(AppDimensions.icon),
+                    MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    stringResource(Res.string.brand),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
         GuestLanguageSelector(language, onSetLanguage)
     }
@@ -239,7 +253,7 @@ private fun GuestPreview(
 ) {
     Column(
         modifier.padding(horizontal = horizontalInset, vertical = AppSpacing.large),
-        verticalArrangement = Arrangement.spacedBy(AppSpacing.large),
+        verticalArrangement = Arrangement.spacedBy(if (LocalDesktopLayout.current) 20.dp else AppSpacing.large),
     ) {
         if (tab == MainTab.US) GuestIllustration(tab)
         Text(
@@ -375,7 +389,7 @@ private fun GuestActions(
     Column(
         Modifier.fillMaxWidth().heightIn(min = 216.dp)
             .padding(horizontal = horizontalInset, vertical = AppSpacing.cardInset),
-        verticalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(if (LocalDesktopLayout.current) 20.dp else AppSpacing.medium),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         PrimaryButton(stringResource(Res.string.auth_register), { onAuthenticate(AuthMode.REGISTER) })
