@@ -25,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -188,7 +189,7 @@ internal fun WishDetails(
             item {
                 WishCover(
                     imageStates.first(),
-                    Modifier.testTag("wish-cover").clickable(
+                    Modifier.testTag("wish-cover").clip(AppShapes.image).clickable(
                         role = Role.Button,
                         onClickLabel = stringResource(Res.string.view_image, 1),
                     ) { viewerIndex = 0 },
@@ -250,7 +251,7 @@ internal fun WishDetails(
             itemsIndexed(wish.content.attachments) { index, _ ->
                 WishCover(
                     imageStates[index + 1],
-                    Modifier.testTag("wish-attachment-$index").clickable(
+                    Modifier.testTag("wish-attachment-$index").clip(AppShapes.image).clickable(
                         role = Role.Button,
                         onClickLabel = stringResource(Res.string.view_image, index + 2),
                     ) { viewerIndex = index + 1 },
