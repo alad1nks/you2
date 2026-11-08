@@ -116,6 +116,10 @@ roborazzi {
     outputDir.set(layout.projectDirectory.dir("src/jvmTest/screenshots"))
 }
 
+tasks.withType<Test>().configureEach {
+    inputs.property("firestoreEmulator", providers.environmentVariable("FIRESTORE_EMULATOR_HOST").orElse(""))
+}
+
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 }

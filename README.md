@@ -316,6 +316,7 @@ calendar-date writes, and listener teardown.
 `FirestoreWishesRepository` from `core/data/androidMain` and a real clock. iOS injects
 `NativeCloudRepository` with a Swift Firebase provider and a real clock. Web uses the same repository
 with `WebCloudProvider`, the Firebase JavaScript SDK, and the browser's current local date.
+Desktop injects `NativeCloudRepository` with `DesktopCloudProvider` and the system's current local date.
 `MainViewModel` observes the singleton
 `WishesRepository.space` StateFlow and sends wish, memory, and profile mutations directly to that
 repository. Screens share the same `PairedSpace`, so lists and counters update together.
@@ -462,10 +463,8 @@ All platforms enter through the single shared App, which owns Koin, the theme, l
 Android DI supplies FirebaseAuthClient from shared/androidMain; iOS injects NativeAuthClient backed by FirebaseAuthProvider.
 Desktop supplies `DesktopAuthClient` using Firebase's REST API; Web uses the Firebase JavaScript SDK.
 
-Android and iOS main tabs display the signed-in user's shared Firestore data. Loading, unpaired, and failed
-states never fall back to Alex/Mia sample content. Desktop cloud data and email verification UI
-are not implemented. Desktop still displays local demo content after authentication; signing in does
-not download the account's wishes, memories, or couple profile.
+Android, iOS, Web, and Desktop main tabs display the signed-in user's shared Firestore data. Loading,
+unpaired, and failed states never fall back to Alex/Mia sample content. Email verification UI is not implemented.
 
 ### Desktop Firebase authentication
 
@@ -528,6 +527,41 @@ A Windows regression test also exercises Credential Manager with a disposable, i
 checking logout, repeated clearing, and subsequent sign-in; it never accesses the app's saved session.
 Manually verify Google sign-in after configuring the desktop OAuth client,
 and session restoration on each target OS with its native credential store.
+
+### Desktop Firestore
+
+Desktop uses `DesktopCloudProvider` with `NativeCloudRepository` for profiles, invitation creation and
+joining, shared wishes, completion, and memories. It authenticates the
+[Firestore REST API](https://firebase.google.com/docs/firestore/use-rest-api) with the current Firebase
+user's ID token, so the same `firestore.rules` apply. ID tokens stay in memory and refresh before expiry.
+Pairing and wish changes use atomic commits with document-version preconditions, server timestamps,
+and bounded conflict retries. Reads share a server read time for a consistent snapshot. The desktop
+client does not call `beginTransaction`: production Firestore rejects server read-write transactions
+authenticated with Firebase user tokens, although the emulator permits them.
+Signing out or changing accounts clears the shared repository and stops its observer.
+
+Use the existing project's **default Firestore database** and deploy the repository's `firestore.rules`.
+No desktop Firebase config file, service account, extra index, or rules exception is required.
+For another project, set `YOU2_FIREBASE_PROJECT_ID` alongside `YOU2_FIREBASE_API_KEY` and configure
+Google sign-in for that same project. Firestore App Check tokens are not implemented on desktop;
+an App Check-enforced database needs a desktop attestation integration before this client can access it.
+
+Desktop refreshes server data every 15 seconds and after its own successful writes. Each refresh reads
+the profile, couple, partner, and full wish collection, so reads are billable even when data is unchanged.
+There is no disk cache, offline write queue, or streaming listener. Network/access failures show the
+existing cloud error and Retry flow rather than demo data. Requests already sent cannot be undone by logout.
+Firebase Storage photo upload/download and orphan cleanup remain unsupported on desktop; existing photo
+references are preserved in Firestore, while desktop renders category artwork as a fallback.
+
+Run the desktop integration test against the emulator (with Node 24.12+ and Java 21):
+
+```powershell
+firebase-tests/node_modules/.bin/firebase.cmd emulators:exec --config firebase.json --project demo-you2 --only firestore ".\gradlew.bat :shared:jvmTest --tests *DesktopFirestoreIntegrationTest"
+```
+
+The test uses mock user tokens and the real repository rules, covering profile initialization, invite
+rotation/joining, shared wish and memory mutations, forbidden access, and observer disposal. It skips
+when `FIRESTORE_EMULATOR_HOST` is absent and never contacts the production project.
 
 Validation:
 

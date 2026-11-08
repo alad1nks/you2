@@ -161,6 +161,36 @@ jobs:
           name: web-firestore-test-reports
           path: shared/build/reports/tests/jsBrowserTest/
 
+  desktop-firestore:
+    name: Desktop Firestore integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: firebase-tests/package-lock.json
+      - uses: actions/setup-java@v6.0.1
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+      - run: npm ci
+        working-directory: firebase-tests
+      - name: Run desktop tests against the demo emulator
+        run: >-
+          firebase-tests/node_modules/.bin/firebase emulators:exec
+          --config firebase.json --project demo-you2 --only firestore
+          "./gradlew :shared:jvmTest --tests '*DesktopFirestore*' --tests '*DesktopAuthClientTest'"
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: desktop-firestore-test-reports
+          path: shared/build/reports/tests/jvmTest/
+
   build-jvm:
     runs-on: macos-latest
     steps:

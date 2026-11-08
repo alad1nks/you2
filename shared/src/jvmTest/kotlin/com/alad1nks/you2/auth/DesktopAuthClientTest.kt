@@ -10,6 +10,7 @@ import kotlinx.coroutines.withTimeout
 import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -22,6 +23,7 @@ class DesktopAuthClientTest {
             assertEquals("signUp", api.lastMethod)
             assertEquals("user", client.currentUser?.id)
             assertEquals("refresh", store.token)
+            assertEquals("id", client.tokenFor("user"))
             assertNull(complete(client::signOut))
             assertNull(client.currentUser)
             assertNull(store.token)
@@ -82,6 +84,22 @@ class DesktopAuthClientTest {
         }
 
     @Test
+    fun expiredTokensRefreshWithoutPublishingAnotherIdentityAndCannotCrossAccounts() =
+        scenario { client, api, _ ->
+            api.expiresIn = 0
+            assertNull(complete { client.signIn("email", "password", it) })
+            var events = 0
+            val stop = client.observeUser { events++ }
+            assertEquals("id", client.tokenFor("user"))
+            assertEquals("refresh", api.refreshed)
+            assertEquals(1, events)
+            assertFailsWith<IllegalStateException> { client.tokenFor("someone-else") }
+            assertNull(complete(client::signOut))
+            assertFailsWith<IllegalStateException> { client.tokenFor("user") }
+            stop()
+        }
+
+    @Test
     fun parsesCallbacksAndFirebaseErrors() {
         assertEquals("a+b", parseOAuthCallback("state=x&code=a%2Bb")["code"])
         assertTrue(parseOAuthCallback("code=%invalid").isEmpty())
@@ -138,6 +156,7 @@ class DesktopAuthClientTest {
         var lastMethod: String? = null
         var values: Map<String, Any> = emptyMap()
         var refreshed: String? = null
+        var expiresIn = 3600
 
         override fun request(method: String, values: Map<String, Any>): JsonObject {
             failure?.let { throw it }
@@ -147,9 +166,9 @@ class DesktopAuthClientTest {
                 if (method == "lookup") {
                     """{"users":[{"localId":"user","email":"person@example.com"}]}"""
                 } else {
-                    """{"localId":"user","email":"person@example.com","refreshToken":"refresh"}"""
+                    """{"localId":"user","email":"person@example.com","refreshToken":"refresh","idToken":"id"}"""
                 },
-            ).asJsonObject
+            ).asJsonObject.apply { addProperty("expiresIn", expiresIn) }
         }
 
         override fun refresh(token: String): JsonObject {
