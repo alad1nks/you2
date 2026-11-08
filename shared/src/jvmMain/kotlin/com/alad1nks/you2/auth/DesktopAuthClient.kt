@@ -23,8 +23,12 @@ internal class DesktopAuthClient(
     override var restoringSession = true
         private set
     private var refreshToken: String? = null
+    private var idToken: String? = null
+    private var tokenExpiresAt = 0L
     private val listeners = mutableSetOf<(AuthUser?) -> Unit>()
     private val mutex = Mutex()
+    private var publishedUser: AuthUser? = null
+    private var publishedInitial = false
 
     init {
         scope.launch {
@@ -91,6 +95,7 @@ internal class DesktopAuthClient(
         request(complete) {
             withContext(Dispatchers.IO) { store.clear() }
             refreshToken = null
+            idToken = null
             currentUser = null
             publish()
         }
@@ -100,6 +105,7 @@ internal class DesktopAuthClient(
             val response = withContext(Dispatchers.IO) { api.request(method, values + ("returnSecureToken" to true)) }
             val user = AuthUser(response.get("localId").asString, response.get("email").asString)
             saveToken(response.get("refreshToken").asString)
+            rememberIdToken(response.get("idToken").asString, response.get("expiresIn")?.asLong ?: 3600)
             currentUser = user
             publish()
         }
@@ -119,11 +125,13 @@ internal class DesktopAuthClient(
                         .getAsJsonArray("users").first().asJsonObject
                 }
             saveToken(response.get("refresh_token").asString)
+            rememberIdToken(response.get("id_token").asString, response.get("expires_in")?.asLong ?: 3600)
             currentUser = AuthUser(user.get("localId").asString, user.get("email").asString)
             publish()
         } catch (failure: DesktopAuthFailure) {
             if (failure.error == AuthError.CREDENTIALS) {
                 refreshToken = null
+                idToken = null
                 currentUser = null
                 publish()
                 withContext(Dispatchers.IO) { store.clear() }
@@ -153,7 +161,30 @@ internal class DesktopAuthClient(
         }
     }
 
-    private fun publish() = listeners.toList().forEach { if (it in listeners) it(currentUser) }
+    /** Called on Main. Never return a credential belonging to a different signed-in user. */
+    suspend fun tokenFor(userId: String): String =
+        mutex.withLock {
+            check(currentUser?.id == userId)
+            if (idToken == null || System.nanoTime() >= tokenExpiresAt) {
+                restore(requireNotNull(refreshToken))
+            }
+            check(currentUser?.id == userId)
+            requireNotNull(idToken)
+        }
+
+    private fun rememberIdToken(token: String, expiresIn: Long) {
+        idToken = token
+        tokenExpiresAt = System.nanoTime() + (expiresIn - 60).coerceAtLeast(0) * 1_000_000_000L
+    }
+
+    private fun publish() {
+        if (restoringSession) return
+        // Token rotation must not reconnect the cloud repository or discard an in-flight edit.
+        if (publishedInitial && publishedUser == currentUser) return
+        publishedInitial = true
+        publishedUser = currentUser
+        listeners.toList().forEach { if (it in listeners) it(currentUser) }
+    }
 
     fun close() = scope.cancel()
 }
