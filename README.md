@@ -79,6 +79,12 @@ and guest previews sit beside authentication actions. Bottom navigation stays ce
 orientations. Narrow split-screen windows use the compact layout. Authentication forms retain
 their existing 440 dp content width, and image viewing remains full screen.
 
+At 1200 dp and above, Desktop and Web use a persistent 104 dp navigation rail. Wishes
+keep three columns and place Add a wish beside the page heading. Forms and details keep
+the rail visible, with their primary action aligned to the bottom right. Guest previews,
+Memories, and Us use the wide two-column workspace. Resizing below 1200 dp restores
+bottom navigation; authentication and image viewing continue to use the full window.
+
 ## Development setup
 
 Clone the application and open the repository in your IDE:

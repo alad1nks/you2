@@ -2,6 +2,7 @@ package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -102,12 +103,13 @@ internal fun WishDetails(
     var viewerIndex by rememberSaveable(wish.id, images) { mutableStateOf<Int?>(null) }
     BoxWithConstraints {
         val layout = AppLayout(maxWidth)
+        val desktop = LocalDesktopLayout.current
         Scaffold(
             topBar = {
                 Row(
                     Modifier.fillMaxWidth().heightIn(
                         min = AppDimensions.headerHeight,
-                    ).padding(horizontal = AppSpacing.page),
+                    ).padding(horizontal = if (desktop) 40.dp else AppSpacing.page),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -150,11 +152,13 @@ internal fun WishDetails(
                 }
             },
             bottomBar = {
-                PrimaryButton(
-                    stringResource(if (completion == null) Res.string.mark_done else Res.string.back_to_memories),
-                    if (completion == null) onComplete else onBack,
-                    Modifier.padding(horizontal = layout.actionInset, vertical = AppSpacing.listGap),
-                )
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                    PrimaryButton(
+                        stringResource(if (completion == null) Res.string.mark_done else Res.string.back_to_memories),
+                        if (completion == null) onComplete else onBack,
+                        Modifier.workspaceAction(desktop, layout.actionInset),
+                    )
+                }
             },
         ) { padding ->
             AdaptiveContent(

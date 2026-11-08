@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -40,10 +42,12 @@ import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.CategoryChip
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
+import com.alad1nks.you2.feature.designsystem.components.PrimaryButton
 import com.alad1nks.you2.feature.designsystem.components.WishCard
 import com.alad1nks.you2.feature.designsystem.theme.AppDimensions
 import com.alad1nks.you2.feature.designsystem.theme.AppSpacing
 import com.alad1nks.you2.resources.generated.Res
+import com.alad1nks.you2.resources.generated.add_wish
 import com.alad1nks.you2.resources.generated.all_wishes
 import com.alad1nks.you2.resources.generated.empty_wishes
 import com.alad1nks.you2.resources.generated.empty_wishes_hint
@@ -71,15 +75,36 @@ internal fun LazyListScope.wishesContent(
     sort: WishSort,
     onSort: (WishSort) -> Unit,
     columns: Int = 1,
+    onAdd: (() -> Unit)? = null,
 ) {
     item(key = "heading") {
-        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-            Text(stringResource(Res.string.our_wishes), style = MaterialTheme.typography.headlineLarge)
-            Text(
-                stringResource(Res.string.subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
-            )
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+                Text(stringResource(Res.string.our_wishes), style = MaterialTheme.typography.headlineLarge)
+                Text(
+                    stringResource(Res.string.subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+            }
+            if (onAdd != null) {
+                PrimaryButton(
+                    stringResource(
+                        Res.string.add_wish,
+                    ),
+                    onAdd,
+                    Modifier.widthIn(min = 180.dp),
+                    fullWidth = false,
+                    maxLines = 1,
+                    leadingIcon = {
+                        Text("+")
+                    },
+                )
+            }
         }
     }
     item(key = "summary") {
@@ -183,7 +208,20 @@ internal fun WishesSortControl(sort: WishSort, onSort: (WishSort) -> Unit) {
             style = MaterialTheme.typography.labelLarge,
         )
         Box {
-            TextButton({ expanded = true }, Modifier.testTag("wish-sort")) {
+            TextButton(
+                { expanded = true },
+                Modifier.testTag(
+                    "wish-sort",
+                ).then(if (LocalDesktopLayout.current) Modifier.height(24.dp) else Modifier),
+                contentPadding =
+                    if (LocalDesktopLayout.current) {
+                        PaddingValues(
+                            horizontal = 12.dp,
+                        )
+                    } else {
+                        androidx.compose.material3.ButtonDefaults.TextButtonContentPadding
+                    },
+            ) {
                 Text(
                     stringResource(sort.label) + if (expanded) " ↑" else " ↓",
                     style = MaterialTheme.typography.bodySmall,
