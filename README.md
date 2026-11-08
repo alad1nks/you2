@@ -60,7 +60,7 @@ the status bar and requests automatic hiding of the home indicator; closing the 
 For Desktop development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
 profile changes reset when the demo restarts. Android, iOS, and Web supply the current local date; `DemoDateSource` supplies the fixed date
-**October 28, 2026**. Desktop image pickers use bundled illustrations; Web supports photo selection. Theme and language
+**October 28, 2026**. Desktop and Web support photo selection. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
 ## Design and resources
@@ -550,13 +550,28 @@ Desktop refreshes server data every 15 seconds and after its own successful writ
 the profile, couple, partner, and full wish collection, so reads are billable even when data is unchanged.
 There is no disk cache, offline write queue, or streaming listener. Network/access failures show the
 existing cloud error and Retry flow rather than demo data. Requests already sent cannot be undone by logout.
-Firebase Storage photo upload/download and orphan cleanup remain unsupported on desktop; existing photo
-references are preserved in Firestore, while desktop renders category artwork as a fallback.
+Desktop supports JPEG/PNG file selection, local previews, and authenticated private Storage uploads and
+JPEG/PNG/WebP downloads. Photos are downsampled to at most 2048 pixels per side, oriented using JPEG
+EXIF, flattened onto white, and re-encoded as JPEG without original metadata (maximum 5 MiB).
+Selections stay in memory until saved; closing the app discards unsaved selections. Each wish supports
+one cover and up to 12 attachments. A new wish is saved before its images are uploaded; a failed upload
+can leave a wish without its photos until Retry succeeds. Images are replaced with new random IDs.
+
+The default bucket is `you2-ae09a.firebasestorage.app`. Set `YOU2_FIREBASE_STORAGE_BUCKET` to the exact
+bucket name (without `gs://`) when using another bucket/project. Enable Storage and publish both
+`firestore.rules` and `storage.rules`, including the Console permission prompt allowing Storage rules
+to read Firestore. No desktop CORS change, service account, or public-read rule is needed. Storage App
+Check attestation is not implemented; enforced App Check requires a desktop attestation integration.
+
+Replaced/deleted images and interrupted uploads are tracked under `~/.you2/image-cleanup/`, separately
+for each account. Cleanup checks the current server document before deleting and retries on subsequent
+writes/polls or sign-in. A failed read never permits deletion. Private image bytes are not cached on disk;
+signing out clears displayed remote images. Offline photo saves are not queued.
 
 Run the desktop integration test against the emulator (with Node 24.12+ and Java 21):
 
 ```powershell
-firebase-tests/node_modules/.bin/firebase.cmd emulators:exec --config firebase.json --project demo-you2 --only firestore ".\gradlew.bat :shared:jvmTest --tests *DesktopFirestoreIntegrationTest"
+firebase-tests/node_modules/.bin/firebase.cmd emulators:exec --config firebase.json --project demo-you2 --only firestore,storage ".\gradlew.bat :shared:jvmTest --tests *DesktopFirestoreIntegrationTest"
 ```
 
 The test uses mock user tokens and the real repository rules, covering profile initialization, invite
@@ -699,7 +714,7 @@ request persistent download-token URLs. Unavailable images fall back to category
 A per-account persistent cleanup queue tracks uploads and removed references. Cleanup checks current
 server references before deleting, and retries after subsequent saves or sign-in. It also handles wish
 deletion. Uninstalling/clearing app data loses this client queue; guaranteed orphan collection requires
-a backend. Uploads and image edits/deletion require connectivity. Desktop retains demo images.
+a backend. Uploads and image edits/deletion require connectivity. Desktop supports photo selection and private Firebase Storage images.
 Web supports browser photo selection and private Firebase Storage images.
 
 Create the default Firebase Storage bucket for the project in `androidApp/google-services.json` and

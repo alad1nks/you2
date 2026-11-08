@@ -117,6 +117,7 @@ roborazzi {
 }
 
 tasks.withType<Test>().configureEach {
+    inputs.property("storageEmulator", providers.environmentVariable("FIREBASE_STORAGE_EMULATOR_HOST").orElse(""))
     inputs.property("firestoreEmulator", providers.environmentVariable("FIRESTORE_EMULATOR_HOST").orElse(""))
 }
 

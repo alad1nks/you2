@@ -17,7 +17,7 @@ interface NativeCloudProvider {
     )
 }
 
-enum class NativeCloudFailure { ACCESS, NETWORK, INVITE, DATA, UNKNOWN }
+enum class NativeCloudFailure { ACCESS, STORAGE_ACCESS, NETWORK, INVITE, DATA, UNKNOWN }
 
 enum class NativeCloudPhase { LOADING, UNPAIRED, READY, ERROR }
 

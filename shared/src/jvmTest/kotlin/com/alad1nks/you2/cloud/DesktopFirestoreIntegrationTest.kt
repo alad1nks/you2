@@ -112,11 +112,121 @@ class DesktopFirestoreIntegrationTest {
         }
     }
 
+    @Test
+    fun privatePhotosUploadReplaceAndDeleteUnderUserRules() {
+        val host = System.getenv("FIRESTORE_EMULATOR_HOST")
+        val storageHost = System.getenv("FIREBASE_STORAGE_EMULATOR_HOST")
+        assumeTrue("Run with Firestore and Storage emulators", host != null && storageHost != null)
+        runBlocking {
+            withContext(Dispatchers.Main) {
+                withTimeout(90_000) {
+                    val alice = Client("photos-alice", host!!)
+                    val bob = Client("photos-bob", host)
+                    val outsider = Client("photos-outsider", host)
+                    val storage = DesktopStorageApi("demo-you2.appspot.com", "http://$storageHost/v0")
+                    try {
+                        alice.await { it.phase == NativeCloudPhase.UNPAIRED }
+                        bob.await { it.phase == NativeCloudPhase.UNPAIRED }
+                        val pair = alice.provider.newId()
+                        val code = alice.provider.newId()
+                        assertNull(
+                            alice.write("invite", id = code, fields = mapOf("pairId" to pair, "name" to "Alice")),
+                        )
+                        assertNull(bob.write("join", id = code, fields = mapOf("name" to "Bob")))
+                        alice.await { it.phase == NativeCloudPhase.READY }
+                        val id = alice.provider.newId()
+                        val bytes =
+                            java.io.ByteArrayOutputStream().also {
+                                javax.imageio.ImageIO.write(
+                                    java.awt.image.BufferedImage(2, 3, java.awt.image.BufferedImage.TYPE_INT_RGB),
+                                    "jpg",
+                                    it,
+                                )
+                            }.toByteArray()
+                        val source = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(bytes)
+                        val content =
+                            WishDocument.content(WishDraft(title = "Photos", category = WishCategory.OTHER)) +
+                                mapOf("cover" to source, "attachments" to listOf(source))
+                        val fields = mapOf("content" to content, "createdOn" to "2026-11-08")
+                        assertNull(alice.write("create", pair, id, fields))
+                        val saved =
+                            bob.await {
+                                (
+                                    it.wishes.singleOrNull()?.fields?.get(
+                                        "content",
+                                    ) as? Map<*, *>
+                                )?.get("cover")?.toString()?.startsWith("couples/") == true
+                            }.wishes.single().fields["content"] as Map<*, *>
+                        val imagePath = saved["cover"] as String
+                        assertEquals(listOf(imagePath), saved["attachments"])
+                        withContext(Dispatchers.IO) {
+                            kotlin.test.assertContentEquals(bytes, storage.download(jwt(bob.uid), imagePath))
+                            val denied =
+                                kotlin.test.assertFailsWith<DesktopStorageFailure> {
+                                    storage.download(
+                                        jwt(outsider.uid),
+                                        imagePath,
+                                    )
+                                }
+                            assertEquals(403, denied.code)
+                        }
+                        // A repeated create after a lost acknowledgement preserves the saved image.
+                        assertNull(alice.write("create", pair, id, fields))
+                        assertNull(
+                            bob.write("edit", pair, id, mapOf("content" to content + ("title" to "Replacement"))),
+                        )
+                        val replacement =
+                            alice.await {
+                                val c = it.wishes.singleOrNull()?.fields?.get("content") as? Map<*, *>
+                                c?.get("title") == "Replacement" && c["cover"] != imagePath
+                            }.wishes.single().fields["content"] as Map<*, *>
+                        withContext(Dispatchers.IO) {
+                            assertEquals(
+                                404,
+                                kotlin.test.assertFailsWith<DesktopStorageFailure> {
+                                    storage.download(jwt(alice.uid), imagePath)
+                                }.code,
+                            )
+                        }
+                        assertNull(alice.write("delete", pair, id))
+                        // Recreate the document to distinguish a deleted object from a read denied by wishExists.
+                        val seed = WishDocument.content(WishDraft(title = "Empty", category = WishCategory.OTHER))
+                        assertNull(
+                            alice.write("create", pair, id, mapOf("content" to seed, "createdOn" to "2026-11-08")),
+                        )
+                        withContext(Dispatchers.IO) {
+                            assertEquals(
+                                404,
+                                kotlin.test.assertFailsWith<DesktopStorageFailure> {
+                                    storage.download(jwt(alice.uid), replacement["cover"] as String)
+                                }.code,
+                            )
+                        }
+                    } finally {
+                        alice.close()
+                        bob.close()
+                        outsider.close()
+                    }
+                }
+            }
+        }
+    }
+
     private class Client(prefix: String, host: String) {
         val uid = "$prefix-${UUID.randomUUID()}"
         val auth = TestAuth(uid)
         val provider =
-            DesktopCloudProvider(auth, { jwt(uid) }, DesktopFirestoreApi("demo-you2", "http://$host/v1"), 100)
+            DesktopCloudProvider(
+                auth,
+                { jwt(uid) },
+                DesktopFirestoreApi("demo-you2", "http://$host/v1"),
+                100,
+                DesktopStorageApi(
+                    "demo-you2.appspot.com",
+                    "http://${System.getenv("FIREBASE_STORAGE_EMULATOR_HOST") ?: "127.0.0.1:9199"}/v0",
+                ),
+                DesktopImageCleanup(java.nio.file.Files.createTempDirectory("you2-image-test")),
+            )
         val snapshots = Channel<NativeCloudSnapshot>(Channel.UNLIMITED)
         var events = 0
         val stop =
