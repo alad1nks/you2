@@ -43,3 +43,5 @@ internal external interface WebTransaction {
 
     fun delete(reference: dynamic): WebTransaction
 }
+
+internal external fun getDocFromServer(reference: dynamic): Promise<dynamic>

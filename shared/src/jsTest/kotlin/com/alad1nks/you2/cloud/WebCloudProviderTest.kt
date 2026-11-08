@@ -10,6 +10,8 @@ import com.alad1nks.you2.core.data.repository.WishDocument
 import com.alad1nks.you2.core.model.DateSource
 import com.alad1nks.you2.core.model.WishCategory
 import com.alad1nks.you2.core.model.WishDraft
+import com.alad1nks.you2.core.model.WishImage
+import com.alad1nks.you2.ui.normalizePhoto
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.delay
@@ -18,6 +20,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.js.Promise
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -146,16 +149,122 @@ class WebCloudProviderTest {
             }
         }
 
+    @Test
+    fun photosUploadPrivatelyReplaceAndDeleteAndCreateRetryPreservesEdits() =
+        MainScope().promise {
+            val alice = Client()
+            val bob = Client()
+            val outsider = Client()
+            val clients = listOf(alice, bob, outsider)
+            try {
+                clients.forEach { it.waitFor { cloudState.value.phase == CloudPhase.UNPAIRED } }
+                alice.repository.createInvitation("Alice")
+                alice.idle()
+                alice.waitFor { cloudState.value.inviteCode != null }
+                bob.repository.joinInvitation("Bob", alice.repository.cloudState.value.inviteCode!!)
+                bob.idle()
+                alice.waitFor { cloudState.value.phase == CloudPhase.READY }
+                bob.waitFor { cloudState.value.phase == CloudPhase.READY }
+                val profile = getDoc(doc(alice.db, "users/${alice.uid}")).await()
+                val pair = profile.data().coupleId as String
+                val canvas = js("document.createElement('canvas')")
+                canvas.width = 4096
+                canvas.height = 64
+                canvas.getContext("2d").fillRect(0, 0, 4096, 64)
+                val data = canvas.toDataURL("image/png") as String
+                val response = js("fetch(data)").unsafeCast<Promise<dynamic>>().await()
+                val source = normalizePhoto(response.blob().unsafeCast<Promise<dynamic>>().await())
+                val photo = js("new Image()")
+                photo.src = source
+                photo.decode().unsafeCast<Promise<Unit>>().await()
+                assertEquals(2048, photo.naturalWidth as Int)
+                assertEquals(32, photo.naturalHeight as Int)
+                val selection = WishImage(source = source)
+                assertTrue(selection.isLocal)
+                assertEquals(selection, WishImage.fromKey(selection.key))
+                val draft = WishDraft("Photo", WishCategory.OTHER, cover = selection, attachments = listOf(selection))
+                val id = alice.repository.create(draft)
+                alice.idle()
+                bob.waitFor { space.value.wishes.any { it.id == id && it.content.cover?.source != null } }
+                val saved = bob.repository.space.value.wishes.single().content
+                val path = saved.cover!!.source!!
+                assertTrue(path.startsWith("couples/$pair/wishes/$id/"))
+                assertEquals(saved.cover, saved.attachments.single())
+                val bytes = getBytes(ref(bob.storage, path), 5_242_880).await()
+                assertEquals(jpegBytes(source).size, bytes.byteLength as Int)
+                val metadata = getMetadata(ref(alice.storage, path)).await()
+                assertEquals("image/jpeg", metadata.contentType as String)
+                assertTrue(
+                    getBytes(ref(outsider.storage, path), 5_242_880).then(
+                        { _: dynamic -> false },
+                        { error -> error.asDynamic().code == "storage/unauthorized" },
+                    ).await(),
+                )
+
+                bob.repository.edit(
+                    id,
+                    saved.copy(title = "Partner edit", cover = selection, attachments = emptyList()),
+                )
+                bob.idle()
+                alice.waitFor { space.value.wishes.single().content.title == "Partner edit" }
+                val replacement = alice.repository.space.value.wishes.single().content.cover!!.source!!
+                assertTrue(path != replacement)
+                assertTrue(
+                    getMetadata(ref(alice.storage, path)).then(
+                        { _: dynamic -> false },
+                        { error -> error.asDynamic().code == "storage/object-not-found" },
+                    ).await(),
+                )
+                val retryContent =
+                    WishDocument.content(draft.copy(cover = null, attachments = emptyList())) +
+                        mapOf("cover" to source, "attachments" to listOf(source))
+                assertNull(
+                    alice.write("create", pair, id, mapOf("createdOn" to "2026-11-07", "content" to retryContent)),
+                )
+                val retried = getDoc(doc(alice.db, "couples/$pair/wishes/$id")).await()
+                assertEquals("Partner edit", retried.data().content.title as String)
+                alice.repository.delete(id)
+                alice.idle()
+                // Once the wish is gone, member reads are denied even for missing objects.
+                // The emulator-only admin endpoint lets us verify actual object deletion.
+                val deletedUrl =
+                    "http://127.0.0.1:9199/v0/b/demo-you2.appspot.com/o/" +
+                        (js("encodeURIComponent(replacement)") as String)
+                val deleted =
+                    js("fetch(deletedUrl, {headers: {Authorization: 'Bearer owner'}})")
+                        .unsafeCast<Promise<dynamic>>().await()
+                assertEquals(404, deleted.status as Int)
+            } finally {
+                clients.forEach {
+                    it.repository.close()
+                    terminate(it.db).await()
+                }
+            }
+        }
+
     private class Client(start: Boolean = true) {
         val uid = js("globalThis.crypto.randomUUID()") as String
         val auth = TestAuth(uid)
         val db: dynamic =
-            getFirestore(initializeApp(webObject(mapOf("projectId" to "demo-you2", "apiKey" to "demo-key")), uid))
+            getFirestore(
+                initializeApp(
+                    webObject(
+                        mapOf(
+                            "projectId" to "demo-you2",
+                            "apiKey" to "demo-key",
+                            "storageBucket" to "demo-you2.appspot.com",
+                        ),
+                    ),
+                    uid,
+                ),
+            )
+        val storage: dynamic = getStorage(db.app)
         val provider: WebCloudProvider
         lateinit var repository: NativeCloudRepository
 
         init {
             connectFirestoreEmulator(db, "127.0.0.1", 8185, webObject(mapOf("mockUserToken" to mapOf("sub" to uid))))
+            connectStorageEmulator(storage, "127.0.0.1", 9199, webObject(mapOf("mockUserToken" to mapOf("sub" to uid))))
             provider = WebCloudProvider(auth, db)
             if (start) start()
         }

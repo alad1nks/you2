@@ -2,6 +2,14 @@ package com.alad1nks.you2.cloud
 
 import com.alad1nks.you2.auth.AuthClient
 import com.alad1nks.you2.auth.firebaseApp
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.await
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.promise
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.js.Date
 import kotlin.js.Promise
 
@@ -10,11 +18,56 @@ internal class WebCloudProvider(
     private val auth: AuthClient,
     private val db: dynamic = getFirestore(firebaseApp),
 ) : NativeCloudProvider {
+    private val scope = MainScope()
+    private val writes = Mutex()
+    private val images by lazy { WebWishImages(auth, db) }
+
+    // localStorage is shared by tabs: cleanup must not race another tab's upload.
+    private suspend fun <T> serialWrite(action: suspend () -> T): T =
+        writes.withLock {
+            val locks = js("globalThis.navigator.locks")
+            check(locks != null) { "Web Locks require a secure browser context" }
+            val callback: (dynamic) -> Promise<T> = { scope.promise { action() } }
+            locks.request("you2-image-storage", callback).unsafeCast<Promise<T>>().await()
+        }
+
+    override fun write(
+        operation: String,
+        userId: String,
+        coupleId: String?,
+        documentId: String,
+        fields: Map<String, Any?>,
+        complete: (NativeCloudFailure?) -> Unit,
+    ) {
+        scope.launch {
+            val failure =
+                try {
+                    serialWrite {
+                        check(auth.currentUser?.id == userId)
+                        if (operation in listOf("create", "edit", "delete")) {
+                            images.write(operation, userId, requireNotNull(coupleId), documentId, fields)
+                            null
+                        } else {
+                            suspendCoroutine { continuation ->
+                                writeDirect(operation, userId, coupleId, documentId, fields) { continuation.resume(it) }
+                            }
+                        }
+                    }
+                } catch (error: Throwable) {
+                    webCloudFailure(error)
+                }
+            complete(failure)
+        }
+    }
+
     override fun newId(): String = (js("globalThis.crypto.randomUUID()") as String).replace("-", "")
 
     override fun observe(userId: String, onChange: (NativeCloudSnapshot) -> Unit): () -> Unit {
         val session = Session(userId, onChange)
         session.start()
+        scope.launch {
+            runCatching { serialWrite { images.cleanup(userId) } }
+        }
         return { session.close() }
     }
 
@@ -190,7 +243,7 @@ internal class WebCloudProvider(
             }
         }
 
-    override fun write(
+    private fun writeDirect(
         operation: String,
         userId: String,
         coupleId: String?,
@@ -291,28 +344,6 @@ internal class WebCloudProvider(
     ): Promise<Unit> {
         val reference = doc(db, "couples/$pair/wishes/$id")
         return when (operation) {
-            "create" -> {
-                // Retrying an acknowledged write must not overwrite later edits or a memory.
-                tx.get(reference).then<Unit> { existing: dynamic ->
-                    if (!(existing.exists() as Boolean)) {
-                        tx.set(
-                            reference,
-                            webObject(
-                                mapOf(
-                                    "authorId" to uid,
-                                    "createdOn" to fields["createdOn"],
-                                    "createdAt" to serverTimestamp(),
-                                    "updatedAt" to serverTimestamp(),
-                                    "content" to fields["content"],
-                                    "completion" to null,
-                                ),
-                            ),
-                        )
-                    }
-                    Unit
-                }
-            }
-
             "complete" -> {
                 tx.get(reference).then<Unit> { existing: dynamic ->
                     check(existing.exists() as Boolean)
@@ -331,15 +362,9 @@ internal class WebCloudProvider(
                 }
             }
 
-            "delete" -> {
-                tx.delete(reference)
-                Promise.resolve(Unit)
-            }
-
             else -> {
                 val updates =
                     when (operation) {
-                        "edit" -> mapOf("content" to fields["content"])
                         "restore" -> mapOf("completion" to null)
                         "memory" -> mapOf("completion.memory" to fields["memory"])
                         else -> error("Unknown cloud operation")
@@ -382,11 +407,11 @@ private fun webValue(value: dynamic): Any? =
 
 internal fun webCloudFailure(error: dynamic, invitation: Boolean = false): NativeCloudFailure =
     when (error.code as? String) {
-        "permission-denied", "unauthenticated" -> {
+        "storage/unauthorized", "storage/unauthenticated", "permission-denied", "unauthenticated" -> {
             if (invitation) NativeCloudFailure.INVITE else NativeCloudFailure.ACCESS
         }
 
-        "unavailable", "deadline-exceeded", "aborted" -> {
+        "storage/retry-limit-exceeded", "unavailable", "deadline-exceeded", "aborted" -> {
             NativeCloudFailure.NETWORK
         }
 

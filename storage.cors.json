@@ -1,0 +1,14 @@
+[
+  {
+    "origin": [
+      "https://you2-ae09a.web.app",
+      "https://you2-ae09a.firebaseapp.com",
+      "http://localhost:8080",
+      "http://localhost:8081"
+    ],
+    "method": [
+      "GET"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

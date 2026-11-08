@@ -60,7 +60,7 @@ the status bar and requests automatic hiding of the home indicator; closing the 
 For Desktop development and UI validation, the demo screens use seeded data for Alex and Mia:
 12 active wishes and four memories. `InMemoryWishesRepository` holds this data, so wish, memory, and
 profile changes reset when the demo restarts. Android, iOS, and Web supply the current local date; `DemoDateSource` supplies the fixed date
-**October 28, 2026**. Desktop and Web image pickers use bundled illustrations. Theme and language
+**October 28, 2026**. Desktop image pickers use bundled illustrations; Web supports photo selection. Theme and language
 preferences already use platform storage; seeded wish content stays English when the UI language changes.
 
 ## Design and resources
@@ -182,27 +182,27 @@ Web writes use transactions and require connectivity; failed operations expose t
 action. The SDK uses its default in-memory cache (no persistent browser database). Sign-out and
 account switching remove listeners and clear displayed private data. Existing cached data can be
 displayed during a temporary disconnect, but an offline cache miss never creates a new profile.
-Web photo uploads/downloads are not implemented: existing private image references are preserved
-when editing, and rendered using category artwork. Web can select bundled category images.
-Web deletions and image-reference changes do not clean up existing Storage objects.
+Web supports photo selection, private Firebase Storage uploads/downloads, and cleanup when images
+are replaced or wishes are deleted. See [Web image storage](#web-image-storage) for bucket CORS setup.
 
 Verify registration, existing-account login, wrong-password errors, password reset, Google sign-in and
 popup cancellation. Reload to check session restoration, then sign out and reload to check the guest
 screen returns. Test account switching and a second browser tab as well. When deploying later, authorize
 the deployed hostname and verify the Google popup on that host.
 
-Web Firestore integration tests run the actual Kotlin/JS adapter in headless Chrome against the
-local Firestore emulator with mock authenticated users. Install Chrome, Node 24.12+, and Java 21,
+Web integration tests run the actual Kotlin/JS adapter in headless Chrome against the
+local Firestore and Storage emulators with mock authenticated users. Install Chrome, Node 24.12+, and Java 21,
 then run from the repository root (use `gradlew.bat` instead of `./gradlew` on Windows):
 
 ```shell
 npm --prefix firebase-tests ci
-npm --prefix firebase-tests exec -- firebase emulators:exec --config firebase.json --project demo-you2 --only firestore "./gradlew :shared:jsBrowserTest"
+npm --prefix firebase-tests exec -- firebase emulators:exec --config firebase.json --project demo-you2 --only firestore,storage "./gradlew :shared:jsBrowserTest"
 ```
 
 The tests cover two-account pairing, revoked invitations, realtime edits, the wish/memory lifecycle,
 idempotent creation/completion, outsider read/write denial, reconnecting, sign-out, and offline profile
-cache misses. They use only the `demo-you2` emulator project, never production credentials.
+cache misses. Photo tests cover resizing, private uploads, partner access, replacement/deletion cleanup,
+and create retries after partner edits. They use only the `demo-you2` emulator project, never production credentials.
 
 ### iOS
 
@@ -587,7 +587,8 @@ request persistent download-token URLs. Unavailable images fall back to category
 A per-account persistent cleanup queue tracks uploads and removed references. Cleanup checks current
 server references before deleting, and retries after subsequent saves or sign-in. It also handles wish
 deletion. Uninstalling/clearing app data loses this client queue; guaranteed orphan collection requires
-a backend. Uploads and image edits/deletion require connectivity. Desktop and Web retain demo images.
+a backend. Uploads and image edits/deletion require connectivity. Desktop retains demo images.
+Web supports browser photo selection and private Firebase Storage images.
 
 Create the default Firebase Storage bucket for the project in `androidApp/google-services.json` and
 ensure that configuration includes `storage_bucket`. Deploy both `firestore.rules` and `storage.rules`
@@ -634,3 +635,23 @@ has reached a server using the new release.
 emulators (Firestore `8185`, Storage `9199`) using the `demo-you2` project. Storage tests cover both
 partners, outsiders, removed membership, missing/deleted wishes, format/size boundaries, and denied
 listing/overwrite operations. No production Firebase data is used.
+
+### Web image storage
+
+The browser picker re-encodes photos as JPEG (maximum 2048 pixels on the longest side and 5 MiB).
+Selections stay in memory until saved. Only private Storage paths are written to Firestore; downloads
+use authenticated `getBytes`, with category artwork as the fallback on failure. Cleanup uses a
+per-account localStorage queue, so browser storage must be available to save photos. Clearing site
+data removes the queue. Web Locks serialize writes and cleanup across tabs; use a modern browser
+on HTTPS (or localhost).
+
+Authenticated browser downloads require bucket CORS configuration, as described in the
+[Firebase documentation](https://firebase.google.com/docs/storage/web/download-files#cors_configuration).
+Apply the provided configuration with deployment credentials (this is not run by the build):
+
+```powershell
+gcloud storage buckets update gs://you2-ae09a.firebasestorage.app --cors-file=storage.cors.json
+```
+
+Add any custom hosting origins to `storage.cors.json` before deployment. Storage rules still enforce
+Firebase authentication and couple membership; CORS does not grant access.

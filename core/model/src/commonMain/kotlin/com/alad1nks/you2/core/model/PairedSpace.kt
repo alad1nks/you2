@@ -11,11 +11,12 @@ enum class WishCategory { ADVENTURES, PRESENTS, PLANS, MOVIES, TV_SERIES, OTHER 
 /** Bundled artwork, a private Storage object, or a staged local selection. */
 data class WishImage(val category: WishCategory = WishCategory.OTHER, val source: String? = null) {
     val key: String get() = source ?: category.name
-    val isLocal: Boolean get() = source?.startsWith("file:") == true
+    val isLocal: Boolean get() =
+        source?.startsWith("file:") == true || source?.startsWith("data:image/jpeg;base64,") == true
 
     companion object {
         fun fromKey(key: String): WishImage =
-            if (key.startsWith("couples/") || key.startsWith("file:")) {
+            if (key.startsWith("couples/") || key.startsWith("file:") || key.startsWith("data:image/jpeg;base64,")) {
                 WishImage(source = key)
             } else {
                 WishImage(WishCategory.valueOf(key))
