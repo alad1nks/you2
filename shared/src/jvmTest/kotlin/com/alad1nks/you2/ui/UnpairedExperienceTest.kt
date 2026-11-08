@@ -51,7 +51,7 @@ class UnpairedExperienceTest {
             onNodeWithText("Invite your partner").performClick()
             runOnIdle { repository.cloudState.value = repository.cloudState.value.copy(inviteCode = CODE) }
             onNodeWithText(CODE).assertIsDisplayed()
-            onRoot().captureRoboImage("src/jvmTest/screenshots/desktop_pair_invite.png")
+            onNodeWithTag("pair-dialog").captureRoboImage("src/jvmTest/screenshots/desktop_pair_invite.png")
             onNodeWithText("Close").performClick()
             onNode(hasText("Memories") and isSelectable()).performClick()
             onRoot().captureRoboImage("src/jvmTest/screenshots/desktop_unpaired_memories.png")

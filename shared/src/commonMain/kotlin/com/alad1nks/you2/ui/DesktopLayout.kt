@@ -16,6 +16,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +42,11 @@ internal val LocalDesktopLayout = staticCompositionLocalOf { false }
 internal fun NavigationWorkspace(selected: MainTab, onSelect: (MainTab) -> Unit, content: @Composable () -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val desktop = maxWidth >= 1200.dp
-        CompositionLocalProvider(LocalDesktopLayout provides desktop) {
+        CompositionLocalProvider(
+            LocalDesktopLayout provides desktop,
+            LocalMinimumInteractiveComponentSize provides
+                if (desktop) 0.dp else LocalMinimumInteractiveComponentSize.current,
+        ) {
             Row(Modifier.fillMaxSize()) {
                 if (desktop) DesktopNavigation(selected, onSelect)
                 Box(Modifier.weight(1f).fillMaxHeight()) { content() }

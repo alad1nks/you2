@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -204,7 +205,20 @@ internal fun WishesSortControl(sort: WishSort, onSort: (WishSort) -> Unit) {
             style = MaterialTheme.typography.labelLarge,
         )
         Box {
-            TextButton({ expanded = true }, Modifier.testTag("wish-sort")) {
+            TextButton(
+                { expanded = true },
+                Modifier.testTag(
+                    "wish-sort",
+                ).then(if (LocalDesktopLayout.current) Modifier.height(24.dp) else Modifier),
+                contentPadding =
+                    if (LocalDesktopLayout.current) {
+                        PaddingValues(
+                            horizontal = 12.dp,
+                        )
+                    } else {
+                        androidx.compose.material3.ButtonDefaults.TextButtonContentPadding
+                    },
+            ) {
                 Text(
                     stringResource(sort.label) + if (expanded) " ↑" else " ↓",
                     style = MaterialTheme.typography.bodySmall,
