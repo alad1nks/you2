@@ -132,7 +132,7 @@ jobs:
         run: ./gradlew :webApp:jsBrowserProductionWebpack
 
   web-firestore:
-    name: Web Firestore integration
+    name: Web Firestore and Storage integration
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -153,7 +153,7 @@ jobs:
       - name: Run browser tests against the demo emulator
         run: >-
           firebase-tests/node_modules/.bin/firebase emulators:exec
-          --config firebase.json --project demo-you2 --only firestore
+          --config firebase.json --project demo-you2 --only firestore,storage
           "./gradlew :shared:jsBrowserTest"
       - uses: actions/upload-artifact@v7.0.1
         if: always()
