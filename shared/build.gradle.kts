@@ -101,6 +101,8 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(projects.core.storage.datastore)
+            implementation(libs.gson)
+            implementation(libs.kotlinx.coroutines.swing)
         }
         jvmTest.dependencies {
             implementation(libs.roborazzi.compose.desktop)
