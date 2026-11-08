@@ -1,17 +1,22 @@
 package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,11 +24,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -58,7 +66,8 @@ internal fun NavigationWorkspace(selected: MainTab, onSelect: (MainTab) -> Unit,
 @Composable
 private fun DesktopNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
     Column(
-        Modifier.width(104.dp).fillMaxHeight().background(MaterialTheme.colorScheme.surfaceContainer)
+        Modifier.width(IntrinsicSize.Max).widthIn(min = 104.dp).fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .testTag("desktop-navigation").padding(horizontal = 12.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(40.dp),
     ) {
@@ -74,26 +83,31 @@ private fun DesktopNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
                 style = MaterialTheme.typography.titleLarge,
             )
         }
-        Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.widthIn(min = 80.dp).selectableGroup(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             MainTab.entries.forEach { tab ->
                 val active = selected == tab
                 val tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                val interactions = remember { MutableInteractionSource() }
                 Column(
-                    Modifier.width(
-                        80.dp,
-                    ).height(72.dp).selectable(active, role = Role.Tab, onClick = { onSelect(tab) }),
+                    Modifier.fillMaxWidth().height(72.dp).selectable(
+                        active,
+                        interactionSource = interactions,
+                        indication = null,
+                        role = Role.Tab,
+                        onClick = { onSelect(tab) },
+                    ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Box(
-                        Modifier.size(64.dp, 32.dp).background(
+                        Modifier.size(64.dp, 32.dp).clip(RoundedCornerShape(20.dp)).background(
                             if (active) {
                                 MaterialTheme.colorScheme.primaryContainer
                             } else {
                                 androidx.compose.ui.graphics.Color.Transparent
                             },
                             RoundedCornerShape(20.dp),
-                        ),
+                        ).indication(interactions, ripple()),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -117,6 +131,8 @@ private fun DesktopNavigation(selected: MainTab, onSelect: (MainTab) -> Unit) {
                         ),
                         color = tint,
                         style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        softWrap = false,
                     )
                 }
             }
