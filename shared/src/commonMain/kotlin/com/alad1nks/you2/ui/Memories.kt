@@ -1,8 +1,10 @@
 package com.alad1nks.you2.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,7 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import com.alad1nks.you2.core.model.PairedSpace
+import com.alad1nks.you2.core.model.Wish
 import com.alad1nks.you2.feature.designsystem.AppIcons
 import com.alad1nks.you2.feature.designsystem.components.ContentCard
 import com.alad1nks.you2.feature.designsystem.components.WishCard
@@ -46,7 +50,7 @@ internal fun PairedSpace.memoryGroups() =
         LocalDate(date.year, date.month, 1)
     }
 
-internal fun LazyListScope.memoriesContent(space: PairedSpace, onOpen: (String) -> Unit) {
+internal fun LazyListScope.memoriesContent(space: PairedSpace, expanded: Boolean = false, onOpen: (String) -> Unit) {
     item(key = "memories-heading") {
         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
             Text(stringResource(Res.string.our_memories), style = MaterialTheme.typography.headlineLarge)
@@ -67,47 +71,62 @@ internal fun LazyListScope.memoriesContent(space: PairedSpace, onOpen: (String) 
             }
         }
     }
-    space.memoryGroups().forEach { (month, wishes) ->
-        item(key = "month-$month") {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                Text(
-                    stringResource(
-                        Res.string.memory_month,
-                        stringArrayResource(Res.array.full_months).getOrNull(month.month.ordinal).orEmpty(),
-                        month.year,
-                    ),
-                    Modifier.weight(1f),
-                    style = MaterialTheme.typography.labelLarge,
-                )
-                Text(
-                    if (wishes.size == 1) {
-                        stringResource(
-                            Res.string.one_memory,
-                        )
-                    } else {
-                        stringResource(Res.string.memory_count, wishes.size)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
+    if (expanded) {
+        val groups = space.memoryGroups().entries.toList()
+        items(groups.chunked(2), key = { "months-${it.first().key}" }) { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+                row.forEach { (month, wishes) ->
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppSpacing.cardInset)) {
+                        MemoryMonthHeading(month, wishes.size)
+                        wishes.forEach { wish -> MemoryCard(wish, onOpen) }
+                    }
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
             }
         }
-        items(wishes, key = { it.id }) { wish ->
-            WishCard(
-                wish.content.title,
-                wish.completion!!.memory,
-                stringResource(
-                    Res.string.memory_metadata,
-                    stringResource(wish.content.category.label),
-                    wishDateText(wish.completion!!.date),
-                ),
-                onClick = { onOpen(wish.id) },
-                modifier = Modifier.testTag("memory-${wish.id}"),
-                symbol = AppIcons.CheckCircle,
-                completed = true,
-            )
+    } else {
+        space.memoryGroups().forEach { (month, wishes) ->
+            item(key = "month-$month") { MemoryMonthHeading(month, wishes.size) }
+            items(wishes, key = { it.id }) { wish -> MemoryCard(wish, onOpen) }
         }
     }
+}
+
+@Composable
+private fun MemoryMonthHeading(month: LocalDate, count: Int) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+        Text(
+            stringResource(
+                Res.string.memory_month,
+                stringArrayResource(Res.array.full_months).getOrNull(month.month.ordinal).orEmpty(),
+                month.year,
+            ),
+            Modifier.weight(1f),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Text(
+            if (count == 1) stringResource(Res.string.one_memory) else stringResource(Res.string.memory_count, count),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.secondary,
+        )
+    }
+}
+
+@Composable
+private fun MemoryCard(wish: Wish, onOpen: (String) -> Unit) {
+    WishCard(
+        wish.content.title,
+        wish.completion!!.memory,
+        stringResource(
+            Res.string.memory_metadata,
+            stringResource(wish.content.category.label),
+            wishDateText(wish.completion!!.date),
+        ),
+        onClick = { onOpen(wish.id) },
+        modifier = Modifier.testTag("memory-${wish.id}"),
+        symbol = AppIcons.CheckCircle,
+        completed = true,
+    )
 }
 
 @Composable

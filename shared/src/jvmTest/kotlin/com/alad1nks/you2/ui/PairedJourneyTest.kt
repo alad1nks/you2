@@ -55,7 +55,7 @@ class PairedJourneyTest {
     fun phoneUsesOnlyThePageInsets() = assertContentInsets(448, 24f, 424f)
 
     @Test
-    fun wideWindowAlsoUsesOnlyThePageInsets() = assertContentInsets(800, 24f, 776f)
+    fun tabletUsesWiderPageInsets() = assertContentInsets(800, 40f, 760f)
 
     private fun assertContentInsets(width: Int, left: Float, right: Float) =
         runDesktopComposeUiTest(width = width, height = 917) {

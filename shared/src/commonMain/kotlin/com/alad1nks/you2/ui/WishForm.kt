@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -130,278 +131,290 @@ internal fun WishForm(
     var pickingImage by rememberSaveable { mutableStateOf<String?>(null) }
     var pickingDate by rememberSaveable { mutableStateOf<String?>(null) }
     val scrollState = rememberLazyListState()
-    Scaffold(
-        topBar = {
-            Row(
-                Modifier.fillMaxWidth().heightIn(
-                    min = AppDimensions.headerHeight,
-                ).padding(horizontal = AppSpacing.large),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+    BoxWithConstraints {
+        val layout = AppLayout(maxWidth)
+        Scaffold(
+            topBar = {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(
+                        min = AppDimensions.headerHeight,
+                    ).padding(horizontal = AppSpacing.large),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    BackTextButton(stringResource(Res.string.cancel), onCancel)
+                    Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
+                        Row(
+                            Modifier.padding(AppSpacing.medium),
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        ) {
+                            Text(
+                                stringResource(
+                                    Res.string.pair_initials,
+                                    couple.you.name.take(1),
+                                    couple.partner.name.take(1),
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                stringResource(Res.string.couple_label, couple.partner.name),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                }
+            },
+            bottomBar = {
+                Box {
+                    PrimaryButton(
+                        stringResource(if (wishId == null) Res.string.add_to_wishes else Res.string.save_changes),
+                        { state.draftOrNull()?.let(onSave) },
+                        Modifier.padding(
+                            horizontal = if (layout.expanded) layout.actionInset else layout.detailInset,
+                            vertical = AppSpacing.listGap,
+                        ).testTag("save-wish"),
+                        enabled = state.draftOrNull() != null,
+                    )
+                    if (scrollState.canScrollForward) {
+                        val background = MaterialTheme.colorScheme.background
+                        Box(
+                            Modifier.fillMaxWidth().height(AppSpacing.section).offset(y = -AppSpacing.section)
+                                .background(Brush.verticalGradient(listOf(background.copy(alpha = 0f), background))),
+                        )
+                    }
+                }
+            },
+        ) { padding ->
+            AdaptiveContent(
+                Modifier.fillMaxSize().padding(padding).testTag("wish-form"),
+                state = scrollState,
+                splitAt = 5,
+                heading = true,
+                gap = AppSpacing.page,
             ) {
-                BackTextButton(stringResource(Res.string.cancel), onCancel)
-                Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.surfaceContainer) {
-                    Row(
-                        Modifier.padding(AppSpacing.medium),
-                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
-                    ) {
-                        Text(
-                            stringResource(
-                                Res.string.pair_initials,
-                                couple.you.name.take(1),
-                                couple.partner.name.take(1),
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Text(
-                            stringResource(Res.string.couple_label, couple.partner.name),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                }
-            }
-        },
-        bottomBar = {
-            Box {
-                PrimaryButton(
-                    stringResource(if (wishId == null) Res.string.add_to_wishes else Res.string.save_changes),
-                    { state.draftOrNull()?.let(onSave) },
-                    Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.listGap).testTag("save-wish"),
-                    enabled = state.draftOrNull() != null,
-                )
-                if (scrollState.canScrollForward) {
-                    val background = MaterialTheme.colorScheme.background
-                    Box(
-                        Modifier.fillMaxWidth().height(AppSpacing.section).offset(y = -AppSpacing.section)
-                            .background(Brush.verticalGradient(listOf(background.copy(alpha = 0f), background))),
+                item {
+                    Text(
+                        stringResource(if (wishId == null) Res.string.add_wish else Res.string.edit_wish),
+                        style = MaterialTheme.typography.headlineLarge,
+                    )
+                    Text(
+                        stringResource(Res.string.form_subtitle),
+                        Modifier.padding(top = AppSpacing.xs),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
-            }
-        },
-    ) { padding ->
-        LazyColumn(
-            Modifier.fillMaxSize().padding(padding).testTag("wish-form"),
-            state = scrollState,
-            contentPadding = PaddingValues(horizontal = AppSpacing.page, vertical = AppSpacing.large),
-            verticalArrangement = Arrangement.spacedBy(AppSpacing.page),
-        ) {
-            item {
-                Text(
-                    stringResource(if (wishId == null) Res.string.add_wish else Res.string.edit_wish),
-                    style = MaterialTheme.typography.headlineLarge,
-                )
-                Text(
-                    stringResource(Res.string.form_subtitle),
-                    Modifier.padding(top = AppSpacing.xs),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-            item {
-                AppTextField(
-                    state.title,
-                    { state.title = it },
-                    stringResource(Res.string.form_title),
-                    Modifier.testTag("wish-title"),
-                    showLengthError = false,
-                    placeholder = stringResource(Res.string.title_placeholder),
-                    labelTrailingText = stringResource(Res.string.field_required),
-                    labelAbove = true,
-                    helperText = stringResource(Res.string.title_hint),
-                )
-            }
-            item {
-                FormLabel(stringResource(Res.string.choose_category))
-                FlowRow(
-                    Modifier.padding(top = AppSpacing.small),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
-                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
-                    maxItemsInEachRow = 3,
-                ) {
-                    WishCategory.entries.forEach { category ->
-                        CategoryChip(
-                            stringResource(category.label),
-                            state.category == category,
-                            { state.category = category },
-                            Modifier.height(32.dp),
-                        )
-                    }
-                }
-            }
-            item {
-                FormLabel(stringResource(Res.string.when_label), optional = true)
-                FlowRow(
-                    Modifier.padding(top = AppSpacing.small),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
-                    verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
-                ) {
-                    WishDateMode.entries.forEach { mode ->
-                        CategoryChip(
-                            stringResource(
-                                when (mode) {
-                                    WishDateMode.NONE -> Res.string.no_date
-                                    WishDateMode.DEADLINE -> Res.string.deadline_mode
-                                    WishDateMode.RANGE -> Res.string.range_mode
-                                },
-                            ),
-                            state.mode == mode,
-                            { state.selectMode(mode) },
-                            Modifier.height(32.dp),
-                        )
-                    }
-                }
-                if (state.mode != WishDateMode.NONE) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
-                        DateField(
-                            stringResource(
-                                if (state.mode == WishDateMode.DEADLINE) {
-                                    Res.string.complete_by
-                                } else {
-                                    Res.string.start_date
-                                },
-                            ),
-                            state.start,
-                            Modifier.weight(1f).testTag("start-date"),
-                        ) { pickingDate = "start" }
-                        if (state.mode == WishDateMode.RANGE) {
-                            DateField(
-                                stringResource(Res.string.end_date),
-                                state.end,
-                                Modifier.weight(1f).testTag("end-date"),
-                            ) { pickingDate = "end" }
-                        }
-                    }
-                }
-                Box(Modifier.padding(top = AppSpacing.small)) {
-                    FormHint(
-                        stringResource(
-                            when {
-                                state.datesInvalid -> Res.string.dates_error
-                                state.mode == WishDateMode.NONE -> Res.string.no_date_hint
-                                state.mode == WishDateMode.DEADLINE -> Res.string.deadline_hint
-                                else -> Res.string.range_hint
-                            },
-                        ),
-                        error = state.datesInvalid,
+                item {
+                    AppTextField(
+                        state.title,
+                        { state.title = it },
+                        stringResource(Res.string.form_title),
+                        Modifier.testTag("wish-title"),
+                        showLengthError = false,
+                        placeholder = stringResource(Res.string.title_placeholder),
+                        labelTrailingText = stringResource(Res.string.field_required),
+                        labelAbove = true,
+                        helperText = stringResource(Res.string.title_hint),
                     )
                 }
-            }
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                    FormLabel(stringResource(Res.string.main_image), optional = true)
-                    val cover = state.cover
-                    if (cover == null) {
-                        ImageAction(
-                            stringResource(Res.string.add_main_image),
-                            AppIcons.AddPhotoAlternate,
-                        ) { pickingImage = "cover" }
-                    } else {
-                        WishImageContent(
-                            wishImageState(cover),
-                            stringResource(Res.string.main_image),
-                            Modifier.fillMaxWidth().heightIn(min = 116.dp, max = 116.dp).clip(AppShapes.field),
-                            contentScale = ContentScale.Crop,
-                            showLoadingLabel = true,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                            OutlinedButton(
-                                { pickingImage = "cover" },
-                                Modifier.weight(1f),
-                            ) { Text(stringResource(Res.string.replace_image)) }
-                            OutlinedButton(
-                                { state.cover = null },
-                                Modifier.weight(1f),
-                            ) { Text(stringResource(Res.string.remove_image)) }
-                        }
-                    }
-                    FormHint(
-                        stringResource(if (cover == null) Res.string.cover_hint else Res.string.cover_selected_hint),
-                    )
-                }
-            }
-            item {
-                AppTextField(
-                    state.description,
-                    { state.description = it },
-                    stringResource(Res.string.form_description),
-                    Modifier.heightIn(min = 128.dp).testTag("wish-description"),
-                    maxLength = 500,
-                    singleLine = false,
-                    minLines = 4,
-                    placeholder = stringResource(Res.string.description_placeholder),
-                    labelTrailingText = stringResource(Res.string.field_optional),
-                    labelAbove = true,
-                    helperText = stringResource(Res.string.description_hint),
-                )
-            }
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
-                    FormLabel(stringResource(Res.string.description_images), optional = true)
+                item {
+                    FormLabel(stringResource(Res.string.choose_category))
                     FlowRow(
+                        Modifier.padding(top = AppSpacing.small),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        maxItemsInEachRow = 3,
+                    ) {
+                        WishCategory.entries.forEach { category ->
+                            CategoryChip(
+                                stringResource(category.label),
+                                state.category == category,
+                                { state.category = category },
+                                Modifier.height(32.dp),
+                            )
+                        }
+                    }
+                }
+                item {
+                    FormLabel(stringResource(Res.string.when_label), optional = true)
+                    FlowRow(
+                        Modifier.padding(top = AppSpacing.small),
                         horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
                     ) {
-                        state.attachments.forEachIndexed { index, image ->
-                            Box(Modifier.size(104.dp).testTag("form-attachment-$index")) {
-                                WishImageContent(
-                                    wishImageState(image),
-                                    stringResource(image.category.label),
-                                    Modifier.fillMaxSize().clip(AppShapes.field),
-                                    contentScale = ContentScale.Crop,
-                                )
-                                IconButton(
-                                    {
-                                        state.attachments =
-                                            state.attachments.filterIndexed {
-                                                i,
-                                                _,
-                                                ->
-                                                i != index
-                                            }
+                        WishDateMode.entries.forEach { mode ->
+                            CategoryChip(
+                                stringResource(
+                                    when (mode) {
+                                        WishDateMode.NONE -> Res.string.no_date
+                                        WishDateMode.DEADLINE -> Res.string.deadline_mode
+                                        WishDateMode.RANGE -> Res.string.range_mode
                                     },
-                                    Modifier.align(Alignment.TopEnd),
-                                ) {
-                                    Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
-                                        Icon(
-                                            AppIcons.DeleteOutline,
-                                            stringResource(Res.string.remove_attachment, index + 1),
-                                            Modifier.padding(6.dp).size(20.dp),
-                                            tint = MaterialTheme.colorScheme.primary,
-                                        )
+                                ),
+                                state.mode == mode,
+                                { state.selectMode(mode) },
+                                Modifier.height(32.dp),
+                            )
+                        }
+                    }
+                    if (state.mode != WishDateMode.NONE) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)) {
+                            DateField(
+                                stringResource(
+                                    if (state.mode == WishDateMode.DEADLINE) {
+                                        Res.string.complete_by
+                                    } else {
+                                        Res.string.start_date
+                                    },
+                                ),
+                                state.start,
+                                Modifier.weight(1f).testTag("start-date"),
+                            ) { pickingDate = "start" }
+                            if (state.mode == WishDateMode.RANGE) {
+                                DateField(
+                                    stringResource(Res.string.end_date),
+                                    state.end,
+                                    Modifier.weight(1f).testTag("end-date"),
+                                ) { pickingDate = "end" }
+                            }
+                        }
+                    }
+                    Box(Modifier.padding(top = AppSpacing.small)) {
+                        FormHint(
+                            stringResource(
+                                when {
+                                    state.datesInvalid -> Res.string.dates_error
+                                    state.mode == WishDateMode.NONE -> Res.string.no_date_hint
+                                    state.mode == WishDateMode.DEADLINE -> Res.string.deadline_hint
+                                    else -> Res.string.range_hint
+                                },
+                            ),
+                            error = state.datesInvalid,
+                        )
+                    }
+                }
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                        FormLabel(stringResource(Res.string.main_image), optional = true)
+                        val cover = state.cover
+                        if (cover == null) {
+                            ImageAction(
+                                stringResource(Res.string.add_main_image),
+                                AppIcons.AddPhotoAlternate,
+                            ) { pickingImage = "cover" }
+                        } else {
+                            WishImageContent(
+                                wishImageState(cover),
+                                stringResource(Res.string.main_image),
+                                Modifier.fillMaxWidth().heightIn(min = 116.dp, max = 116.dp).clip(AppShapes.field),
+                                contentScale = ContentScale.Crop,
+                                showLoadingLabel = true,
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                                OutlinedButton(
+                                    { pickingImage = "cover" },
+                                    Modifier.weight(1f),
+                                ) { Text(stringResource(Res.string.replace_image)) }
+                                OutlinedButton(
+                                    { state.cover = null },
+                                    Modifier.weight(1f),
+                                ) { Text(stringResource(Res.string.remove_image)) }
+                            }
+                        }
+                        FormHint(
+                            stringResource(
+                                if (cover == null) Res.string.cover_hint else Res.string.cover_selected_hint,
+                            ),
+                        )
+                    }
+                }
+                item {
+                    AppTextField(
+                        state.description,
+                        { state.description = it },
+                        stringResource(Res.string.form_description),
+                        Modifier.heightIn(min = 128.dp).testTag("wish-description"),
+                        maxLength = 500,
+                        singleLine = false,
+                        minLines = 4,
+                        placeholder = stringResource(Res.string.description_placeholder),
+                        labelTrailingText = stringResource(Res.string.field_optional),
+                        labelAbove = true,
+                        helperText = stringResource(Res.string.description_hint),
+                    )
+                }
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.small)) {
+                        FormLabel(stringResource(Res.string.description_images), optional = true)
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                        ) {
+                            state.attachments.forEachIndexed { index, image ->
+                                Box(Modifier.size(104.dp).testTag("form-attachment-$index")) {
+                                    WishImageContent(
+                                        wishImageState(image),
+                                        stringResource(image.category.label),
+                                        Modifier.fillMaxSize().clip(AppShapes.field),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                    IconButton(
+                                        {
+                                            state.attachments =
+                                                state.attachments.filterIndexed {
+                                                    i,
+                                                    _,
+                                                    ->
+                                                    i != index
+                                                }
+                                        },
+                                        Modifier.align(Alignment.TopEnd),
+                                    ) {
+                                        Surface(shape = AppShapes.pill, color = MaterialTheme.colorScheme.background) {
+                                            Icon(
+                                                AppIcons.DeleteOutline,
+                                                stringResource(Res.string.remove_attachment, index + 1),
+                                                Modifier.padding(6.dp).size(20.dp),
+                                                tint = MaterialTheme.colorScheme.primary,
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    ImageAction(
-                        stringResource(Res.string.add_images),
-                        AppIcons.Add,
-                        attachments = true,
-                    ) { if (state.attachments.size < 12) pickingImage = "attachments" }
-                    FormHint(stringResource(Res.string.attachments_hint))
-                    if (state.attachments.size >= 12) {
-                        Text(stringResource(Res.string.cloud_attachment_limit), color = MaterialTheme.colorScheme.error)
+                        ImageAction(
+                            stringResource(Res.string.add_images),
+                            AppIcons.Add,
+                            attachments = true,
+                        ) { if (state.attachments.size < 12) pickingImage = "attachments" }
+                        FormHint(stringResource(Res.string.attachments_hint))
+                        if (state.attachments.size >= 12) {
+                            Text(
+                                stringResource(Res.string.cloud_attachment_limit),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                     }
                 }
-            }
-            item {
-                Surface(shape = AppShapes.card, color = MaterialTheme.colorScheme.primaryContainer) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(AppSpacing.large),
-                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            AppIcons.FavoriteBorder,
-                            null,
-                            Modifier.clip(AppShapes.pill).background(MaterialTheme.colorScheme.background)
-                                .padding(AppSpacing.small).size(AppDimensions.icon),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
-                            FormLabel(stringResource(Res.string.form_shared_title))
-                            FormHint(stringResource(Res.string.form_shared_hint, couple.partner.name))
+                item {
+                    Surface(shape = AppShapes.card, color = MaterialTheme.colorScheme.primaryContainer) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(AppSpacing.large),
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                AppIcons.FavoriteBorder,
+                                null,
+                                Modifier.clip(AppShapes.pill).background(MaterialTheme.colorScheme.background)
+                                    .padding(AppSpacing.small).size(AppDimensions.icon),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.xs)) {
+                                FormLabel(stringResource(Res.string.form_shared_title))
+                                FormHint(stringResource(Res.string.form_shared_hint, couple.partner.name))
+                            }
                         }
                     }
                 }

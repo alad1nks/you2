@@ -3,6 +3,7 @@ package com.alad1nks.you2.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -105,7 +106,8 @@ internal fun AppContent(
     val usScroll = rememberLazyListState()
     BackHandler(enabled = navigation.screen != null) { navigation.back() }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Box(contentAlignment = Alignment.TopCenter) {
+        BoxWithConstraints(contentAlignment = Alignment.TopCenter) {
+            val layout = AppLayout(maxWidth)
             if (navigation.screen == null) {
                 Box(
                     Modifier.align(Alignment.BottomCenter).fillMaxWidth()
@@ -122,7 +124,7 @@ internal fun AppContent(
                                     PrimaryButton(
                                         stringResource(Res.string.add_wish),
                                         { navigation.open(PairedRoute.Form()) },
-                                        Modifier.padding(horizontal = AppSpacing.page, vertical = AppSpacing.small),
+                                        Modifier.padding(horizontal = layout.actionInset, vertical = AppSpacing.small),
                                         leadingIcon = { Text("+") },
                                     )
                                 }
@@ -142,7 +144,16 @@ internal fun AppContent(
                 ) { padding ->
                     LazyColumn(
                         modifier =
-                            Modifier.fillMaxSize().padding(padding).padding(horizontal = AppSpacing.page)
+                            Modifier.fillMaxSize().padding(padding).padding(
+                                horizontal =
+                                    if (navigation.tab == MainTab.US) {
+                                        layout.detailInset
+                                    } else if (navigation.tab == MainTab.MEMORIES && layout.expanded) {
+                                        64.dp
+                                    } else {
+                                        layout.listInset
+                                    },
+                            )
                                 .testTag("paired-list"),
                         state =
                             when (navigation.tab) {
@@ -154,7 +165,11 @@ internal fun AppContent(
                             Arrangement.spacedBy(
                                 if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.detailsGap,
                             ),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = AppSpacing.large),
+                        contentPadding =
+                            androidx.compose.foundation.layout.PaddingValues(
+                                vertical =
+                                    if (layout.tablet && navigation.tab != MainTab.WISHES) 32.dp else AppSpacing.large,
+                            ),
                     ) {
                         if (navigation.tab == MainTab.WISHES) {
                             wishesContent(
@@ -163,13 +178,16 @@ internal fun AppContent(
                                 navigation.category,
                                 onCategory = { navigation.category = it },
                                 sort = navigation.sort,
+                                columns = layout.wishColumns,
                                 onSort = { navigation.sort = it },
                                 onOpen = { navigation.open(PairedRoute.Details(it)) },
                             )
                         } else if (navigation.tab == MainTab.MEMORIES) {
-                            memoriesContent(space) { navigation.open(PairedRoute.Details(it)) }
+                            memoriesContent(space, layout.expanded) { navigation.open(PairedRoute.Details(it)) }
                         } else {
-                            usContent(space, darkTheme, language, onSignOut) { usDialog = it }
+                            adaptiveSections(layout.expanded, splitAt = 3, rightTop = 80.dp) {
+                                usContent(space, darkTheme, language, onSignOut) { usDialog = it }
+                            }
                         }
                     }
                 }
