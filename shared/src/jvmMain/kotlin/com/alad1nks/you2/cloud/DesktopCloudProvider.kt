@@ -25,6 +25,8 @@ internal class DesktopCloudProvider(
     private val tokenFor: suspend (String) -> String,
     private val api: DesktopFirestoreApi = DesktopFirestoreApi(),
     private val pollMillis: Long = 15_000,
+    private val storage: DesktopStorageApi = DesktopStorageApi(),
+    private val cleanupQueue: DesktopImageCleanup = DesktopImageCleanup(),
 ) : NativeCloudProvider {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val operations = Mutex()
@@ -42,6 +44,7 @@ internal class DesktopCloudProvider(
                 try {
                     while (auth.currentUser?.id == userId && generation == session) {
                         operations.withLock {
+                            cleanupImages(userId, session)
                             val snapshot = transaction(userId, session) { snapshot(userId) }
                             if (auth.currentUser?.id == userId && generation == session) onChange(snapshot)
                         }
@@ -77,7 +80,11 @@ internal class DesktopCloudProvider(
             val failure =
                 try {
                     operations.withLock {
-                        transaction(userId, session) { write(operation, userId, coupleId, documentId, fields) }
+                        if (operation in setOf("create", "edit", "delete")) {
+                            writeImages(operation, userId, session, requireNotNull(coupleId), documentId, fields)
+                        } else {
+                            transaction(userId, session) { write(operation, userId, coupleId, documentId, fields) }
+                        }
                     }
                     wake?.trySend(Unit)
                     null
@@ -87,6 +94,111 @@ internal class DesktopCloudProvider(
                     cloudFailure(error, operation == "invite" || operation == "join")
                 }
             complete(failure)
+        }
+    }
+
+    private suspend fun cleanupImages(uid: String, session: Int) {
+        val pending = withContext(Dispatchers.IO) { runCatching { cleanupQueue.paths(uid) }.getOrDefault(emptySet()) }
+        for (path in pending) {
+            try {
+                transaction(uid, session) {
+                    require(
+                        Regex(
+                            "couples/[a-zA-Z0-9_-]+/wishes/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+\\.(jpg|png|webp)",
+                        ).matches(path),
+                    )
+                    val document = get(path.substringBeforeLast('/'))
+                    val referenced =
+                        path in
+                            desktopImagePaths(
+                                document?.get("content") as? Map<*, *> ?: emptyMap<String, Any>(),
+                            )
+                    if (!referenced) io { storage.delete(token, path) }
+                    io { cleanupQueue.forget(uid, path) }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Never delete after an unsuccessful read. Retry on the next poll or write.
+            }
+        }
+    }
+
+    private suspend fun writeImages(
+        operation: String,
+        uid: String,
+        session: Int,
+        pair: String,
+        id: String,
+        fields: Map<String, Any?>,
+    ) {
+        val path = "couples/${segment(pair)}/wishes/${segment(id)}"
+        if (operation == "delete") {
+            transaction(uid, session) {
+                val previous = get(path)?.get("content") as? Map<*, *> ?: emptyMap<String, Any>()
+                io { cleanupQueue.track(uid, desktopImagePaths(previous)) }
+                write(operation, uid, pair, id, fields)
+            }
+            cleanupImages(uid, session)
+            return
+        }
+        @Suppress("UNCHECKED_CAST")
+        val content = fields["content"] as Map<String, Any?>
+        val attachments = content["attachments"] as List<*>
+        require(attachments.size <= 12)
+        val sources = listOfNotNull(content["cover"] as? String) + attachments.map { it as String }
+        val local = sources.filter { it.startsWith("data:image/jpeg;base64,") }.distinct()
+        val seed =
+            content +
+                mapOf(
+                    "cover" to
+                        (content["cover"] as? String)?.takeUnless {
+                            it in local
+                        },
+                    "attachments" to attachments.filterNot { it in local },
+                )
+        if (operation == "create") {
+            val needsImages =
+                transaction(uid, session) {
+                    val old = get(path)
+                    if (old == null) write("create", uid, pair, id, fields + ("content" to seed))
+                    old == null || (old["content"] == seed && old["completion"] == null)
+                }
+            if (local.isEmpty() || !needsImages) return
+        }
+        val uploaded = mutableMapOf<String, String>()
+        try {
+            for (source in local) {
+                transaction(uid, session) {
+                    val target = "$path/${UUID.randomUUID()}.jpg"
+                    io {
+                        val bytes = java.util.Base64.getDecoder().decode(source.substringAfter(','))
+                        require(bytes.size in 1..MAX_IMAGE_BYTES)
+                        cleanupQueue.track(uid, setOf(target))
+                        storage.upload(token, target, bytes)
+                    }
+                    uploaded[source] = target
+                }
+            }
+            val resolved =
+                content +
+                    mapOf(
+                        "cover" to
+                            (content["cover"] as? String)?.let {
+                                uploaded[it] ?: it
+                            },
+                        "attachments" to attachments.map { uploaded[it] ?: it },
+                    )
+            transaction(uid, session) {
+                val old = requireNotNull(get(path))
+                val previous = old["content"] as Map<*, *>
+                if (operation == "create" && (previous != seed || old["completion"] != null)) return@transaction
+                require(desktopImagePaths(resolved).all { it in desktopImagePaths(previous) || it in uploaded.values })
+                io { cleanupQueue.track(uid, desktopImagePaths(previous)) }
+                write("edit", uid, pair, id, fields + ("content" to resolved))
+            }
+        } finally {
+            cleanupImages(uid, session)
         }
     }
 
@@ -380,6 +492,14 @@ private val emptySnapshot =
 
 internal fun cloudFailure(error: Exception, invitation: Boolean = false): NativeCloudFailure =
     when {
+        error is DesktopStorageFailure -> {
+            when (error.code) {
+                401, 403 -> NativeCloudFailure.STORAGE_ACCESS
+                408, 429, in 500..599 -> NativeCloudFailure.NETWORK
+                else -> NativeCloudFailure.DATA
+            }
+        }
+
         error is IOException -> {
             NativeCloudFailure.NETWORK
         }

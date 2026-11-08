@@ -44,9 +44,23 @@ class WishFormTest {
     fun createEditAndCancelUpdateOnlyOnSave() =
         runDesktopComposeUiTest(width = 412, height = 917) {
             val repository = InMemoryWishesRepository(DemoDateSource)
+            val photo = java.nio.file.Files.createTempFile("you2-photo", ".png").toFile().apply { deleteOnExit() }
+            javax.imageio.ImageIO.write(
+                java.awt.image.BufferedImage(2, 3, java.awt.image.BufferedImage.TYPE_INT_RGB),
+                "png",
+                photo,
+            )
+            val selected = WishImage(source = desktopImageSelection(photo))
             setContent {
                 val space by repository.space.collectAsState()
-                CompositionLocalProvider(LocalDensity provides Density(1f, 1f), LocalAppLocale provides "en") {
+                CompositionLocalProvider(
+                    LocalDesktopImageFiles provides {
+                        limit ->
+                        List(if (limit == 1) 1 else 2) { photo }
+                    },
+                    LocalDensity provides Density(1f, 1f),
+                    LocalAppLocale provides "en",
+                ) {
                     AppTheme(darkTheme = false) {
                         AppContent(
                             space,
@@ -76,13 +90,10 @@ class WishFormTest {
             onNodeWithText("No date").performClick()
             onNodeWithTag("wish-form").performScrollToNode(hasText("Add main image"))
             onNodeWithText("Add main image").performClick()
-            onNodeWithTag("demo-image-PLANS").performClick()
-            onNodeWithText("Use selected images").performClick()
+            waitUntil { onAllNodes(hasText("Remove image")).fetchSemanticsNodes().isNotEmpty() }
             onNodeWithTag("wish-form").performScrollToNode(hasText("Add images"))
             onNodeWithText("Add images").performClick()
-            onNodeWithTag("demo-image-ADVENTURES").performClick()
-            onNodeWithTag("demo-image-PLANS").performClick()
-            onNodeWithText("Use selected images").performClick()
+            waitUntil { onAllNodes(hasTestTag("form-attachment-1")).fetchSemanticsNodes().isNotEmpty() }
             onNodeWithTag("wish-form").performScrollToNode(hasTestTag("form-attachment-0"))
             onNodeWithContentDescription("Remove attachment 1").performClick()
             onNodeWithTag("save-wish").performClick()
@@ -90,8 +101,8 @@ class WishFormTest {
             runOnIdle {
                 val created = repository.space.value.active.first()
                 assertEquals(13, repository.space.value.active.size)
-                assertEquals(WishImage(WishCategory.PLANS), created.content.cover)
-                assertEquals(listOf(WishImage(WishCategory.PLANS)), created.content.attachments)
+                assertEquals(selected, created.content.cover)
+                assertEquals(listOf(selected), created.content.attachments)
                 assertEquals(WishDates.NoDate, created.content.dates)
             }
             onNodeWithContentDescription("More options").performClick()
