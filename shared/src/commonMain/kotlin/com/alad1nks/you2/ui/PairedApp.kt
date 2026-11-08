@@ -163,7 +163,11 @@ internal fun AppContent(
                             },
                         verticalArrangement =
                             Arrangement.spacedBy(
-                                if (navigation.tab != MainTab.US) AppSpacing.listGap else AppSpacing.detailsGap,
+                                when {
+                                    navigation.tab == MainTab.US -> AppSpacing.detailsGap
+                                    layout.tablet && navigation.tab == MainTab.WISHES -> 16.dp
+                                    else -> AppSpacing.listGap
+                                },
                             ),
                         contentPadding =
                             androidx.compose.foundation.layout.PaddingValues(

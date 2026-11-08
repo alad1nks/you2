@@ -37,7 +37,9 @@ class TabletLayoutTest {
         runDesktopComposeUiTest(width = width, height = height) {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f, 1f), LocalAppLocale provides "en") {
-                    AppTheme(darkTheme = dark) { AppContent(DemoSpace.create(), DemoDateSource.today()) }
+                    AppTheme(
+                        darkTheme = dark,
+                    ) { AppContent(DemoSpace.create(), DemoDateSource.today(), darkTheme = dark) }
                 }
             }
             val prefix = "src/jvmTest/screenshots/tablet_${width}_${if (dark) "dark" else "light"}"
@@ -75,7 +77,7 @@ class TabletLayoutTest {
         runDesktopComposeUiTest(width = width, height = height) {
             setContent {
                 CompositionLocalProvider(LocalDensity provides Density(1f, 1f), LocalAppLocale provides "en") {
-                    AppTheme {
+                    AppTheme(darkTheme = false) {
                         GuestScreen(MainTab.US, {}, Language.ENGLISH, {}, {})
                     }
                 }

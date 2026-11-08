@@ -158,10 +158,8 @@ internal fun LazyListScope.wishesContent(
                                 stringResource(Res.string.wish_attribution, categoryLabel, space.couple.partner.name)
                             },
                         onClick = { onOpen(wish.id) },
-                        modifier =
-                            Modifier.testTag(
-                                wish.id,
-                            ).then(if (columns > 1) Modifier.heightIn(min = 116.dp) else Modifier),
+                        modifier = Modifier.testTag(wish.id),
+                        contentMinHeight = if (columns > 1) 116.dp else 0.dp,
                         date = { WishDateBadge(wish.content.dates, today) },
                     )
                 }

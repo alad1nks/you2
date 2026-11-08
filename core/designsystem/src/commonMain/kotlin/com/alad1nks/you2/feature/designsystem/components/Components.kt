@@ -55,6 +55,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -184,6 +185,7 @@ fun WishCard(
     date: @Composable () -> Unit = {},
     symbol: ImageVector = AppIcons.FavoriteBorder,
     completed: Boolean = false,
+    contentMinHeight: Dp = 0.dp,
 ) {
     Card(
         onClick = onClick,
@@ -193,7 +195,7 @@ fun WishCard(
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Row(
-            Modifier.padding(AppSpacing.cardInset),
+            Modifier.heightIn(min = contentMinHeight).padding(AppSpacing.cardInset),
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
             verticalAlignment = Alignment.CenterVertically,
         ) {
