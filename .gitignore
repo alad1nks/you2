@@ -23,5 +23,6 @@ node_modules/
 # Local Firebase client configuration
 google-services.json
 GoogleService-Info.plist
+client_secret_*.json
 .firebase/
 *-debug.log

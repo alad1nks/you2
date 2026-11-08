@@ -102,7 +102,9 @@ Platform requirements:
 
 - **Android:** Android Studio and Android SDK API 37. Configure the SDK through Android Studio or
   `sdk.dir` in an untracked `local.properties`. The minimum supported Android API is 28.
-- **Desktop:** a desktop environment and the configured JDK.
+- **Desktop:** a desktop environment; Gradle downloads an Amazon Corretto JDK 25 toolchain for desktop
+  compilation, tests, and packaging. Installers bundle this runtime. Shared tests and screenshot CI stay on JDK 21.
+  Desktop launcher and packaging toolchains are resolved lazily, so unrelated tasks do not request JDK 25.
 - **Web:** a browser. The project targets Kotlin/JS.
 - **iOS:** macOS and Xcode 26.2 or newer (Swift 6.2.3 for the Firebase package), with support for the configured iOS 18.2 deployment target.
   Kotlin targets are `iosArm64` and `iosSimulatorArm64`.
@@ -458,11 +460,74 @@ Passwords stay in memory only and are cleared when changing forms or leaving the
 Authentication screens and state live in shared/commonMain and use the common English, Russian, and Kazakh resources.
 All platforms enter through the single shared App, which owns Koin, the theme, locale, and screen routing.
 Android DI supplies FirebaseAuthClient from shared/androidMain; iOS injects NativeAuthClient backed by FirebaseAuthProvider.
-Desktop and Web retain the demo flow.
+Desktop supplies `DesktopAuthClient` using Firebase's REST API; Web uses the Firebase JavaScript SDK.
 
 Android and iOS main tabs display the signed-in user's shared Firestore data. Loading, unpaired, and failed
-states never fall back to Alex/Mia sample content. Web/Desktop cloud data and email verification UI
-are not implemented.
+states never fall back to Alex/Mia sample content. Desktop cloud data and email verification UI
+are not implemented. Desktop still displays local demo content after authentication; signing in does
+not download the account's wishes, memories, or couple profile.
+
+### Desktop Firebase authentication
+
+Desktop supports email/password sign-in, registration, password-reset emails, session restoration,
+and sign-out. It uses the existing `you2-ae09a` project's public web API key. Enable **Email/Password**
+in Firebase Console > Authentication > Sign-in method. No service account or Admin SDK credentials
+belong in the desktop app. If the key's application restrictions only allow browser referrers, provide
+a separate key from the same project via `YOU2_FIREBASE_API_KEY`, allowing Identity Toolkit and
+Secure Token API requests from desktop. Do not weaken the browser key's restrictions just for desktop.
+
+Refresh tokens are stored through direct native bindings to Windows Credential Manager (`CredReadW`,
+`CredWriteW`, `CredDeleteW`), macOS Security (`SecItem`), or Linux `libsecret`/Secret Service.
+The desktop host uses Java 25's stable Foreign Function & Memory API (`java.lang.foreign`).
+Neither JNA nor java-keyring is used. Credential access uses only JDK APIs and the operating system's
+libraries; JSON parsing uses Google's Gson and asynchronous work uses JetBrains' kotlinx.coroutines.
+Gradle development runs, tests, and installers enable native access with `--enable-native-access=ALL-UNNAMED`.
+The shared module receives a `DesktopSessionStore` from the desktop host and remains Java 21 compatible.
+Linux requires `libsecret-1.so.0` and a running, unlocked Secret Service provider (such as GNOME Keyring
+or a compatible KWallet service). Windows retains the previous credential entry name and encoding,
+so existing sessions continue to work. Linux users upgrading from the previous backend must sign in again.
+The OS credential store must be available and unlocked; failed writes
+fail authentication, and failed removal keeps the user signed in so sign-out can be retried. There is
+no plaintext fallback. Passwords and Firebase ID tokens are never persisted. OS credential stores do
+not isolate secrets from every program running as the same OS user. Startup validates the saved
+session with Firebase; offline startup shows the guest flow but preserves the credential for the next
+launch. Invalid/disabled sessions are cleared. Active sessions refresh approximately every 50 minutes.
+
+For Google sign-in:
+
+1. Enable **Google** in Firebase Authentication and configure its support email.
+2. In the same Google Cloud project, configure the OAuth consent screen and create an OAuth client
+   with application type **Desktop app**. Add test users if the consent screen is in testing mode.
+3. Place the downloaded `client_secret_*.json` in `desktopApp/` (keep exactly one matching file).
+   Gradle bundles it into development runs and installers as `you2-google-desktop-client.json`.
+   The source JSON is Git-ignored; supply it separately when building in CI. These identify an
+   installed public client; do not use a web application's secret or a service-account key.
+4. Rebuild and restart the app. The Google button is hidden until a desktop client ID is configured.
+
+Alternatively, set `YOU2_GOOGLE_DESKTOP_CLIENT_ID` and `YOU2_GOOGLE_DESKTOP_CLIENT_SECRET`
+to override the bundled configuration at runtime. When a client ID override is present, both values
+come from the environment; the bundled secret is never mixed with an overridden client ID.
+
+The app opens the system browser and listens temporarily on a random `127.0.0.1` port. OAuth state
+and PKCE bind the callback to the initiating request. Access denial or a three-minute timeout returns
+to the form; Google tokens are exchanged for a Firebase session. Closing the form cancels the listener.
+The browser's Google session is unaffected by signing out of You2.
+
+Example in PowerShell (environment variables are inherited by the app):
+
+```powershell
+$env:YOU2_GOOGLE_DESKTOP_CLIENT_ID = "your-desktop-client-id.apps.googleusercontent.com"
+$env:YOU2_GOOGLE_DESKTOP_CLIENT_SECRET = "your-desktop-client-secret"
+.\gradlew.bat :desktopApp:run
+```
+
+Protocol references: [Firebase Auth REST API](https://firebase.google.com/docs/reference/rest/auth) and
+[Google OAuth for desktop apps](https://developers.google.com/identity/protocols/oauth2/native-app).
+Auth tests use fake API responses without production account creation or password-reset emails.
+A Windows regression test also exercises Credential Manager with a disposable, isolated test entry,
+checking logout, repeated clearing, and subsequent sign-in; it never accesses the app's saved session.
+Manually verify Google sign-in after configuring the desktop OAuth client,
+and session restoration on each target OS with its native credential store.
 
 Validation:
 
