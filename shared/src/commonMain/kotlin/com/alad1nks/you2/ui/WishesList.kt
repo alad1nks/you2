@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -96,7 +97,9 @@ internal fun LazyListScope.wishesContent(
                         Res.string.add_wish,
                     ),
                     onAdd,
-                    Modifier.width(180.dp),
+                    Modifier.widthIn(min = 180.dp),
+                    fullWidth = false,
+                    maxLines = 1,
                     leadingIcon = {
                         Text("+")
                     },

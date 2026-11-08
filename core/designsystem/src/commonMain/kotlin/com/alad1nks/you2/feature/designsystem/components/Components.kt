@@ -87,10 +87,12 @@ fun PrimaryButton(
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     textStyle: TextStyle = MaterialTheme.typography.labelLarge,
+    fullWidth: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     Button(
         onClick,
-        modifier.fillMaxWidth().heightIn(min = AppDimensions.buttonHeight),
+        modifier.then(if (fullWidth) Modifier.fillMaxWidth() else Modifier).heightIn(min = AppDimensions.buttonHeight),
         enabled = enabled,
         shape = AppShapes.pill,
     ) {
@@ -99,7 +101,7 @@ fun PrimaryButton(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             leadingIcon?.invoke()
-            Text(text, textAlign = TextAlign.Center, style = textStyle)
+            Text(text, textAlign = TextAlign.Center, style = textStyle, maxLines = maxLines)
         }
     }
 }
