@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out code
@@ -59,7 +59,7 @@ jobs:
 
   post-build:
     needs: build
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
