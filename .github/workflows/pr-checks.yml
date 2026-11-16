@@ -59,7 +59,7 @@ jobs:
           retention-days: 14
 
   build-android:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -115,7 +115,7 @@ jobs:
           CODE_SIGNING_ALLOWED=NO build
 
   build-js:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -193,7 +193,7 @@ jobs:
           path: shared/build/reports/tests/jvmTest/
 
   build-jvm:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -223,7 +223,7 @@ jobs:
         run: .\gradlew.bat :desktopApp:test
 
   lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
