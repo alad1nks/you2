@@ -59,7 +59,7 @@ jobs:
           retention-days: 14
 
   build-android:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -87,6 +87,7 @@ jobs:
         run: ./gradlew assembleDebug
 
   build-ios:
+    # Kotlin/Native Apple targets and xcodebuild require macOS.
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -114,7 +115,7 @@ jobs:
           CODE_SIGNING_ALLOWED=NO build
 
   build-js:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -192,7 +193,7 @@ jobs:
           path: shared/build/reports/tests/jvmTest/
 
   build-jvm:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
@@ -210,6 +211,7 @@ jobs:
         run: ./gradlew jvmJar :desktopApp:compileJava :desktopApp:test
 
   desktop-auth-windows:
+    # Exercise the native Windows Credential Manager backend.
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7.0.1
@@ -221,7 +223,7 @@ jobs:
         run: .\gradlew.bat :desktopApp:test
 
   lint:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
